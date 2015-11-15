@@ -1,13 +1,16 @@
 
 class FileCache {
 	
-	File:PodMeta	files	:= File:PodMeta[:]
+	File:PodVersion?	files	:= File:PodVersion?[:]
 	
-	PodMeta get(File file) {
+	PodVersion? get(File file) {
 		files.getOrAdd(file) { readFile(file) }
 	}
 	
-	private PodMeta readFile(File file) {
+	private PodVersion? readFile(File file) {
+		if (file.exists.not)
+			return null
+
 		zip	:= Zip.read(file.in)
 		try {
 			File? 		entry
@@ -18,7 +21,7 @@ class FileCache {
 			}
 			if (metaProps == null)
 				throw Err("Pod file ${file.normalize.osPath} does not contain `/meta.props`")
-			return PodMeta(file, metaProps)
+			return PodVersion(file, metaProps)
 
 		} finally {
 			zip.close
