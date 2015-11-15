@@ -1,17 +1,20 @@
 
 class PodResolvers {
-	PodResolver[] resolvers
-
-	new make(FpmConfig config, PodCache podCache) {
-		resolvers = [
-			PodResolverFanr(config.repoDir, podCache)
+	PodResolver[] 	resolvers
+	Depend:PodMeta	depends		:= Depend:PodMeta[:]
+	
+	new make(FpmConfig config, FileCache fileCache) {
+		resolvers = PodResolver[
+			PodResolverFanr(config.repoDir, fileCache)
 		].addAll(
-			config.paths.map { PodResolverPath(it, podCache) }
+			config.paths.map |path->PodResolver| { PodResolverPath(path, fileCache) }
 		)
 	}
 	
 	PodMeta? resolve(Depend dependency) {
-		resolvers.eachWhile { it.resolve(dependency) }
+		depends.getOrAdd(dependency) {
+			resolvers.eachWhile { it.resolve(dependency) }
+		}
 	}
 }
 
@@ -22,12 +25,12 @@ mixin PodResolver {
 class PodResolverFanr : PodResolver {
 	private static const Regex		podRegex		:= "(.+)-(.+)\\.pod".toRegex
 
-	PodCache	podCache
+	FileCache	fileCache
 	File 		repoDir
 
-	new make(File repoDir, PodCache podCache) {
+	new make(File repoDir, FileCache fileCache) {
 		this.repoDir	= repoDir
-		this.podCache	= podCache
+		this.fileCache	= fileCache
 	}
 
 	override PodMeta? resolve(Depend dependency) {
@@ -47,9 +50,7 @@ class PodResolverFanr : PodResolver {
 			if (!dependency.match(version))
 				return null
 			
-			return podCache.get(file) {
-				it.inRepo = true
-			}
+			return fileCache.get(file)
 
 		}.exclude { it == null }
 		
@@ -59,12 +60,12 @@ class PodResolverFanr : PodResolver {
 }
 
 class PodResolverPath : PodResolver {
-	PodCache	podCache
+	FileCache	fileCache
 	File 		pathDir
 
-	new make(File pathDir, PodCache podCache) {
+	new make(File pathDir, FileCache fileCache) {
 		this.pathDir	= pathDir
-		this.podCache	= podCache
+		this.fileCache	= fileCache
 	}
 
 	override PodMeta? resolve(Depend dependency) {
@@ -72,7 +73,7 @@ class PodResolverPath : PodResolver {
 		if (file.exists.not)
 			return null
 		
-		podMeta := (PodMeta?) podCache.get(file)
+		podMeta := (PodMeta?) fileCache.get(file)
 
 		if (!dependency.match(podMeta.version))
 			podMeta = null

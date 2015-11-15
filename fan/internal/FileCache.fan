@@ -1,10 +1,10 @@
 
-class PodCache {
+class FileCache {
 	
-	File:PodMeta	pods	:= File:PodMeta[:]
+	File:PodMeta	files	:= File:PodMeta[:]
 	
 	PodMeta get(File file) {
-		pods.getOrAdd(file) { readFile(file) }
+		files.getOrAdd(file) { readFile(file) }
 	}
 	
 	private PodMeta readFile(File file) {
