@@ -4,7 +4,7 @@ internal class PodDependencies {
 	PodResolvers	podResolvers
 	FileCache		fileCache		:= FileCache()
 	PodNode[]		initNodes		:= PodNode[,]
-	Str:PodNode		podNodes		:= Str:PodNode[:]
+	Str:PodNode		allNodes		:= Str:PodNode[:] { it.ordered = true }
 	
 	new make(FpmConfig config) {
 		this.podResolvers	= PodResolvers(config, fileCache)
@@ -19,22 +19,65 @@ internal class PodDependencies {
 	}
 	
 	This satisfyDependencies() {
-		createProblemDomain
-		reduceDomain
-		pickLatestPods
+		createProblemDomains
+		
+//		reduceDomain
+//		pickLatestPods
+		
 		return this
 	}
 	
-	Void createProblemDomain() {
-		podNodes.vals.each { expandNode(it) }
-	}
-	
-	Void reduceDomain() {
+	Void createProblemDomains() {
+		allNodes.vals.each { expandNode(it) }
+
+		// brute force - try every permutation of pod versions and see which ones work
+		
 		
 	}
 	
+	// see https://en.wikipedia.org/wiki/AC-3_algorithm
+	Void reduceDomain(Str:PodNode podNodes) {
+		constraints := (PodConstraint[]) podNodes.vals.map { it.toConstraints }.flatten
+		worklist	:= constraints.dup
+
+		while (worklist.isEmpty.not) {
+			arc := worklist.pop
+			if (arcReduce(arc, podNodes)) {
+				destNode := podNodes[arc.depend.name]
+				if (destNode.podVersions.isEmpty) {
+					availableVersions := destNode._podVersions.map { version }.join(", ")
+					causes := destNode.removalCauses.join(", ")
+					throw Err("Could not resolve ${destNode.name} ${availableVersions} due to ${causes}")
+					
+				}
+				else {
+					// worklist := worklist + { (z, x) | z != y and there exists a relation R2(x, z) or a relation R2(z, x) }
+					worklist.addAll(constraints.findAll { it.depend.name == arc.depend.name })
+				}
+			}
+		}
+	}
+	
+	Bool arcReduce(PodConstraint arc, Str:PodNode podNodes) {
+		change := false
+		
+		destNode := podNodes[arc.depend.name]
+		destNode.podVersions.each |dx| {
+			if (arc.depend.match(dx.version).not) {
+				destNode.removeVersion(dx, arc)
+				change = true
+			}
+		}
+		
+		return change
+	}
+	
+	
 	// in the event multiple pods satisfy the dependencies, pick the latest ones
-	Void pickLatestPods() {
+	Void pickLatestPods(Str:PodNode podNodes) {
+		podNodes.each {
+			echo(it.name + " : " + it.podVersions.map{version}.toStr)
+		}
 		podNodes.each { it.pickLatestVersion }
 	}
 	
@@ -48,36 +91,46 @@ internal class PodDependencies {
 	}
 	
 	PodNode? resolveNode(Depend dependency) {
-		podNodes.getOrAdd(dependency.name) {
+		allNodes.getOrAdd(dependency.name) {
 			PodNode {
-				it.name 		= dependency.name
-				it.podVersions	= PodVersion[,]
+				it.name = dependency.name
 			}
 		}.addPodVersions(podResolvers.resolve(dependency))
 	}	
 	
 	Str:PodFile getPodFiles() {
-		podNodes.map { it.toPodFile }
+//		podNodes.map { it.toPodFile }
+		[:]
 	}
 }
 
 
 class PodNode {
-	const 	Str		name
-	PodVersion[]	podVersions
-	Bool			expanded
+	const 	Str				name
+			PodVersion[]	_podVersions	:= PodVersion[,]
+					Bool	expanded
+		PodConstraint[]		removalCauses	:= PodConstraint[,]
 
 	new make(|This|in) { in(this) }
 
 	This pickLatestVersion() {
-		podVersions = podVersions.sort |p1, p2| { p1.version <=> p2.version }
-		podVersions = podVersions.isEmpty ? podVersions : [podVersions.last]
+		picked := podVersions.sort.last
+		_podVersions.each { it.deleted = (it != picked) }
 		return this
 	}
 	
 	This addPodVersions(PodVersion[] pods) {
-		podVersions = podVersions.addAll(pods).unique
+		_podVersions = _podVersions.addAll(pods).unique.sort.reverse	// highest first
 		return this
+	}
+	
+	Void removeVersion(PodVersion podVersion, PodConstraint cause) {
+		podVersion.deleted = true
+		removalCauses.add(cause)
+	}
+	
+	PodVersion[] podVersions() {
+		_podVersions.findAll { it.deleted.not }
 	}
 	
 	PodFile toPodFile() {
@@ -93,6 +146,10 @@ class PodNode {
 		}
 	}
 
+	PodConstraint[] toConstraints() {
+		_podVersions.map { it.toConstraints(this) }.flatten
+	}
+
 	override Str toStr() 			{ name }
 	override Int hash() 			{ name.hash }
 	override Bool equals(Obj? that)	{ name == that?->name }
@@ -104,6 +161,7 @@ class PodVersion {
 	const	Depend		depend
 	const	File		file
 	const	Depend[]	depends
+			Bool		deleted
 
 	new make(|This|in) { in(this) }
 
@@ -114,8 +172,28 @@ class PodVersion {
 		this.depends	= metaProps["pod.depends"].split(';').map { Depend(it, false) }.exclude { it == null }
 		this.depend		= Depend("${name} ${version}")
 	}
+	
+	PodConstraint[] toConstraints(PodNode node) {
+		depends.map |d| { PodConstraint { it.podNode = node; it.podVersion = this; it.depend = d } }
+	}
+	
+	override Int compare(Obj that) {
+		version <=> (that as PodVersion).version
+	}
 
 	override Str toStr() 			{ depend.toStr }
 	override Int hash() 			{ depend.hash }
 	override Bool equals(Obj? that)	{ depend == that?->depend }
+}
+
+class PodConstraint {
+	PodNode		podNode
+	PodVersion	podVersion
+	Depend		depend
+	
+	override Str toStr() {
+		"${podNode.name}@${podVersion.version} -> ${depend}"
+	}
+	
+	new make(|This|in) { in(this) }
 }
