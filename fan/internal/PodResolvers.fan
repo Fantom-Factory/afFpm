@@ -1,7 +1,7 @@
 
 class PodResolvers {
 	PodResolver[] 	resolvers
-	Depend:PodMeta	depends		:= Depend:PodMeta[:]
+	Depend:PodVersion[]	depends		:= Depend:PodVersion[][:]
 	
 	new make(FpmConfig config, FileCache fileCache) {
 		resolvers = PodResolver[
@@ -11,15 +11,15 @@ class PodResolvers {
 		)
 	}
 	
-	PodMeta? resolve(Depend dependency) {
+	PodVersion[] resolve(Depend dependency) {
 		depends.getOrAdd(dependency) {
-			resolvers.eachWhile { it.resolve(dependency) }
+			resolvers.map { it.resolve(dependency) }.flatten
 		}
 	}
 }
 
 mixin PodResolver {
-	abstract PodMeta? resolve(Depend dependency)
+	abstract PodVersion[] resolve(Depend dependency)
 }
 
 class PodResolverFanr : PodResolver {
@@ -33,9 +33,9 @@ class PodResolverFanr : PodResolver {
 		this.fileCache	= fileCache
 	}
 
-	override PodMeta? resolve(Depend dependency) {
+	override PodVersion[] resolve(Depend dependency) {
 		podDir := repoDir.plus(dependency.name.toUri.plusSlash, true)
-		files  := (PodMeta[]) podDir.listFiles(podRegex).map |file->PodMeta?| {
+		return podDir.listFiles(podRegex).map |file->PodVersion?| {
 			matcher := podRegex.matcher(file.name)
 			if (!matcher.find)
 				return null
@@ -53,9 +53,6 @@ class PodResolverFanr : PodResolver {
 			return fileCache.get(file)
 
 		}.exclude { it == null }
-		
-		podMeta := files.sort |p1, p2| { p1.version <=> p2.version }.last
-		return podMeta
 	}
 }
 
@@ -68,16 +65,14 @@ class PodResolverPath : PodResolver {
 		this.fileCache	= fileCache
 	}
 
-	override PodMeta? resolve(Depend dependency) {
-		file := pathDir.plus(`lib/fan/${dependency.name}.pod`)
-		if (file.exists.not)
-			return null
-		
-		podMeta := (PodMeta?) fileCache.get(file)
+	override PodVersion[] resolve(Depend dependency) {
+		file 		:= pathDir.plus(`lib/fan/${dependency.name}.pod`)	
+		podVersion	:= fileCache.get(file)
 
-		if (!dependency.match(podMeta.version))
-			podMeta = null
+		if (podVersion != null)
+			if (!dependency.match(podVersion.version))
+				podVersion = null
 		
-		return podMeta
+		return podVersion == null ? PodVersion#.emptyList : [podVersion]
 	}
 }
