@@ -31,7 +31,7 @@ class FpmConfig {
 		
 		paths := Env.cur.vars["FAN_ENV_PATH"]?.split(File.pathSep.chars.first) ?: Str#.emptyList
 		paths.insert(0, workDir)
-		paths.add(Env.cur.homeDir)
+		paths.add(Env.cur.homeDir.osPath)
 		this.paths = paths.map { toFile(it) }.unique
 	}
 	

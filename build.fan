@@ -22,7 +22,7 @@ class Build : BuildPod {
 			"afPlastic 1.0.18 - 1.0",
 		]
 
-		srcDirs = [`fan/`, `fan/public/`, `fan/public/cmds/`, `fan/internal/`]
+		srcDirs = [`test/`, `fan/`, `fan/public/`, `fan/public/cmds/`, `fan/internal/`]
 		resDirs = [`doc/`]
 	}
 	

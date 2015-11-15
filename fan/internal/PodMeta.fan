@@ -4,8 +4,6 @@ class PodMeta {
 	const 	Version		version
 	const 	File		file
 	const	Depend[]	depends
-	
-			Bool		inRepo
 			Bool		versionFixed
 	
 	new make(|This|in) { in(this) }
