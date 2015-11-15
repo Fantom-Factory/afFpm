@@ -16,7 +16,7 @@ const class FpmEnv : Env {
 	
 	new make() : super.make() {
 		fpmConfig	:= FpmConfig()
-		podDepends	:= PodDependencies(fpmConfig.repoDir)
+		podDepends	:= PodDependencies(fpmConfig)
 		cmdArgs		:= (Str[]) (Env.cur.vars["FPM_CMDLINE_ARGS"]?.split ?: Str#.emptyList)	// TODO: honour "path with spaces/build.fan"
 		
 		firstArg	:= cmdArgs.first ?: ""
