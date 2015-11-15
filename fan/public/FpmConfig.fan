@@ -1,9 +1,11 @@
 
 class FpmConfig {
 	
-	File workDir
+	File 	workDir
 	
-	File repoDir
+	File 	repoDir
+	
+	File[]	paths
 	
 	new make() {
 		fpmFile := (File?) File(`fpm.props`).normalize
@@ -26,6 +28,11 @@ class FpmConfig {
 		if (repoDir == null)
 			repoDir = this.workDir.plus(`repo/`, false).uri.toStr
 		this.repoDir = toFile(repoDir)
+		
+		paths := Env.cur.vars["FAN_ENV_PATH"]?.split(File.pathSep.chars.first) ?: Str#.emptyList
+		paths.insert(0, workDir)
+		paths.add(Env.cur.homeDir)
+		this.paths = paths.map { toFile(it) }.unique
 	}
 	
 	private File toFile(Str filePath) {
