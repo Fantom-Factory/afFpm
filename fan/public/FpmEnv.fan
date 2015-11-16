@@ -41,7 +41,9 @@ const class FpmEnv : Env {
 	}
 	
 	override File? findPodFile(Str podName) {
-		podFiles[podName]?.file ?: super.findPodFile(podName)
+		f := podFiles[podName]?.file ?: super.findPodFile(podName)
+		echo(f)
+		return f
 	}
 
 	override Str[] findAllPodNames() {

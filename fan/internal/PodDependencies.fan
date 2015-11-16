@@ -44,8 +44,8 @@ internal class PodDependencies {
 				podMap = Str:PodNode[:].addList(podLst) { it.name }
 				
 				constraints := (PodConstraint[]) podMap.vals.map { it.toConstraints }.flatten
-				echo(constraints.toStr.replace(",", "\n"))
-				echo(finNodes.vals.sort.map { it.toPodFile } )
+//				echo(constraints.toStr.replace(",", "\n"))
+//				echo(finNodes.vals.sort.map { it.toPodFile } )
 				fin = reduceDomain(podMap)
 			}
 			
