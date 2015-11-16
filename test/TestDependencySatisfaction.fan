@@ -11,6 +11,14 @@ internal class TestDependencySatisfaction : Test {
 		}
 	}
 	
+	Void testEggbox() {
+		podDepends := PodDependencies(FpmConfig())
+		podDepends.addPod(Depend("afEggbox 0+"))
+		podFiles   := podDepends.satisfyDependencies.podFiles
+		
+		echo(podFiles)
+	}
+	
 	Void testEasyHappyPath() {
 		// everyone depends on the same versions
 		addDep("afBed 2.0", "afPlastic 1.2")
@@ -37,7 +45,7 @@ internal class TestDependencySatisfaction : Test {
 		addDep("afIoc 2.0", "afPlastic 1.2")
 		
 		satisfyDependencies("afIoc 2.0")
-		fail
+		verifyNull(podDepends.podFiles)
 	}
 
 	Void testPaths4() {
@@ -47,7 +55,7 @@ internal class TestDependencySatisfaction : Test {
 		addDep("afPlastic 1.2")
 		
 		satisfyDependencies("afBed 2.0, afIoc 2.0")
-		fail
+		verifyNull(podDepends.podFiles)
 	}
 	
 	Void testPaths5() {
@@ -57,7 +65,7 @@ internal class TestDependencySatisfaction : Test {
 		addDep("afPlastic 3.0")
 		
 		satisfyDependencies("afBed 2.0, afIoc 3.0")
-		fail
+		verifyNull(podDepends.podFiles)
 	}
 
 	Void testPaths6() {
@@ -74,12 +82,12 @@ internal class TestDependencySatisfaction : Test {
 	
 	private Void satisfyDependencies(Str pods) {
 		pods.split(',').map { Depend(it) }.each { podDepends.addPod(it) }
-		podDepends.satisfyDependencies		
+		podDepends.satisfyDependencies
 	}
 
 	private Void verifyPodFiles(Str pods) {
 		expected := pods.split(',').map { Depend(it) }
-		actual 	 := podDepends.getPodFiles.vals.map { Depend("$it.name $it.version") }
+		actual 	 := podDepends.podFiles?.vals?.map { Depend("$it.name $it.version") } ?: [,]
 		common	 := expected.intersection(actual)
 		all		 := expected.union(actual)
 		diff	 := all.removeAll(common)

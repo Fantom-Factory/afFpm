@@ -34,7 +34,7 @@ const class FpmEnv : Env {
 			podDepends.addPod(Depend("${firstArg} 0+"))			
 		}
 		
-		this.podFiles = podDepends.satisfyDependencies.getPodFiles
+		this.podFiles = podDepends.satisfyDependencies.podFiles
 		
 		// TODO: debug print env details
 		echo(podFiles.vals)		
