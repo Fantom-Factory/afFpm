@@ -79,6 +79,28 @@ internal class TestDependencySatisfaction : Test {
 
 		verifyPodFiles("afBed 2.0, afIoc 2.0, afPlastic 1.4")
 	}
+
+	Void testPaths7() {
+		// test filter out pods that can't be reached with current selection
+		addDep("afBed 2.0", "afIoc 2.0-3.0")
+		addDep("afIoc 2.0")
+		addDep("afIoc 3.0", "afPlastic 2.0")
+		
+		satisfyDependencies("afBed 2.0")
+
+		verifyPodFiles("afBed 2.0, afIoc 2.0")
+	}
+
+	Void testPaths8() {
+		// same as above but with more potential for NPEs
+		addDep("afBed 2.0", "afIoc 2.0-3.0")
+		addDep("afIoc 3.0")
+		addDep("afIoc 2.0", "afPlastic 2.0")
+		
+		satisfyDependencies("afBed 2.0")
+
+		verifyPodFiles("afBed 2.0, afIoc 3.0")
+	}
 	
 	private Void satisfyDependencies(Str pods) {
 		pods.split(',').map { Depend(it) }.each { podDepends.addPod(it) }
@@ -105,7 +127,7 @@ internal class TestDependencySatisfaction : Test {
 			it.name 	= depend.name
 			it.version	= depend.version
 			it.depends	= dependents?.split(',')?.map { Depend(it) } ?: Depend#.emptyList 
-			it.file		= File(``)			
+			it.file		= File(``)
 		}
 	}
 }
