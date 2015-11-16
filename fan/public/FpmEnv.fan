@@ -11,7 +11,8 @@ using afPlastic
 ** Does not cater for 
 **  - running a script - fan appBuild.fan (should just take latest?)
 const class FpmEnv : Env {
-	
+	private const Log log := FpmEnv#.pod.log
+
 	const Str:PodFile	podFiles
 	
 	new make() : super.make() {
@@ -19,19 +20,29 @@ const class FpmEnv : Env {
 		podDepends	:= PodDependencies(fpmConfig)
 		cmdArgs		:= (Str[]) (Env.cur.vars["FPM_CMDLINE_ARGS"]?.split ?: Str#.emptyList)	// TODO: honour "path with spaces/build.fan"
 		
-		firstArg	:= cmdArgs.first ?: ""
-		echo(firstArg)
-		if (firstArg.contains(File.sep))
+		firstArg	:= cmdArgs.first
+		if (firstArg != null && firstArg.contains(File.sep))
 			firstArg = firstArg[firstArg.index(File.sep)..-1]
 
 		if (firstArg == "build.fan") {
 			bob := loadBuild
-			if (bob != null)
-				podDepends.addPod(Depend("${bob.podName} ${bob.version}"))
-		} else {
+			if (bob != null) {
+				// FIXME: don't add afEggbox - it may not have been built yet!
+				// instead add / resolve its dependencies
+//				podDepends.addPod(Depend("${bob.podName} ${bob.version}"))
+				bob.depends.each {
+					podDepends.addPod(Depend(it))				
+				}
+			} else
+				log.warn("Defaulting to latest pod versions - File 'build.fan' not found")
+
+		} else if (firstArg != null) {
 		
 			// TODO: check for version e.g. afIoc@3.0
-			podDepends.addPod(Depend("${firstArg} 0+"))			
+			podDepends.addPod(Depend("${firstArg} 0+")).pickLatestVersion
+
+		} else {
+			log.warn("Defaulting to latest pod versions - Env Var 'FPM_CMDLINE_ARGS' not found")
 		}
 		
 		this.podFiles = podDepends.satisfyDependencies.podFiles
@@ -42,7 +53,6 @@ const class FpmEnv : Env {
 	
 	override File? findPodFile(Str podName) {
 		f := podFiles[podName]?.file ?: super.findPodFile(podName)
-		echo(f)
 		return f
 	}
 
