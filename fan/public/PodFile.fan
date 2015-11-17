@@ -4,7 +4,7 @@ const class PodFile {
 	const Version	version
 	const File		file
 	
-	new make(|This|in) { in(this) }
+	internal new make(|This|in) { in(this) }
 
 	override Str toStr() {
 		"$name $version"

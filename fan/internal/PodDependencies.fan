@@ -105,6 +105,7 @@ internal class PodDependencies {
 	}
 	
 	PodNode? resolveNode(Depend dependency) {
+		// TODO: cyclic redundency check
 		allNodes.getOrAdd(dependency.name) {
 			PodNode {
 				it.name = dependency.name

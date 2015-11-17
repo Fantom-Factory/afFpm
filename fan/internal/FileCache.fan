@@ -7,7 +7,7 @@ class FileCache {
 		files.getOrAdd(file) { readFile(file) }
 	}
 	
-	private PodVersion? readFile(File file) {
+	static PodVersion? readFile(File file) {
 		if (file.exists.not)
 			return null
 
