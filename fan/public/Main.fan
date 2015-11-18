@@ -6,8 +6,17 @@ class Main : AbstractMain {
 	Str? cmd
 	
 	override Int run() {
-		echo("cmd")
-//		if (cmd == "publish")
+		
+		// TODO: print out some basic FPM info, like repo dir & paths
+		
+		switch (cmd) {
+			case "setup":
+				SetupCmd().go
+		
+		  default:
+		    
+		}
+		
 		return 0
 	}
 }
