@@ -7,8 +7,8 @@ internal class PodDependencies {
 	Str:PodNode		allNodes		:= Str:PodNode[:] { it.ordered = true }
 	[Str:PodFile]?	podFiles
 
-	new make(FpmConfig config) {
-		this.podResolvers	= PodResolvers(config, fileCache)
+	new make(FpmConfig config, File[] podFiles) {
+		this.podResolvers	= PodResolvers(config, podFiles, fileCache)
 	}
 
 	PodNode addPod(Depend dependency) {
@@ -29,9 +29,6 @@ internal class PodDependencies {
 
 		// brute force - try every permutation of pod versions and see which ones work		
 		nos := (PodVersion[][]) allNodes.vals.map { it.podVersions }
-
-//		if (nos.any { it.isEmpty })
-//			return this	// TODO: pod not found
 
 		max := nos.map { it.size }
 		cur := Int[,].fill(0, max.size)

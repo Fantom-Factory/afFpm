@@ -6,13 +6,13 @@ internal class TestDependencySatisfaction : Test {
 
 	override Void setup() {
 		podDependsCache	= PodResolverCache()
-		podDepends = PodDependencies(FpmConfig()) {
+		podDepends = PodDependencies(FpmConfig(), File#.emptyList) {
 			it.podResolvers.resolvers = [podDependsCache]
 		}
 	}
 	
 	Void testEggbox() {
-		podDepends := PodDependencies(FpmConfig())
+		podDepends := PodDependencies(FpmConfig(), File#.emptyList)
 		podDepends.addPod(Depend("afEggbox 0+"))
 		podFiles   := podDepends.satisfyDependencies.podFiles
 		

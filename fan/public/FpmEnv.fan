@@ -31,11 +31,14 @@ const class FpmEnv : Env {
 				podFiles := findPodFiles(fpmConfig, args)
 				podName	 := podFiles.remove("fpm-podName")
 				this.podFiles = podFiles
-				this.targetPod = "${podName.name} ${podName.version}"	
+				this.targetPod = "${podName.name} ${podName.version}"
+				if (targetPod.endsWith(" 0"))
+					targetPod += "+"
 			}
 
 		} catch (Err err)
-			log.err(err.msg)
+		err.trace
+//			log.err(err.msg)
 
 		if (podFiles == null)
 			log.warn("Defaulting to PathEnv")
@@ -138,7 +141,11 @@ const class FpmEnv : Env {
 	}
 	
 	private static [Str:PodFile]? findPodFiles(FpmConfig fpmConfig, Str? cmdLineArgs) {
-		podDepends	:= PodDependencies(fpmConfig)
+		// add F4 pod locations
+		f4PodPaths	:= Env.cur.vars["F4PODENV_POD_LOCATIONS"]?.trimToNull?.split(File.pathSep.chars.first, true) ?: Str#.emptyList
+		f4PodFiles	:= f4PodPaths.map { toFile(it) }
+
+		podDepends	:= PodDependencies(fpmConfig, f4PodFiles)
 		cmdArgs		:= splitStr(cmdLineArgs)
 		buildPod	:= getBuildPod(cmdArgs.first)
 		podName		:= null as Depend
@@ -212,5 +219,10 @@ const class FpmEnv : Env {
 			return PlasticCompiler().compileCode(file.readAllStr).types.find { it.fits(BuildPod#) }?.make
 		} catch
 			return null
+	}
+	
+	private static File toFile(Str filePath) {
+		file := filePath.startsWith("file:") ? File(filePath.toUri, false) : File.os(filePath)
+		return file.normalize
 	}
 }
