@@ -37,27 +37,28 @@ const class FpmEnv : Env {
 			}
 
 		} catch (Err err)
-		err.trace
-//			log.err(err.msg)
+//			err.trace
+			log.err(err.msg)
 
 		if (podFiles == null)
 			log.warn("Defaulting to PathEnv")
 
-		log.debug(debug)
+		try	log.debug(debug)
+		catch (Err err)	err.trace
 	}
 	
 	**
 	** Working directory is always first item in `path`.
 	**
 	override File workDir() {
-		fpmConfig.workDir
+		fpmConfig.workDirs.first
 	}
 
 	**
 	** Temp directory is always under `workDir`.
 	**
 	override File tempDir() {
-		fpmConfig.workDir
+		fpmConfig.tempDir
 	}
 	
 	override Str[] findAllPodNames() {
@@ -70,12 +71,12 @@ const class FpmEnv : Env {
 	}
 
 	override File[] findAllFiles(Uri uri) {
-		fpmConfig.paths.map { it + uri }.exclude |File f->Bool| { f.exists.not }
+		fpmConfig.workDirs.map { it + uri }.exclude |File f->Bool| { f.exists.not }
 	}
 
 	override File? findFile(Uri uri, Bool checked := true) {
 		if (uri.isPathAbs) throw ArgErr("Uri must be rel: $uri")
-		return fpmConfig.paths.eachWhile |dir| {
+		return fpmConfig.workDirs.eachWhile |dir| {
 			f := dir.plus(uri, false)
 			return f.exists ? f : null
 		} ?: (checked ? throw UnresolvedErr(uri.toStr) : null)
@@ -86,11 +87,9 @@ const class FpmEnv : Env {
 		str += "Fantom Pod Manager (FPM) Environment ${typeof.pod.version}\n"
 		str += "\n"
 		str += "Target Pod : ${targetPod}\n"
-		str += "Home Dir   : ${fpmConfig.homeDir.osPath}\n"
-		str += "Work Dir   : ${fpmConfig.workDir.osPath}\n"
-		str += "Repo Dir   : ${fpmConfig.repoDir.osPath}\n"
-		str += "Temp Dir   : ${fpmConfig.tempDir.osPath}\n"
-		str += "Paths      : ${fpmConfig.paths}\n"
+		str += fpmConfig.debug
+
+		podFiles := podFiles ?: Str:PodFile[:]
 		str += "\n"
 		str += "Referencing ${podFiles.size} pods:\n"
 		

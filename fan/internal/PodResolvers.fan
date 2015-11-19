@@ -1,15 +1,19 @@
 
 class PodResolvers {
-	PodResolver[] 	resolvers
+	PodResolver[] 		resolvers
 	Depend:PodVersion[]	depends		:= Depend:PodVersion[][:]
 	
 	new make(FpmConfig config, File[] podFiles, FileCache fileCache) {
 		// order matters
-		resolvers =	podFiles.map { PodResolverPod(it, fileCache) }
-			.add(
-				PodResolverFanr(config.repoDir, fileCache)
+		resolvers =	PodResolver[,]
+			.addAll(
+				podFiles.map { PodResolverPod(it, fileCache) }
 			).addAll(
-				config.paths.map |path->PodResolver| { PodResolverPath(path, fileCache) }
+				config.repoDirs.vals.map { PodResolverFanr(it, fileCache) }
+			).addAll(
+				config.podDirs.map { PodResolverPath(it, fileCache) }
+			).addAll(
+				config.workDirs.map { PodResolverPath(it + `lib/fan/`, fileCache) }
 			)
 	}
 	
@@ -68,7 +72,7 @@ class PodResolverPath : PodResolver {
 	}
 
 	override PodVersion[] resolve(Depend dependency) {
-		file 		:= pathDir.plus(`lib/fan/${dependency.name}.pod`)	
+		file 		:= pathDir.plus(`${dependency.name}.pod`)	
 		podVersion	:= fileCache.get(file)
 
 		if (podVersion != null)

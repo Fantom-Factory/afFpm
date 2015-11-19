@@ -10,8 +10,11 @@ class Main : AbstractMain {
 		// TODO: print out some basic FPM info, like repo dir & paths
 		
 		switch (cmd) {
+			case "publish":
+				PublishCmd().run
+
 			case "setup":
-				SetupCmd().go
+				SetupCmd().run
 		
 		  default:
 		    
