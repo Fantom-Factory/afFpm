@@ -2,8 +2,8 @@
 internal class TestFpmEnv :Test {
 	
 	Void testSplitStr() {
-		verifyEq(FpmEnv.splitStr(null), Str[,])
-		verifyEq(FpmEnv.splitStr(""), Str[,])
+		verifyEq(FpmEnv.splitStr(null), Str#.emptyList)
+		verifyEq(FpmEnv.splitStr(""), Str#.emptyList)
 		
 		// standard split
 		verifyEq(FpmEnv.splitStr("how are you"), Str["how", "are", "you"])

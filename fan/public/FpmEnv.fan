@@ -10,62 +10,37 @@ using concurrent
 ** 
 ** Does not cater for 
 **  - running a script - fan appBuild.fan (should just take latest?)
+** 
+** Creates a targeted environment for a pod
 const class FpmEnv : Env {
-	private const Log log := FpmEnv#.pod.log
+	private static const Log log := FpmEnv#.pod.log
 
 	const FpmConfig			fpmConfig
 
+	const Str?				targetPod
 	const [Str:PodFile]?	podFiles
 	
 	new make() : super.make() {
-		fpmConfig	= FpmConfig()
+		fpmConfig = FpmConfig()
 
 		try {
-			podDepends	:= PodDependencies(fpmConfig)
-			cmdArgs		:= splitStr(Env.cur.vars["FPM_CMDLINE_ARGS"])
-			
-			firstArg	:= cmdArgs.first
-			podDepend 	:= findPodDepend(firstArg)
-			if (firstArg != null && firstArg.contains(File.sep))
-				firstArg = firstArg[firstArg.index(File.sep)..-1]
-			
-			if (podDepend == null) {
-				idx := cmdArgs.index("-pod")
-				if (idx != null)
-					podDepend = findPodDepend(cmdArgs.getSafe(idx + 1))
+			args := Env.cur.vars["FPM_CMDLINE_ARGS"]
+			if (args == null)
+				log.warn("Env Var 'FPM_CMDLINE_ARGS' not found")
+			else {
+				podFiles := findPodFiles(fpmConfig, args)
+				podName	 := podFiles.remove("fpm-podName")
+				this.podFiles = podFiles
+				this.targetPod = "${podName.name} ${podName.version}"	
 			}
-			
-			if (firstArg == "build.fan") {
-				bob := loadBuild
-				if (bob != null) {
-					bob.depends.each {
-						podDepends.addPod(Depend(it))		
-					}
-				} else
-					log.warn("Defaulting to latest pod versions - File 'build.fan' not found")
-	
-			} else if (podDepend != null) {
-			
-				podDepends.addPod(podDepend).pickLatestVersion
-	
-			} else if (firstArg != null) {
-				log.warn("Defaulting to latest pod versions - Unknown 'FPM_CMDLINE_ARGS' - $firstArg")
-	
-			} else {
-				log.warn("Defaulting to latest pod versions - Env Var 'FPM_CMDLINE_ARGS' not found")
-			}
-			
-			this.podFiles = podDepends.satisfyDependencies.podFiles
 
-			// TODO: debug print env details
-			echo(podFiles.vals)
-
-		} catch (Err err) {
+		} catch (Err err)
 			log.err(err.msg)
-			// TODO: log resorting to using latest pods
-			// FIXME: NO! fpm should provide a 'targeted' environment for DEV only!
-			// TODO: default instead to boot env
-		}
+
+		if (podFiles == null)
+			log.warn("Defaulting to PathEnv")
+
+		log.debug(debug)
 	}
 	
 	**
@@ -83,7 +58,6 @@ const class FpmEnv : Env {
 	}
 	
 	override Str[] findAllPodNames() {
-		// TODO: we should list (and cache) ALL the pods in repo and don't call super
 		podFiles?.keys ?: parent.findAllPodNames
 	}
 
@@ -104,6 +78,29 @@ const class FpmEnv : Env {
 		} ?: (checked ? throw UnresolvedErr(uri.toStr) : null)
 	}
 
+	Str debug() {
+		str	:= "\n\n"
+		str += "Fantom Pod Manager (FPM) Environment ${typeof.pod.version}\n"
+		str += "\n"
+		str += "Target Pod : ${targetPod}\n"
+		str += "Home Dir   : ${fpmConfig.homeDir.osPath}\n"
+		str += "Work Dir   : ${fpmConfig.workDir.osPath}\n"
+		str += "Repo Dir   : ${fpmConfig.repoDir.osPath}\n"
+		str += "Temp Dir   : ${fpmConfig.tempDir.osPath}\n"
+		str += "Paths      : ${fpmConfig.paths}\n"
+		str += "\n"
+		str += "Referencing ${podFiles.size} pods:\n"
+		
+		maxNom := podFiles.reduce(0) |Int size, podFile| { size.max(podFile.name.size) } as Int
+		maxVer := podFiles.reduce(0) |Int size, podFile| { size.max(podFile.version.toStr.size) }
+		podFiles.keys.sort.each |key| {
+			podFile := podFiles[key]
+			str += podFile.name.justr(maxNom + 2) + " " + podFile.version.toStr.justl(maxVer) + " - " + podFile.file.osPath + "\n"
+		}
+		str += "\n"
+		return str
+	}
+	
 	internal static Str[] splitStr(Str? str) {
 		if (str?.trimToNull == null)	return Str#.emptyList
 		strings	 := Str[,]
@@ -140,6 +137,45 @@ const class FpmEnv : Env {
 		return strings
 	}
 	
+	private static [Str:PodFile]? findPodFiles(FpmConfig fpmConfig, Str? cmdLineArgs) {
+		podDepends	:= PodDependencies(fpmConfig)
+		cmdArgs		:= splitStr(cmdLineArgs)
+		buildPod	:= getBuildPod(cmdArgs.first)
+		podName		:= null as Depend
+		
+		if (buildPod != null) {
+			buildPod.depends.each {
+				podDepends.addPod(Depend(it))		
+			}
+			podName	= Depend("${buildPod.podName} ${buildPod.version}")
+		}
+		
+		if (podDepends.isEmpty) {
+			podDepend := findPodDepend(cmdArgs.first)
+			
+			// given we're making a targeted environment, this is a fail safe / get out jail card 
+			if (podDepend == null) {
+				idx := cmdArgs.index("-fpmPod")
+				if (idx != null)
+					podDepend = findPodDepend(cmdArgs.getSafe(idx + 1))
+			}
+			
+			if (podDepend != null) {
+				podDepends.addPod(podDepend).pickLatestVersion
+				podName	= podDepend
+			}
+		}
+
+		if (podDepends.isEmpty)
+			log.warn("Could not parse pod from: ${cmdArgs.first}")
+		
+		return podDepends.satisfyDependencies.podFiles.add("fpm-podName", PodFile {
+			it.name = podName.name
+			it.version = podName.version
+			it.file	= ``.toFile
+		})
+	}
+	
 	private static Depend? findPodDepend(Str? arg) {
 		if (arg == null || arg.endsWith(".fan"))
 			return null
@@ -160,15 +196,21 @@ const class FpmEnv : Env {
 		return Depend(dependStr, true)
 	}
 
-	private PodVersion resolveLatestPod(Str podName) {
-		PodResolvers(fpmConfig, FileCache()).resolve(Depend("${podName} 0+")).sort.last		
-	}
+//	private PodVersion resolveLatestPod(Str podName) {
+//		PodResolvers(fpmConfig, FileCache()).resolve(Depend("${podName} 0+")).sort.last		
+//	}
 
-	private static BuildPod? loadBuild() {
-		buildFan := (File?) File(`build.fan`).normalize
-		while (buildFan != null && !buildFan.exists)
-			buildFan = buildFan.parent.parent?.plus(`build.fan`)
-		// use Plastic because the default pod name when running a script (e.g. 'build_0') is already taken == Err
-		return buildFan == null ? null : PlasticCompiler().compileCode(buildFan.readAllStr).types.find { it.fits(BuildPod#) }.make
+	private static BuildPod? getBuildPod(Str? filePath) {
+		try {
+			if (filePath == null)
+				return null
+			file := filePath.startsWith("file:") ? File(filePath.toUri, false) : File.os(filePath)
+			if (file.isDir || file.exists.not || file.ext != "fan")
+				return null
+			
+			// use Plastic because the default pod name when running a script (e.g. 'build_0') is already taken == Err
+			return PlasticCompiler().compileCode(file.readAllStr).types.find { it.fits(BuildPod#) }?.make
+		} catch
+			return null
 	}
 }
