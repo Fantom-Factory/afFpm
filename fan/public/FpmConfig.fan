@@ -3,20 +3,36 @@ const class FpmConfig {
 	
 	const File 		homeDir
 
-	const File 		repoDir
+	const Str:File 	repoDirs
 
 	const File 		tempDir
 
-	const File 		workDir
+	** homeDir is always the last entry, so this list is never empty
+	const File[]	workDirs
 	
-	const File[]	paths
+	const File[]	podDirs
 
+	private new makePrivate(|This|in) { in(this) }
+	
 	static new make() {
 		makeFromDirs(File(``), Env.cur.homeDir, Env.cur.vars["FAN_ENV_PATH"])
 	}
-	
+
 	@NoDoc	// ctor used by F4
-	new makeFromDirs(File baseDir, File homeDir, Str? envPaths) {
+	static new makeFromDirs(File baseDir, File homeDir, Str? envPaths) {
+		fpmFile := (File?) baseDir.plus(`fpm.props`).normalize
+		while (fpmFile != null && !fpmFile.exists)
+			fpmFile = fpmFile.parent.parent?.plus(`fpm.props`)
+		
+		// let the local file override the system values
+		// note that the map isn't ordered... :(
+		fpmProps := FpmConfig.fpmProps.rw.setAll(fpmFile?.readProps ?: Str:Str[:])
+
+		return makeInternal(baseDir, homeDir, envPaths, fpmProps)
+	}
+
+	@NoDoc	// ctor used by tests
+	internal new makeInternal(File baseDir, File homeDir, Str? envPaths, Str:Str fpmProps) {
 		baseDir = baseDir.normalize
 		if (baseDir.isDir.not || baseDir.exists.not)
 			throw ArgErr("Base directory is not valid: ${baseDir.osPath}")
@@ -26,52 +42,75 @@ const class FpmConfig {
 			throw ArgErr("Home directory is not valid: ${homeDir.osPath}")
 
 		this.homeDir = homeDir
+		
+		workDirs := fpmProps["workDirs"]
+		workDirs = (workDirs == null ? "" : workDirs + File.pathSep) + envPaths
+		workDirs = (workDirs == null ? "" : workDirs + File.pathSep) + homeDir.uri.toStr
+		this.workDirs = workDirs.split(File.pathSep.chars.first).map { toAbsDir(it) }.unique
 
-		fpmFile := (File?) baseDir.plus(`fpm.props`).normalize
-		while (fpmFile != null && !fpmFile.exists)
-			fpmFile = fpmFile.parent.parent?.plus(`fpm.props`)
-		fpmProps := fpmFile?.readProps ?: Str:Str[:]
-		
-		workDir := fpmProps["workDir"]
-		if (workDir == null)
-			workDir = podProp("workDir")
-		if (workDir == null)
-			workDir = envPaths?.split(File.pathSep.chars.first)?.first
-		if (workDir == null)
-			workDir = homeDir.uri.toStr
-		this.workDir = toFile(baseDir, workDir)
-		
-		repoDir := fpmProps["repoDir"]
-		if (repoDir == null)
-			repoDir = podProp("repoDir")
-		if (repoDir == null)
-			repoDir = this.workDir.plus(`repo/`, false).uri.toStr
-		this.repoDir = toFile(baseDir, repoDir)
+		repoDirs := (Str:Str) fpmProps.findAll |path, name| {
+			name.startsWith("repoDir.")
+		}.reduce(Str:Str[:]) |Str:Str repos, path, name| {
+			repos[name["repoDir.".size..-1]] = path
+			return repos
+		}
+		if (repoDirs.containsKey("default").not)
+			repoDirs["default"] = this.workDirs.first.plus(`repo/`, false).uri.toStr
+		this.repoDirs = repoDirs.map { toAbsDir(it) }
 		
 		tempDir := fpmProps["tempDir"]
 		if (tempDir == null)
-			tempDir = podProp("tempDir")
-		if (tempDir == null)
-			tempDir = this.workDir.plus(`temp/`, false).uri.toStr
-		this.tempDir = toFile(baseDir, tempDir)
+			tempDir = this.workDirs.first.plus(`temp/`, false).uri.toStr
+		this.tempDir = toAbsDir(tempDir)
 		
-		paths := envPaths?.split(File.pathSep.chars.first) ?: Str#.emptyList
-		paths.insert(0, workDir)
-		paths.add(homeDir.osPath)
-		this.paths = paths.map { toFile(baseDir, it) }.unique
+		podDirs := fpmProps["podDirs"]
+		this.podDirs = podDirs?.split(File.pathSep.chars.first)?.map { toRelDir(baseDir, it) }?.unique ?: File#.emptyList
 	}
 	
-	private static File toFile(File baseDir, Str filePath) {
-		file := filePath.startsWith("file:") ? File(filePath.toUri, false) : File.os(filePath)
-		if (file.uri.isPathAbs.not)
-			file = baseDir + file.uri
-		return file.normalize
+	Str debug() {
+		str := ""
+		str += "Home Dir   : ${homeDir.osPath}\n"
+		str += "Work Dirs  : " + workDirs.join(", ") { it.osPath } + "\n"
+		str += "Pod  Dirs  : " + podDirs .join(", ") { it.osPath } + "\n"
+		str += "Temp Dir   : ${tempDir.osPath}\n"
+		str += "Repo Dirs  : -\n"
+
+		maxDir := repoDirs.keys.reduce(10) |Int size, repoName| { size.max(repoName.size) } as Int
+		repoDirs.each |repoDir, repoName| {
+			str += repoName.justr(maxDir) + " : " + repoDir.osPath + "\n"
+		}
+
+		return str
+	}
+
+	private static File toAbsDir(Str dirPath) {
+		dir := toDir(dirPath).normalize
+		if (dir.uri.isPathAbs.not)
+			throw ArgErr("Directory path must be absolute: ${dirPath}")
+		return dir
 	}
 	
-	private Str? podProp(Str key) {
+	private static File toRelDir(File baseDir, Str dirPath) {
+		dir := toDir(dirPath)
+		if (dir.uri.isPathAbs.not)
+			dir = baseDir + dir.uri
+		return dir.normalize
+	}
+
+	private static File toDir(Str dirPath) {
+		file := dirPath.startsWith("file:") ? File(dirPath.toUri, false) : File.os(dirPath)
+		if (file.isDir.not)
+			throw ArgErr("Path is not a directory: ${dirPath}")
+		return file
+	}
+	
+	private static Str:Str fpmProps() {
 		// recursing into Env.cur while still creating an Env can cause problems
 		// mainly with 'fan -pods'
-		try return Env.cur.config(typeof.pod, "repoDir")
-		catch return null
+		try {
+			props := Str:Str[:] { it.ordered = true }
+			Env.cur.findAllFiles(`etc/afFpm/config.props`).eachr { props.setAll(it.readProps) }
+			return props
+		} catch return Str:Str[:]
 	}
 }

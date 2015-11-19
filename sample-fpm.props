@@ -1,0 +1,17 @@
+
+# The 'workDir' is an alternative directory to '%FAN_HOME%' that is used to store 'etc' files, etc.
+# If not set then it defaults to whatever is set in '%FAN_HOME%/etc/afFpm/config.props'.
+workDirs		= C:\\Repositories\\Fantom;C:\\Repositories\\Fantom
+
+podDirs			= lib/
+
+# Where the local fanr repository is located.
+# If not set then it defaults to whatever is set in '%FAN_HOME%/etc/afFpm/config.props'.
+repoDir.default	= C:\\Repositories\\Fantom
+repoDir.release	= C:\\Repositories\\Fantom
+
+tempDir			= C:\\Repositories\\Fantom\\temp
+
+pod.afIoc		= repo:afIoc 2.0
+pod.afBedSheet	= repo+release:afBedSheet 2.0
+pod.afPlastic	= C:\\Repositories\\Fantom\\repo\\afPlastic\\afPlastic-1.0.18.pod

@@ -5,11 +5,12 @@
 ** sets up etc/afFpm/config.props with repo loc and path env
 class SetupCmd : FpmCmd {
 
-	override Void go() {
+	override Int run() {
 
 		// todo: do path env too
 		PublishCmd(Env.cur.homeDir.plus(`lib/fan/`)).go
 		
+		return 0
 	}
 	
 }
