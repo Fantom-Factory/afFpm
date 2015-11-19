@@ -1,5 +1,5 @@
 
-class PodResolvers {
+internal class PodResolvers {
 	PodResolver[] 		resolvers
 	Depend:PodVersion[]	depends		:= Depend:PodVersion[][:]
 	
@@ -24,11 +24,11 @@ class PodResolvers {
 	}
 }
 
-mixin PodResolver {
+internal mixin PodResolver {
 	abstract PodVersion[] resolve(Depend dependency)
 }
 
-class PodResolverFanr : PodResolver {
+internal class PodResolverFanr : PodResolver {
 	private static const Regex		podRegex		:= "(.+)-(.+)\\.pod".toRegex
 
 	FileCache	fileCache
@@ -62,7 +62,7 @@ class PodResolverFanr : PodResolver {
 	}
 }
 
-class PodResolverPath : PodResolver {
+internal class PodResolverPath : PodResolver {
 	FileCache	fileCache
 	File 		pathDir
 
@@ -83,7 +83,7 @@ class PodResolverPath : PodResolver {
 	}
 }
 
-class PodResolverPod : PodResolver {
+internal class PodResolverPod : PodResolver {
 	FileCache	fileCache
 	File		podFile
 

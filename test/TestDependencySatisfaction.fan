@@ -132,7 +132,7 @@ internal class TestDependencySatisfaction : Test {
 	}
 }
 
-class PodResolverCache : PodResolver {
+internal class PodResolverCache : PodResolver {
 	Depend:PodVersion	cache	:= Depend:PodVersion[:]
 	
 	override PodVersion[] resolve(Depend dependency) {

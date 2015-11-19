@@ -1,5 +1,5 @@
 
-class FileCache {
+internal class FileCache {
 	
 	File:PodVersion?	files	:= File:PodVersion?[:]
 	
