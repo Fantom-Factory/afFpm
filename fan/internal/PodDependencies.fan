@@ -116,7 +116,7 @@ internal class PodDependencies {
 }
 
 
-class PodNode {
+internal class PodNode {
 	const 	Str				name
 			PodVersion[]?	podVersions
 
@@ -138,7 +138,7 @@ class PodNode {
 	override Bool equals(Obj? that)	{ name == that?->name }
 }
 
-const class PodVersion {
+internal const class PodVersion {
 	const 	Str				name
 	const 	Version			version
 	const	Depend			depend	// convenience for Depend("${name} ${version}")
@@ -177,7 +177,7 @@ const class PodVersion {
 	override Bool equals(Obj? that)	{ depend == that?->depend }
 }
 
-const class PodConstraint {
+internal const class PodConstraint {
 	const Str			podName
 	const PodVersion	podVersion
 	const Depend		depend
