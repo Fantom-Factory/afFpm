@@ -61,7 +61,7 @@ const class FpmConfig {
 		this.paths = paths.map { toFile(baseDir, it) }.unique
 	}
 	
-	private File toFile(File baseDir, Str filePath) {
+	private static File toFile(File baseDir, Str filePath) {
 		file := filePath.startsWith("file:") ? File(filePath.toUri, false) : File.os(filePath)
 		if (file.uri.isPathAbs.not)
 			file = baseDir + file.uri
