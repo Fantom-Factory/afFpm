@@ -1,16 +1,33 @@
 
 const class FpmConfig {
 	
-	const File 		workDir
+	const File 		homeDir
+
+	const File 		repoDir
 
 	const File 		tempDir
 
-	const File 		repoDir
+	const File 		workDir
 	
 	const File[]	paths
+
+	static new make() {
+		makeFromDirs(File(``), Env.cur.homeDir, Env.cur.vars["FAN_ENV_PATH"])
+	}
 	
-	new make() {
-		fpmFile := (File?) File(`fpm.props`).normalize
+	@NoDoc	// ctor used by F4
+	new makeFromDirs(File baseDir, File homeDir, Str? envPaths) {
+		baseDir = baseDir.normalize
+		if (baseDir.isDir.not || baseDir.exists.not)
+			throw ArgErr("Base directory is not valid: ${baseDir.osPath}")
+
+		homeDir = homeDir.normalize
+		if (homeDir.isDir.not || homeDir.exists.not)
+			throw ArgErr("Home directory is not valid: ${homeDir.osPath}")
+
+		this.homeDir = homeDir
+
+		fpmFile := (File?) baseDir.plus(`fpm.props`).normalize
 		while (fpmFile != null && !fpmFile.exists)
 			fpmFile = fpmFile.parent.parent?.plus(`fpm.props`)
 		fpmProps := fpmFile?.readProps ?: Str:Str[:]
@@ -19,33 +36,36 @@ const class FpmConfig {
 		if (workDir == null)
 			workDir = podProp("workDir")
 		if (workDir == null)
-			workDir = Env.cur.vars["FAN_ENV_PATH"]?.split(File.pathSep.chars.first)?.first
+			workDir = envPaths?.split(File.pathSep.chars.first)?.first
 		if (workDir == null)
-			workDir = Env.cur.homeDir.uri.toStr
-		this.workDir = toFile(workDir)
+			workDir = homeDir.uri.toStr
+		this.workDir = toFile(baseDir, workDir)
 		
 		repoDir := fpmProps["repoDir"]
 		if (repoDir == null)
 			repoDir = podProp("repoDir")
 		if (repoDir == null)
 			repoDir = this.workDir.plus(`repo/`, false).uri.toStr
-		this.repoDir = toFile(repoDir)
+		this.repoDir = toFile(baseDir, repoDir)
 		
 		tempDir := fpmProps["tempDir"]
 		if (tempDir == null)
 			tempDir = podProp("tempDir")
 		if (tempDir == null)
 			tempDir = this.workDir.plus(`temp/`, false).uri.toStr
-		this.tempDir = toFile(tempDir)
+		this.tempDir = toFile(baseDir, tempDir)
 		
-		paths := Env.cur.vars["FAN_ENV_PATH"]?.split(File.pathSep.chars.first) ?: Str#.emptyList
+		paths := envPaths?.split(File.pathSep.chars.first) ?: Str#.emptyList
 		paths.insert(0, workDir)
-		paths.add(Env.cur.homeDir.osPath)
-		this.paths = paths.map { toFile(it) }.unique
+		paths.add(homeDir.osPath)
+		this.paths = paths.map { toFile(baseDir, it) }.unique
 	}
 	
-	private File toFile(Str filePath) {
-		filePath.startsWith("file:") ? File(filePath.toUri, false) : File.os(filePath)
+	private File toFile(File baseDir, Str filePath) {
+		file := filePath.startsWith("file:") ? File(filePath.toUri, false) : File.os(filePath)
+		if (file.uri.isPathAbs.not)
+			file = baseDir + file.uri
+		return file.normalize
 	}
 	
 	private Str? podProp(Str key) {

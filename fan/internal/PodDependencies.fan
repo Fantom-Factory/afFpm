@@ -19,6 +19,10 @@ internal class PodDependencies {
 		return podNode
 	}
 
+	Bool isEmpty() {
+		initNodes.isEmpty
+	}
+	
 	This satisfyDependencies() {
 		allNodes.vals.each { expandNode(it) }
 		finNodes := ([Str:PodVersion]?) null
