@@ -5,16 +5,18 @@ internal class PodDependencies {
 	FileCache		fileCache		:= FileCache()
 	PodNode[]		initNodes		:= PodNode[,]
 	Str:PodNode		allNodes		:= Str:PodNode[:] { it.ordered = true }
-	[Str:PodFile]?	podFiles
+	Str:PodFile		podFiles		:= Str:PodFile[:]
+	PodConstraint[]	unsatisfied		:= PodConstraint[,]
 
 	new make(FpmConfig config, File[] podFiles) {
 		this.podResolvers	= PodResolvers(config, podFiles, fileCache)
 	}
 
-	PodNode addPod(Depend dependency) {
-		podNode := resolveNode(dependency)
-		if (podNode.podVersions.isEmpty)
-			throw Err("Could not find pod file for '${dependency}'")
+	PodNode addPod(Str podName) {
+		podNode := PodNode {
+			it.name = podName
+		}
+		allNodes[podName] = podNode
 		initNodes.add(podNode)
 		return podNode
 	}
@@ -24,7 +26,8 @@ internal class PodDependencies {
 	}
 	
 	This satisfyDependencies() {
-		allNodes.vals.each { expandNode(it) }
+		stack := Depend[,]
+		allNodes.vals.each { expandNode(it, stack) }
 		finNodes := ([Str:PodVersion]?) null
 
 		// brute force - try every permutation of pod versions and see which ones work		
@@ -32,6 +35,7 @@ internal class PodDependencies {
 
 		max := nos.map { it.size }
 		cur := Int[,].fill(0, max.size)
+		err := (Str:PodVersion[]) allNodes.map { PodVersion[,] }
 		fin := false
 		while (fin.not) {
 			podLst := cur.map |v, i| { nos[i].getSafe(v) }.exclude { it == null }
@@ -47,15 +51,25 @@ internal class PodDependencies {
 						copyPod(podVers, it.name)
 					}
 				}
-			}			
+			}
 			podMap2 := Str:PodVersion[:]
 			initNodes.each |initNode| { 
 				copyPod(podMap2, initNode.name)
 			}
 
-			fin = reduceDomain(podMap2)
-			if (fin)
-				finNodes = podMap2
+			// check cache of known failures
+			if (podMap2.any |v, k| { err[k].contains(v) }.not) {
+				res := reduceDomain(podMap2)
+				if (res != null) {
+					unsatisfied.addAll(res)
+					err[res.first.depend.name].add(res.first.podVersion)
+
+				} else {
+					// found a working combination!
+					finNodes = podMap2
+					fin = true
+				}
+			}
 
 			// permutate through all versions of podsS
 			if (fin.not) {
@@ -77,36 +91,41 @@ internal class PodDependencies {
 			}
 		}
 
-		podFiles = finNodes?.map { it.toPodFile }		
+		podFiles = finNodes?.map { it.toPodFile } ?: Str:PodFile[:]
+		if (podFiles.isEmpty.not)
+			unsatisfied.clear
+		unsatisfied = unsatisfied.unique
 		return this
 	}
 	
 	// see https://en.wikipedia.org/wiki/AC-3_algorithm
-	Bool reduceDomain(Str:PodVersion podVersions) {
+	PodConstraint[]? reduceDomain(Str:PodVersion podVersions) {
 		worklist := (PodConstraint[]) podVersions.vals.map { it.constraints }.flatten
-
-		// TODO: create a cache list of known -> failures
+		allCons	 := worklist.dup
 		
 		while (worklist.isEmpty.not) {
-			arc := worklist.pop
-			nod := podVersions[arc.depend.name]
-			if (nod == null || arc.depend.match(nod.version).not)
-				return false
+			con := worklist.pop
+			nod := podVersions[con.depend.name]
+			if (nod == null || con.depend.match(nod.version).not)
+				// find out who else conflicted / removed the versions we wanted
+				return allCons.findAll { it.depend.name == con.depend.name }.insert(0, con).unique
 		}
-		return true
+		return null
 	}
 	
-	Void expandNode(PodNode node) {
+	Void expandNode(PodNode node, Depend[] stack) {
 		node.podVersions.each |podVersion| {
-			podVersion.depends.each |depend| {
-				innerNode := resolveNode(depend)
-				expandNode(innerNode)
+			if (stack.contains(podVersion.depend).not) {
+				stack.add(podVersion.depend)			
+				podVersion.depends.each |depend| {
+					innerNode := resolveNode(depend)
+					expandNode(innerNode, stack)
+				}
 			}
 		}
 	}
-	
+
 	PodNode? resolveNode(Depend dependency) {
-		// TODO: cyclic redundency check
 		allNodes.getOrAdd(dependency.name) {
 			PodNode {
 				it.name = dependency.name
@@ -123,7 +142,7 @@ internal class PodNode {
 	new make(|This|in) { in(this) }
 
 	This pickLatestVersion() {
-		picked := podVersions.sort.last
+		picked := podVersions?.sort?.last
 		podVersions	= picked == null ? PodVersion#.emptyList : [picked]
 		return this
 	}
@@ -148,7 +167,7 @@ internal const class PodVersion {
 
 	new make(|This|in) {
 		in(this)
-		this.constraints = depends.map |d| { PodConstraint { it.podName = name; it.podVersion = this; it.depend = d } }		
+		this.constraints = depends.map |d| { PodConstraint { it.podVersion = this; it.depend = d } }		
 	}
 
 	new makeFromProps(File file, Str:Str metaProps) {
@@ -157,7 +176,7 @@ internal const class PodVersion {
 		this.version	= Version(metaProps["pod.version"], true)
 		this.depends	= metaProps["pod.depends"].split(';').map { Depend(it, false) }.exclude { it == null }
 		this.depend		= Depend("${name} ${version}")
-		this.constraints= depends.map |d| { PodConstraint { it.podName = name; it.podVersion = this; it.depend = d } }
+		this.constraints= depends.map |d| { PodConstraint { it.podVersion = this; it.depend = d } }
 	}
 	
 	PodFile toPodFile() {
@@ -178,13 +197,12 @@ internal const class PodVersion {
 }
 
 internal const class PodConstraint {
-	const Str			podName
 	const PodVersion	podVersion
 	const Depend		depend
 	
 	override Str toStr() {
-		"${podName}@${podVersion.version} -> ${depend}"
+		"${podVersion.name}@${podVersion.version} -> ${depend}"
 	}
 	
-	new make(|This|in) { in(this) }
+	new make(|This|? in) { in?.call(this) }
 }

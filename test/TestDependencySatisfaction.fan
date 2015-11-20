@@ -13,7 +13,7 @@ internal class TestDependencySatisfaction : Test {
 	
 	Void testEggbox() {
 		podDepends := PodDependencies(FpmConfig(), File#.emptyList)
-		podDepends.addPod(Depend("afEggbox 0+"))
+		podDepends.addPod("afEggbox")
 		podFiles   := podDepends.satisfyDependencies.podFiles
 		
 		echo(podFiles)
@@ -103,13 +103,13 @@ internal class TestDependencySatisfaction : Test {
 	}
 	
 	private Void satisfyDependencies(Str pods) {
-		pods.split(',').map { Depend(it) }.each { podDepends.addPod(it) }
+		pods.split(',').map { Depend(it) }.each { podDepends.addPod(it.toStr) }
 		podDepends.satisfyDependencies
 	}
 
 	private Void verifyPodFiles(Str pods) {
 		expected := pods.split(',').map { Depend(it) }
-		actual 	 := podDepends.podFiles?.vals?.map { Depend("$it.name $it.version") } ?: [,]
+		actual 	 := podDepends.podFiles.vals.map { Depend("$it.name $it.version") }
 		common	 := expected.intersection(actual)
 		all		 := expected.union(actual)
 		diff	 := all.removeAll(common)
