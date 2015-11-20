@@ -1,5 +1,4 @@
 using build
-using concurrent
 
 **
 ** Has to cater for 
@@ -18,33 +17,53 @@ const class FpmEnv : Env {
 	const FpmConfig			fpmConfig
 
 	const Str?				targetPod
-	const [Str:PodFile]?	podFiles
+	const Str:PodFile		podFiles
 	
 	new make() : super.make() {
-		fpmConfig = FpmConfig()
+		fpmConfig	= FpmConfig()
+		podFiles	= Str:PodFile[:] 
+		depends := null as PodDependencies
+		error	:= null as Err
 
 		try {
 			args := Env.cur.vars["FPM_CMDLINE_ARGS"]
 			if (args == null)
 				log.warn("Env Var 'FPM_CMDLINE_ARGS' not found")
 			else {
-				podFiles := findPodFiles(fpmConfig, args)
-				podName	 := podFiles.remove("fpm-podName")
-				this.podFiles = podFiles
-				this.targetPod = "${podName.name} ${podName.version}"
+				results	 := findPodFiles(fpmConfig, args)
+				targetPod = (Str) 				results[0]
+				podFiles  = (Str:PodFile) 		results[1]
+				depends   = (PodDependencies)	results[2] 
+
 				if (targetPod.endsWith(" 0"))
 					targetPod += "+"
 			}
 
-		} catch (Err err)
-//			err.trace
-			log.err(err.msg)
+		} catch (UnknownPodErr err) {
+			// TODO: auto-download / install the pod dependency!
+			// beware, also thrown by BuildPod on malformed dependency str
+			error = err
 
-		if (podFiles == null)
-			log.warn("Defaulting to PathEnv")
+		} catch (Err err)
+			error = err
 
 		try	log.debug(debug)
 		catch (Err err)	err.trace
+
+		if (depends != null && depends.unsatisfied.isEmpty.not) {
+			output	:= "Could not satisfy the following constraints:\n"
+			maxCon	:= depends.unsatisfied.reduce(0) |Int size, con| { size.max(con.podVersion.depend.toStr.size) } as Int
+			depends.unsatisfied.each {
+				output += "${it.podVersion.name}@${it.podVersion.version}".justr(maxCon + 2) + " -> ${it.depend}\n"
+			}
+			log.warn(output)
+		}
+		
+		if (error != null)
+			log.err(error.toStr)
+
+		if (podFiles.isEmpty)
+			log.warn("Defaulting to PathEnv")
 	}
 	
 	**
@@ -62,12 +81,11 @@ const class FpmEnv : Env {
 	}
 	
 	override Str[] findAllPodNames() {
-		podFiles?.keys ?: parent.findAllPodNames
+		podFiles.isEmpty ? parent.findAllPodNames : podFiles.keys 
 	}
 
 	override File? findPodFile(Str podName) {
-		podFiles?.get(podName)?.file ?: parent.findPodFile(podName)
-//		podFiles?.get(podName)?.file ?: resolveLatestPod(podName).file
+		podFiles.isEmpty ? parent.findPodFile(podName) : podFiles.get(podName)?.file
 	}
 
 	override File[] findAllFiles(Uri uri) {
@@ -89,9 +107,8 @@ const class FpmEnv : Env {
 		str += "Target Pod : ${targetPod}\n"
 		str += fpmConfig.debug
 
-		podFiles := podFiles ?: Str:PodFile[:]
 		str += "\n"
-		str += "Referencing ${podFiles.size} pods:\n"
+		str += "Resolved ${podFiles.size} pods:\n"
 		
 		maxNom := podFiles.reduce(0) |Int size, podFile| { size.max(podFile.name.size) } as Int
 		maxVer := podFiles.reduce(0) |Int size, podFile| { size.max(podFile.version.toStr.size) }
@@ -139,7 +156,7 @@ const class FpmEnv : Env {
 		return strings
 	}
 	
-	private static [Str:PodFile]? findPodFiles(FpmConfig fpmConfig, Str? cmdLineArgs) {
+	private static Obj[] findPodFiles(FpmConfig fpmConfig, Str? cmdLineArgs) {
 		// add F4 pod locations
 		f4PodPaths	:= Env.cur.vars["F4PODENV_POD_LOCATIONS"]?.trimToNull?.split(File.pathSep.chars.first, true) ?: Str#.emptyList
 		f4PodFiles	:= f4PodPaths.map { toFile(it) }
@@ -147,13 +164,24 @@ const class FpmEnv : Env {
 		podDepends	:= PodDependencies(fpmConfig, f4PodFiles)
 		cmdArgs		:= splitStr(cmdLineArgs)
 		buildPod	:= getBuildPod(cmdArgs.first)
-		podName		:= null as Depend
+		podName		:= null as Str
 		
 		if (buildPod != null) {
-			buildPod.depends.each {
-				podDepends.addPod(Depend(it))		
+			podDepends.addPod(buildPod.podName) {
+				// check the dependencies exist
+				buildPod.depends.each {
+					if (podDepends.podResolvers.resolve(Depend(it)).isEmpty)
+						throw UnknownPodErr(ErrMsgs.env_couldNotResolvePod(it))
+				}
+
+				// this file shouldn't be read - it's just an id
+				it.podVersions = [PodVersion(fpmConfig.workDirs.first + `${buildPod.podName}.pod`, Str:Str[
+					"pod.name"		: buildPod.podName,
+					"pod.version"	: buildPod.version.toStr,
+					"pod.depends"	: buildPod.depends.join(";")
+				])]
 			}
-			podName	= Depend("${buildPod.podName} ${buildPod.version}")
+			podName	= "${buildPod.podName} ${buildPod.version}"
 		}
 		
 		if (podDepends.isEmpty) {
@@ -167,19 +195,20 @@ const class FpmEnv : Env {
 			}
 			
 			if (podDepend != null) {
-				podDepends.addPod(podDepend).pickLatestVersion
-				podName	= podDepend
+				podDepends.addPod(podDepend.name).pickLatestVersion
+				if (podDepends.podResolvers.resolve(podDepend).isEmpty)
+					throw UnknownPodErr(ErrMsgs.env_couldNotResolvePod(podDepend.toStr))
+				
+				podName	= podDepend.toStr
 			}
 		}
 
 		if (podDepends.isEmpty)
 			log.warn("Could not parse pod from: ${cmdArgs.first}")
 		
-		return podDepends.satisfyDependencies.podFiles.add("fpm-podName", PodFile {
-			it.name = podName.name
-			it.version = podName.version
-			it.file	= ``.toFile
-		})
+		podFiles := podDepends.satisfyDependencies.podFiles
+		
+		return [podName, podFiles, podDepends]
 	}
 	
 	private static Depend? findPodDepend(Str? arg) {
@@ -201,10 +230,6 @@ const class FpmEnv : Env {
 
 		return Depend(dependStr, true)
 	}
-
-//	private PodVersion resolveLatestPod(Str podName) {
-//		PodResolvers(fpmConfig, FileCache()).resolve(Depend("${podName} 0+")).sort.last		
-//	}
 
 	private static BuildPod? getBuildPod(Str? filePath) {
 		try {

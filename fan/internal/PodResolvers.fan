@@ -96,7 +96,7 @@ internal class PodResolverPod : PodResolver {
 		podVersion	:= fileCache.get(podFile)
 
 		if (podVersion != null)
-			if (!dependency.match(podVersion.version))
+			if (dependency.name != podVersion.name || dependency.match(podVersion.version).not)
 				podVersion = null
 		
 		return podVersion == null ? PodVersion#.emptyList : [podVersion]

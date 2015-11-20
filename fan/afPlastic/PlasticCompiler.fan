@@ -22,8 +22,8 @@ class PlasticCompiler {
 	Pod compileCode(Str fantomPodCode, Str? podName := null) {
 		podName = podName ?: generatePodName
 
-		if (Pod.of(this).log.isDebug)
-			Pod.of(this).log.debug("Compiling code for pod: ${podName}\n${fantomPodCode}")
+//		if (Pod.of(this).log.isDebug)
+//			Pod.of(this).log.debug("Compiling code for pod: ${podName}\n${fantomPodCode}")
 		
 		try {
 			input 		    := CompilerInput()
