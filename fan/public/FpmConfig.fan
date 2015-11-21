@@ -44,8 +44,8 @@ const class FpmConfig {
 		this.homeDir = homeDir
 		
 		workDirs := fpmProps["workDirs"]
-		workDirs = (workDirs == null ? "" : workDirs + File.pathSep) + envPaths
-		workDirs = (workDirs == null ? "" : workDirs + File.pathSep) + homeDir.uri.toStr
+		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + (envPaths ?: "")
+		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + homeDir.uri.toStr
 		this.workDirs = workDirs.split(File.pathSep.chars.first).map { toAbsDir(it) }.unique
 
 		repoDirs := (Str:Str) fpmProps.findAll |path, name| {

@@ -8,7 +8,7 @@ class SetupCmd : FpmCmd {
 	override Int run() {
 
 		// todo: do path env too
-		PublishCmd(Env.cur.homeDir.plus(`lib/fan/`)).go
+		PublishCmd.makeFromLibDir(Env.cur.homeDir.plus(`lib/fan/`).uri).go
 		
 		return 0
 	}

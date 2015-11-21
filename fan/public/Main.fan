@@ -1,12 +1,11 @@
 using util
 
-class Main : AbstractMain {
+class Main {
 	
-	@Arg
-	Str? cmd
-	
-	override Int run() {
+	Void main(Str[] args) {
 		
+		cmd := args.first
+
 		// TODO: print out some basic FPM info, like repo dir & paths
 		
 		switch (cmd) {
@@ -20,7 +19,6 @@ class Main : AbstractMain {
 		    
 		}
 		
-		return 0
 	}
 }
 
