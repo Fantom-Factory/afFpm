@@ -1,7 +1,7 @@
 using build
 
 ** Provides a targeted environment for a pod. 
-** Always provides access to the libs in HomeDir
+** Always provides access to the libs in HomeDir, as a fail safe! (
 ** 
 ** Has to cater for 
 **  - building a pod - fan build.fan

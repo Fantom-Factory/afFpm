@@ -22,7 +22,7 @@ class Build : BuildPod {
 		]
 
 		srcDirs = [`test/`, `fan/`, `fan/public/`, `fan/public/cmds/`, `fan/internal/`, `fan/afPlastic/`]
-		resDirs = [`doc/`]
+		resDirs = [`doc/`, `res/`]
 	}
 	
 	@Target { help = "Compile to pod file and associated natives" }
