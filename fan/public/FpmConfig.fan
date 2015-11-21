@@ -98,7 +98,7 @@ const class FpmConfig {
 	}
 
 	private static File toDir(Str dirPath) {
-		file := dirPath.startsWith("file:") ? File(dirPath.toUri, false) : File.os(dirPath)
+		file := dirPath.startsWith("file:") && dirPath.containsChar('\\').not ? File(dirPath.toUri, false) : File.os(dirPath)
 		if (file.isDir.not)
 			throw ArgErr("Path is not a directory: ${dirPath} (${file.normalize.osPath})")
 		return file

@@ -2,6 +2,6 @@
 
 @set FPM_CMDLINE_ARGS=%*
 
-@call fan-orig.cmd %*
+@call fan-orig.bat %*
 
 @endlocal
