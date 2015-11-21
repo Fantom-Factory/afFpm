@@ -1,6 +1,8 @@
 using build
 
-**
+** Provides a targeted environment for a pod. 
+** Always provides access to the libs in HomeDir
+** 
 ** Has to cater for 
 **  - building a pod - fan build.fan
 **  - running a pod - fan afEggbox
@@ -47,23 +49,26 @@ const class FpmEnv : Env {
 		} catch (Err err)
 			error = err
 
-		try	log.debug(debug)
-		catch (Err err)	err.trace
-
-		if (depends != null && depends.unsatisfied.isEmpty.not) {
-			output	:= "Could not satisfy the following constraints:\n"
-			maxCon	:= depends.unsatisfied.reduce(0) |Int size, con| { size.max(con.podVersion.depend.toStr.size) } as Int
-			depends.unsatisfied.each {
-				output += "${it.podVersion.name}@${it.podVersion.version}".justr(maxCon + 2) + " -> ${it.depend}\n"
+		try {
+			log.debug(debug)
+	
+			if (depends != null && depends.unsatisfied.isEmpty.not) {
+				output	:= "Could not satisfy the following constraints:\n"
+				maxCon	:= depends.unsatisfied.reduce(0) |Int size, con| { size.max(con.podVersion.depend.toStr.size) } as Int
+				depends.unsatisfied.each {
+					output += "${it.podVersion.name}@${it.podVersion.version}".justr(maxCon + 2) + " -> ${it.depend}\n"
+				}
+				log.warn(output)
 			}
-			log.warn(output)
-		}
-		
-		if (error != null)
-			log.err(error.toStr)
+			
+			if (error != null)
+				log.err(error.toStr)
+			error?.trace
+	
+			if (podFiles.isEmpty)
+				log.warn("Defaulting to PathEnv")
 
-		if (podFiles.isEmpty)
-			log.warn("Defaulting to PathEnv")
+		} catch (Err err) err.trace
 	}
 	
 	**
@@ -81,11 +86,11 @@ const class FpmEnv : Env {
 	}
 	
 	override Str[] findAllPodNames() {
-		podFiles.isEmpty ? parent.findAllPodNames : podFiles.keys 
+		podFiles.keys.addAll(parent.findAllPodNames).unique 
 	}
 
 	override File? findPodFile(Str podName) {
-		podFiles.isEmpty ? parent.findPodFile(podName) : podFiles.get(podName)?.file
+		podFiles.get(podName)?.file ?: parent.findPodFile(podName) 
 	}
 
 	override File[] findAllFiles(Uri uri) {
@@ -195,8 +200,11 @@ const class FpmEnv : Env {
 			}
 			
 			if (podDepend != null) {
-				podDepends.addPod(podDepend.name).pickLatestVersion
-				if (podDepends.podResolvers.resolve(podDepend).isEmpty)
+				podNode := podDepends.addPod(podDepend.name) {
+					it.podVersions = podDepends.podResolvers.resolve(podDepend)
+				}.pickLatestVersion
+				
+				if (podNode.podVersions.isEmpty)
 					throw UnknownPodErr(ErrMsgs.env_couldNotResolvePod(podDepend.toStr))
 				
 				podName	= podDepend.toStr

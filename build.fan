@@ -17,8 +17,8 @@ class Build : BuildPod {
 			"sys   1.0.67 - 1.0",
 			"util  1.0.67 - 1.0",
 			"build 1.0.67 - 1.0",
-//			"fanr  1.0.67 - 1.0",
-			"compiler  1.0.67 - 1.0",			
+//			"fanr        1.0.67 - 1.0",
+			"compiler    1.0.67 - 1.0",			
 		]
 
 		srcDirs = [`test/`, `fan/`, `fan/public/`, `fan/public/cmds/`, `fan/internal/`, `fan/afPlastic/`]
