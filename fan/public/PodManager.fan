@@ -12,7 +12,7 @@ const class PodManager {
 			config = FpmConfig()
 	}
 
-	Void publishPod(File pod, Str repo) {
+	PodFile publishPod(File pod, Str repo) {
 		_publishPod(PodFile(pod))
 	}
 
@@ -30,13 +30,22 @@ const class PodManager {
 		}
 	}
 
-	private Void _publishPod(PodFile podFile, Str? repo := null) {
+	PodFile? findPodFile(Str query, Bool checked := true) {
+		findAllPodFiles(query).last ?: (checked ? throw Err("Could not find pod '${query}'") : null)
+	}
+
+	PodFile[] findAllPodFiles(Str query) {
+		PodResolvers(config, File#.emptyList, FileCache()).resolve(Depend(query)).sort.map { it.toPodFile }
+	}
+	
+	private PodFile _publishPod(PodFile podFile, Str? repo := null) {
 		// note the manual indent!
 		log.info("  Publishing ${podFile}")
 
 		// TODO: allow repo to be a dir path
 		repoFile := config.repoDirs[repo ?: "default"] + `${podFile.name}/${podFile.name}-${podFile.version}.pod`
 		podFile.file.copyTo(repoFile, ["overwrite" : true])
+		return podFile
 	}
 	
 //	private FileCache fileCache() { FileCache() }
