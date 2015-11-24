@@ -1,6 +1,6 @@
 
 const class PodManager {
-	const Log 			log 		:= PodManager#.pod.log
+	const Log 			log 			:= PodManager#.pod.log
 
 	const FpmConfig		config
 
@@ -39,6 +39,9 @@ const class PodManager {
 	}
 	
 	private PodFile _publishPod(PodFile podFile, Str? repo := null) {
+		if (podFile.file.exists.not)
+			throw IOErr(ErrMsgs.mgr_podFileNotFound(podFile.file))
+
 		// note the manual indent!
 		log.info("  Publishing ${podFile}")
 

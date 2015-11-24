@@ -91,7 +91,7 @@ internal class PodDependencies {
 			}
 		}
 
-		podFiles = finNodes?.map { it.toPodFile } ?: Str:PodFile[:]
+		podFiles = finNodes?.exclude{ it.file == null }?.map { it.toPodFile } ?: Str:PodFile[:]
 		if (podFiles.isEmpty.not)
 			unsatisfied.clear
 		unsatisfied = unsatisfied.unique
@@ -161,7 +161,7 @@ internal const class PodVersion {
 	const 	Str				name
 	const 	Version			version
 	const	Depend			depend	// convenience for Depend("${name} ${version}")
-	const	File			file
+	const	File?			file
 	const	Depend[]		depends
 	const	PodConstraint[]	constraints
 
@@ -170,7 +170,7 @@ internal const class PodVersion {
 		this.constraints = depends.map |d| { PodConstraint { it.podVersion = this; it.depend = d } }		
 	}
 
-	new makeFromProps(File file, Str:Str metaProps) {
+	new makeFromProps(File? file, Str:Str metaProps) {
 		this.file 		= file
 		this.name		= metaProps["pod.name"]
 		this.version	= Version(metaProps["pod.version"], true)
