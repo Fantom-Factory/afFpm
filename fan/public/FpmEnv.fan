@@ -129,7 +129,7 @@ const class FpmEnv : Env {
 		str += fpmConfig.debug
 
 		str += "\n"
-		str += "Resolved ${resolved.size} pods:\n"
+		str += "Resolved ${resolved.size} pod" + (resolved.size == 1 ? "" : "s") + ":\n"
 		
 		maxNom := resolved.reduce(0) |Int size, podFile| { size.max(podFile.name.size) } as Int
 		maxVer := resolved.reduce(0) |Int size, podFile| { size.max(podFile.version.toStr.size) }

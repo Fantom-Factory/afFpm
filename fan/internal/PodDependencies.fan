@@ -44,6 +44,7 @@ internal class PodDependencies {
 			// filter out pods that can't be reached with current selection
 			copyPod := (|Str:PodVersion, Str|?) null
 			copyPod = |Str:PodVersion podVers, Str podName| {
+				if (podVers.containsKey(podName)) return	// stack overflow
 				ver := podMap[podName]
 				if (ver != null) {
 					podVers[podName] = ver
