@@ -1,7 +1,7 @@
 using build
 
 ** Provides a targeted environment for a pod. 
-** Always provides access to the libs in HomeDir, as a fail safe! (
+** Always provides access to the libs in HomeDir and WorkDirs, as a fail safe! (
 ** 
 ** Has to cater for 
 **  - building a pod - fan build.fan
@@ -14,14 +14,16 @@ using build
 ** 
 ** Creates a targeted environment for a pod
 const class FpmEnv : Env {
-	private static const Log log := FpmEnv#.pod.log
+	private static const Log 	log := FpmEnv#.pod.log
 
-	const FpmConfig			fpmConfig
-
-	const Str?				targetPod
-	const Str:PodFile		podFiles
+	private const Str:PodFile	resolved
+			const FpmConfig		fpmConfig
+			const Str?			targetPod
+			const Str:PodFile	podFiles	
 	
-	new make() : super.make() {
+	new make(|This|? in := null) : super.make() {
+		in?.call(this)	// can't do field null comparison without an it-block ctor
+
 		fpmConfig	= FpmConfig()
 		podFiles	= Str:PodFile[:] 
 		depends := null as PodDependencies
@@ -32,13 +34,22 @@ const class FpmEnv : Env {
 			if (args == null)
 				log.warn("Env Var 'FPM_CMDLINE_ARGS' not found")
 			else {
-				results	 := findPodFiles(fpmConfig, args)
-				targetPod = (Str) 				results[0]
-				podFiles  = (Str:PodFile) 		results[1]
-				depends   = (PodDependencies)	results[2] 
+				results	  := findPodFiles(fpmConfig, args)
+				targetPod  = (Str) 				results[0]
+				podFiles  := (Str:PodFile) 		results[1]
+				depends    = (PodDependencies)	results[2] 
 
 				if (targetPod.endsWith(" 0"))
 					targetPod += "+"
+
+				allPodFiles	:= Str:PodFile[:]
+				podRegex	:= ".+\\.pod".toRegex
+
+				this.resolved = podFiles.dup
+				// add pods in the the home and work dirs
+				fpmConfig.podDirs .each {              (it).listFiles(podRegex).each { if (it.isDir.not && podFiles.containsKey(it.basename).not) podFiles[it.basename] = PodFile(it) } }
+				fpmConfig.workDirs.each { (it + `lib/fan/`).listFiles(podRegex).each { if (it.isDir.not && podFiles.containsKey(it.basename).not) podFiles[it.basename] = PodFile(it) } }
+				this.podFiles = podFiles
 			}
 
 		} catch (UnknownPodErr err) {
@@ -68,7 +79,13 @@ const class FpmEnv : Env {
 			if (podFiles.isEmpty)
 				log.warn("Defaulting to PathEnv")
 
-		} catch (Err err) err.trace
+		} catch (Err err) {
+			err.trace
+
+		} finally {
+			this.podFiles = this.podFiles != null ? this.podFiles : [:]
+			this.resolved = this.resolved != null ? this.resolved : [:]
+		}
 	}
 	
 	**
@@ -86,11 +103,11 @@ const class FpmEnv : Env {
 	}
 	
 	override Str[] findAllPodNames() {
-		podFiles.keys.addAll(parent.findAllPodNames).unique 
+		podFiles.keys 
 	}
 
 	override File? findPodFile(Str podName) {
-		podFiles.get(podName)?.file ?: parent.findPodFile(podName) 
+		podFiles.get(podName)?.file 
 	}
 
 	override File[] findAllFiles(Uri uri) {
@@ -113,12 +130,12 @@ const class FpmEnv : Env {
 		str += fpmConfig.debug
 
 		str += "\n"
-		str += "Resolved ${podFiles.size} pods:\n"
+		str += "Resolved ${resolved.size} pods:\n"
 		
-		maxNom := podFiles.reduce(0) |Int size, podFile| { size.max(podFile.name.size) } as Int
-		maxVer := podFiles.reduce(0) |Int size, podFile| { size.max(podFile.version.toStr.size) }
-		podFiles.keys.sort.each |key| {
-			podFile := podFiles[key]
+		maxNom := resolved.reduce(0) |Int size, podFile| { size.max(podFile.name.size) } as Int
+		maxVer := resolved.reduce(0) |Int size, podFile| { size.max(podFile.version.toStr.size) }
+		resolved.keys.sort.each |key| {
+			podFile := resolved[key]
 			str += podFile.name.justr(maxNom + 2) + " " + podFile.version.toStr.justl(maxVer) + " - " + podFile.file.osPath + "\n"
 		}
 		str += "\n"
