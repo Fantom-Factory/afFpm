@@ -57,8 +57,12 @@ const class FpmEnv : Env {
 			// beware, also thrown by BuildPod on malformed dependency str
 			error = err
 
-		} catch (Err err)
+		} catch (Err err) {
 			error = err
+		} finally {
+			this.podFiles = this.podFiles != null ? this.podFiles : [:]
+			this.resolved = this.resolved != null ? this.resolved : [:]
+		}
 
 		try {
 			log.debug(debug)
@@ -79,13 +83,8 @@ const class FpmEnv : Env {
 			if (podFiles.isEmpty)
 				log.warn("Defaulting to PathEnv")
 
-		} catch (Err err) {
+		} catch (Err err)
 			err.trace
-
-		} finally {
-			this.podFiles = this.podFiles != null ? this.podFiles : [:]
-			this.resolved = this.resolved != null ? this.resolved : [:]
-		}
 	}
 	
 	**
@@ -190,14 +189,13 @@ const class FpmEnv : Env {
 		
 		if (buildPod != null) {
 			podDepends.addPod(buildPod.podName) {
-				// check the dependencies exist
+				// check the build dependencies exist
 				buildPod.depends.each {
 					if (podDepends.podResolvers.resolve(Depend(it)).isEmpty)
 						throw UnknownPodErr(ErrMsgs.env_couldNotResolvePod(it))
 				}
 
-				// this file shouldn't be read - it's just an id
-				it.podVersions = [PodVersion(fpmConfig.workDirs.first + `${buildPod.podName}.pod`, Str:Str[
+				it.podVersions = [PodVersion(null, Str:Str[
 					"pod.name"		: buildPod.podName,
 					"pod.version"	: buildPod.version.toStr,
 					"pod.depends"	: buildPod.depends.join(";")
