@@ -1,6 +1,7 @@
 
 const class FpmConfig {
-	
+	private static const Log 	log := FpmConfig#.pod.log
+
 	const File 		homeDir
 
 	const Str:File 	repoDirs
@@ -23,10 +24,17 @@ const class FpmConfig {
 		fpmFile := (File?) baseDir.plus(`fpm.props`).normalize
 		while (fpmFile != null && !fpmFile.exists)
 			fpmFile = fpmFile.parent.parent?.plus(`fpm.props`)
-		
-		// let the local file override the system values
-		// note that the map isn't ordered... :(
-		fpmProps := FpmConfig.fpmProps.rw.setAll(fpmFile?.readProps ?: Str:Str[:])
+
+		// this is a little bit chicken and egg - we use the workDir to find config.props to find the workDir! 
+		workDirs := "" as Str
+		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + (envPaths ?: "")
+		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + homeDir.uri.toStr
+		workFile := workDirs.split(File.pathSep.chars.first).map { toAbsDir(it) + `etc/afFpm/config.props` }.unique as File[]
+		if (fpmFile != null)
+			workFile.insert(0, fpmFile)
+
+		fpmProps := Str:Str[:] { it.ordered = true }
+		workFile.eachr { if (it.exists) fpmProps.setAll(it.readProps) }
 
 		return makeInternal(baseDir, homeDir, envPaths, fpmProps)
 	}
@@ -102,15 +110,5 @@ const class FpmConfig {
 		if (file.isDir.not)
 			throw ArgErr("Path is not a directory: ${dirPath} (${file.normalize.osPath})")
 		return file
-	}
-	
-	private static Str:Str fpmProps() {
-		// recursing into Env.cur while still creating an Env can cause problems
-		// mainly with 'fan -pods'
-		try {
-			props := Str:Str[:] { it.ordered = true }
-			Env.cur.findAllFiles(`etc/afFpm/config.props`).eachr { props.setAll(it.readProps) }
-			return props
-		} catch return Str:Str[:]
 	}
 }
