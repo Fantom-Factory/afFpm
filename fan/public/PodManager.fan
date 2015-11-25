@@ -13,7 +13,7 @@ const class PodManager {
 	}
 
 	PodFile publishPod(File pod, Str repo) {
-		_publishPod(PodFile(pod))
+		_publishPod(PodFile(pod), repo)
 	}
 
 	Void publishAllPods(File dir, Str? repo := null) {
