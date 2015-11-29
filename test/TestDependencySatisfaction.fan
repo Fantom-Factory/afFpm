@@ -11,14 +11,6 @@ internal class TestDependencySatisfaction : Test {
 		}
 	}
 	
-	Void testEggbox() {
-		podDepends := PodDependencies(FpmConfig(), File#.emptyList)
-		podDepends.addPod("afEggbox")
-		podFiles   := podDepends.satisfyDependencies.podFiles
-		
-		echo(podFiles)
-	}
-	
 	Void testEasyHappyPath() {
 		// everyone depends on the same versions
 		addDep("afBed 2.0", "afPlastic 1.2")

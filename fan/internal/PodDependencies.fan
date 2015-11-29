@@ -7,12 +7,41 @@ internal class PodDependencies {
 	Str:PodNode		allNodes		:= Str:PodNode[:] { it.ordered = true }
 	Str:PodFile		podFiles		:= Str:PodFile[:]
 	PodConstraint[]	unsatisfied		:= PodConstraint[,]
+	Str?			targetPod
 
 	new make(FpmConfig config, File[] podFiles) {
 		this.podResolvers	= PodResolvers(config, podFiles, fileCache)
 	}
 
-	PodNode addPod(Str podName) {
+	Void setBuildTarget(Str name, Version version, Depend[] depends) {
+		addPod(name) {
+			// check the build dependencies exist
+			depends.each {
+				if (podResolvers.resolve(it).isEmpty)
+					throw UnknownPodErr(ErrMsgs.env_couldNotResolvePod(it))
+			}
+
+			it.podVersions = [PodVersion(null, Str:Str[
+				"pod.name"		: name,
+				"pod.version"	: version.toStr,
+				"pod.depends"	: depends.join(";")
+			])]
+		}
+		targetPod	= "${name} ${version}"
+	}
+	
+	Void setRunTarget(Depend podDepend) {
+		podNode := addPod(podDepend.name) {
+			it.podVersions = podResolvers.resolve(podDepend)
+		}.pickLatestVersion
+		
+		if (podNode.podVersions.isEmpty)
+			throw UnknownPodErr(ErrMsgs.env_couldNotResolvePod(podDepend))
+		
+		targetPod	= podDepend.toStr		
+	}
+	
+	internal PodNode addPod(Str podName) {
 		podNode := PodNode {
 			it.name = podName
 		}
@@ -63,7 +92,7 @@ internal class PodDependencies {
 				res := reduceDomain(podMap2)
 				if (res != null) {
 					unsatisfied.addAll(res)
-					err[res.first.depend.name].add(res.first.podVersion)
+					err[res.first.dependsOn.name].add(res.first.pVersion)
 
 				} else {
 					// found a working combination!
@@ -106,10 +135,10 @@ internal class PodDependencies {
 		
 		while (worklist.isEmpty.not) {
 			con := worklist.pop
-			nod := podVersions[con.depend.name]
-			if (nod == null || con.depend.match(nod.version).not)
+			nod := podVersions[con.dependsOn.name]
+			if (nod == null || con.dependsOn.match(nod.version).not)
 				// find out who else conflicted / removed the versions we wanted
-				return allCons.findAll { it.depend.name == con.depend.name }.insert(0, con).unique
+				return allCons.findAll { it.dependsOn.name == con.dependsOn.name }.insert(0, con).unique
 		}
 		return null
 	}
@@ -168,7 +197,7 @@ internal const class PodVersion {
 
 	new make(|This|in) {
 		in(this)
-		this.constraints = depends.map |d| { PodConstraint { it.podVersion = this; it.depend = d } }		
+		this.constraints = depends.map |d| { PodConstraint { it.pVersion = this; it.dependsOn = d } }		
 	}
 
 	new makeFromProps(File? file, Str:Str metaProps) {
@@ -177,7 +206,7 @@ internal const class PodVersion {
 		this.version	= Version(metaProps["pod.version"], true)
 		this.depends	= metaProps["pod.depends"].split(';').map { Depend(it, false) }.exclude { it == null }
 		this.depend		= Depend("${name} ${version}")
-		this.constraints= depends.map |d| { PodConstraint { it.podVersion = this; it.depend = d } }
+		this.constraints= depends.map |d| { PodConstraint { it.pVersion = this; it.dependsOn = d } }
 	}
 	
 	PodFile toPodFile() {
@@ -195,15 +224,4 @@ internal const class PodVersion {
 	override Str toStr() 			{ depend.toStr }
 	override Int hash() 			{ depend.hash }
 	override Bool equals(Obj? that)	{ depend == that?->depend }
-}
-
-internal const class PodConstraint {
-	const PodVersion	podVersion
-	const Depend		depend
-	
-	override Str toStr() {
-		"${podVersion.name}@${podVersion.version} -> ${depend}"
-	}
-	
-	new make(|This|? in) { in?.call(this) }
 }

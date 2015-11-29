@@ -1,7 +1,7 @@
 
 internal mixin ErrMsgs {
 	
-	static Str env_couldNotResolvePod(Str depends) {
+	static Str env_couldNotResolvePod(Depend depends) {
 		"Could not resolve pod: ${depends}"
 	}
 
