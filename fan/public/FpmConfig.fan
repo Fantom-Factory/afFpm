@@ -85,7 +85,7 @@ const class FpmConfig {
 
 		maxDir := repoDirs.keys.reduce(10) |Int size, repoName| { size.max(repoName.size) } as Int
 		repoDirs.each |repoDir, repoName| {
-			str += repoName.justr(maxDir) + " : " + repoDir.osPath + "\n"
+			str += repoName.justr(maxDir) + " = " + repoDir.osPath + "\n"
 		}
 
 		return str
