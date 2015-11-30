@@ -81,7 +81,7 @@ const class FpmConfig {
 		str += "Work Dirs  : " + workDirs.join(", ") { it.osPath } + "\n"
 		str += "Pod  Dirs  : " + podDirs .join(", ") { it.osPath } + "\n"
 		str += "Temp Dir   : ${tempDir.osPath}\n"
-		str += "Repo Dirs  : -\n"
+		str += "Repo Dirs  : \n"
 
 		maxDir := repoDirs.keys.reduce(10) |Int size, repoName| { size.max(repoName.size) } as Int
 		repoDirs.each |repoDir, repoName| {
