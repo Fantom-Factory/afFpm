@@ -20,9 +20,9 @@ abstract const class FpmEnv : Env {
 	const Str				targetPod
 	const PodConstraint[]	unsatisfiedConstraints
 	
-//	static new make() {
-//		FpmEnvDefault()
-//	}
+	static new make() {
+		FpmEnvDefault()
+	}
 
 	new makeManual(FpmConfig fpmConfig, File[] f4PodFiles, |This|? in := null) : super.make() {
 		in?.call(this)	// can't do field null comparison without an it-block ctor
@@ -43,7 +43,8 @@ abstract const class FpmEnv : Env {
 				targetPod += "+"
 
 			// add pods in the the home and work dirs
-			podFiles	:= resolvedPodFiles.dup
+			podFiles	:= resolvedPodFiles.dup.rw
+			podFiles.remove(podDepends.building)
 			podRegex	:= ".+\\.pod".toRegex
 			fpmConfig.podDirs .each {              (it).listFiles(podRegex).each { if (it.isDir.not && podFiles.containsKey(it.basename).not) podFiles[it.basename] = PodFile(it) } }
 			fpmConfig.workDirs.each { (it + `lib/fan/`).listFiles(podRegex).each { if (it.isDir.not && podFiles.containsKey(it.basename).not) podFiles[it.basename] = PodFile(it) } }
@@ -59,9 +60,10 @@ abstract const class FpmEnv : Env {
 			error = err
 
 		} finally {
-			this.resolvedPodFiles = this.resolvedPodFiles != null ? this.resolvedPodFiles : [:]
-			this.allPodFiles 	  = this.allPodFiles 	  != null ? this.allPodFiles 	  : [:]
-			this.targetPod		  = this.targetPod		  != null ? this.targetPod	 	  : "???"
+			this.unsatisfiedConstraints	= this.unsatisfiedConstraints	!= null ? this.unsatisfiedConstraints	: [,]
+			this.resolvedPodFiles		= this.resolvedPodFiles			!= null ? this.resolvedPodFiles			: [:]
+			this.allPodFiles 			= this.allPodFiles				!= null ? this.allPodFiles				: [:]
+			this.targetPod				= this.targetPod				!= null ? this.targetPod				: "???"
 		}
 	}
 	
@@ -110,7 +112,7 @@ abstract const class FpmEnv : Env {
 		str += fpmConfig.debug
 
 		str += "\n"
-		str += "Resolved ${resolvedPodFiles.size} pod" + (resolvedPodFiles.size == 1 ? "" : "s") + ":\n"
+		str += "Resolved ${resolvedPodFiles.size} pod" + (resolvedPodFiles.size == 1 ? "" : "s") + (resolvedPodFiles.size == 0 ? "" : ":") + "\n"
 		
 		maxNom := resolvedPodFiles.reduce(0) |Int size, podFile| { size.max(podFile.name.size) } as Int
 		maxVer := resolvedPodFiles.reduce(0) |Int size, podFile| { size.max(podFile.version.toStr.size) }
@@ -127,6 +129,9 @@ abstract const class FpmEnv : Env {
 				str += "${it.podName}@${it.podVersion}".justr(maxCon + 2) + " -> ${it.dependsOn}\n"
 			}
 		}
+		
+		if (error != null)
+			str += error.traceToStr
 
 		return str
 	}

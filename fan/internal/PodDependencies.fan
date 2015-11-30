@@ -8,6 +8,7 @@ internal class PodDependencies {
 	Str:PodFile		podFiles		:= Str:PodFile[:]
 	PodConstraint[]	unsatisfied		:= PodConstraint[,]
 	Str?			targetPod
+	Str?			building
 
 	new make(FpmConfig config, File[] podFiles) {
 		this.podResolvers	= PodResolvers(config, podFiles, fileCache)
@@ -28,6 +29,7 @@ internal class PodDependencies {
 			])]
 		}
 		targetPod	= "${name} ${version}"
+		building	= name
 	}
 	
 	Void setRunTarget(Depend podDepend) {
