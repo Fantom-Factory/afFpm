@@ -44,7 +44,8 @@ abstract const class FpmEnv : Env {
 
 			// add pods in the the home and work dirs
 			podFiles	:= resolvedPodFiles.dup.rw
-			podFiles.remove(podDepends.building)
+			if (podDepends.building != null)
+				podFiles.remove(podDepends.building)
 			podRegex	:= ".+\\.pod".toRegex
 			fpmConfig.podDirs .each {              (it).listFiles(podRegex).each { if (it.isDir.not && podFiles.containsKey(it.basename).not) podFiles[it.basename] = PodFile(it) } }
 			fpmConfig.workDirs.each { (it + `lib/fan/`).listFiles(podRegex).each { if (it.isDir.not && podFiles.containsKey(it.basename).not) podFiles[it.basename] = PodFile(it) } }
