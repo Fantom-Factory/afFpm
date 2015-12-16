@@ -17,7 +17,9 @@ abstract const class FpmEnv : Env {
 	const FpmConfig			fpmConfig
 	const Str:PodFile		resolvedPodFiles
 	const Str:PodFile		allPodFiles
-	const Str				targetPod
+	
+	** Will never be null
+	const Str?				targetPod
 	const PodConstraint[]	unsatisfiedConstraints
 	
 	static new make() {
@@ -39,7 +41,7 @@ abstract const class FpmEnv : Env {
 			resolvedPodFiles		= podDepends.podFiles
 			targetPod				= podDepends.targetPod
 			unsatisfiedConstraints	= podDepends.unsatisfied
-			if (targetPod.endsWith(" 0"))
+			if (targetPod != null && targetPod.endsWith(" 0"))
 				targetPod += "+"
 
 			// add pods in the the home and work dirs
