@@ -1,35 +1,35 @@
 
 internal class TestFpmEnvDefault :Test {
 	
-	Void testSplitStr() {
-		verifyEq(FpmEnvDefault.splitStr(null), Str#.emptyList)
-		verifyEq(FpmEnvDefault.splitStr(""), Str#.emptyList)
+	Void testSplitQuotedStr() {
+		verifyEq(FpmEnvDefault.splitQuotedStr(null), null)
+		verifyEq(FpmEnvDefault.splitQuotedStr(""), null)
 		
 		// standard split
-		verifyEq(FpmEnvDefault.splitStr("how are you"), Str["how", "are", "you"])
+		verifyEq(FpmEnvDefault.splitQuotedStr("how are you"), Str["how", "are", "you"])
 
 		// standard split - moar spaces
-		verifyEq(FpmEnvDefault.splitStr("   how   are   you   "), Str["how", "are", "you"])
+		verifyEq(FpmEnvDefault.splitQuotedStr("   how   are   you   "), Str["how", "are", "you"])
 		
 		// standard quotes
-		verifyEq(FpmEnvDefault.splitStr("\"how are you\""), Str["how are you"])
+		verifyEq(FpmEnvDefault.splitQuotedStr("\"how are you\""), Str["how are you"])
 		
 		// mixed
-		verifyEq(FpmEnvDefault.splitStr("\"how are\" you"), Str["how are", "you"])
+		verifyEq(FpmEnvDefault.splitQuotedStr("\"how are\" you"), Str["how are", "you"])
 		
 		// no closing quote
-		verifyEq(FpmEnvDefault.splitStr("how \"are you"), Str["how", "are you"])
+		verifyEq(FpmEnvDefault.splitQuotedStr("how \"are you"), Str["how", "are you"])
 		
 		// quotes not prefixed with space
-		verifyEq(FpmEnvDefault.splitStr("how\"are\" you"), Str["how\"are\"", "you"])
+		verifyEq(FpmEnvDefault.splitQuotedStr("how\"are\" you"), Str["how\"are\"", "you"])
 
 		// quotes surrounded with space
-		verifyEq(FpmEnvDefault.splitStr("how \" are \" you"), Str["how", " are ", "you"])
+		verifyEq(FpmEnvDefault.splitQuotedStr("how \" are \" you"), Str["how", " are ", "you"])
 
 		// quotes surrounded with space
-		verifyEq(FpmEnvDefault.splitStr("how \" are \"you"), Str["how", " are ", "you"])
+		verifyEq(FpmEnvDefault.splitQuotedStr("how \" are \"you"), Str["how", " are ", "you"])
 
 		// quotes surrounded with space
-		verifyEq(FpmEnvDefault.splitStr("how \" are y\"ou"), Str["how", " are y", "ou"])
+		verifyEq(FpmEnvDefault.splitQuotedStr("how \" are y\"ou"), Str["how", " are y", "ou"])
 	}
 }

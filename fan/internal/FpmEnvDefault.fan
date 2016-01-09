@@ -36,32 +36,43 @@ internal const class FpmEnvDefault : FpmEnv {
 	new makeManual(FpmConfig fpmConfig, File[] podFiles, |This|? in := null) : super.makeManual(fpmConfig, podFiles, in) { }
 
 	override Void findTarget(PodDependencies podDepends) {
-		cmdLineArgs := Env.cur.vars["FPM_CMDLINE_ARGS"]
-		if (cmdLineArgs == null)
-			log.warn("Env Var 'FPM_CMDLINE_ARGS' not found")
-
-		cmdArgs		:= splitStr(cmdLineArgs)
-		buildPod	:= getBuildPod(cmdArgs.first)
+		fanArgs	:= Env.cur.args
+		fpmArgs	:= splitQuotedStr(Env.cur.vars["FPM_CMDLINE_ARGS"])
+		cmdArgs	:= fpmArgs ?: fanArgs
 		
-		if (buildPod != null)
-			podDepends.setBuildTarget(buildPod.podName, buildPod.version, buildPod.depends.map { Depend(it, false) }.exclude { it == null } )
-		
-		if (podDepends.isEmpty) {
-			podDepend := findPodDepend(cmdArgs.first)
-			
-			// given we're making a targeted environment, this is a fail safe / get out jail card 
-			if (podDepend == null) {
-				idx := cmdArgs.index("-fpmPod")
-				if (idx != null)
-					podDepend = findPodDepend(cmdArgs.getSafe(idx + 1))
-			}
-			
-			if (podDepend != null)
-				podDepends.setRunTarget(podDepend)
+		// a fail safe / get out jail card for pin pointing the targeted environment 
+		idx := cmdArgs.index("-fpmPod")
+		if (idx != null) {
+			podDepend := findPodDepend(cmdArgs.getSafe(idx + 1))
+			podDepends.setRunTarget(podDepend)
+			return
 		}
 
-		if (podDepends.isEmpty)
-			log.warn("Could not parse pod from: ${cmdArgs.first}")
+		// use it if we got it
+		if (fpmArgs != null) {
+			buildPod	:= getBuildPod(cmdArgs.first)		
+			if (buildPod != null) {
+				podDepends.setBuildTarget(buildPod.podName, buildPod.version, buildPod.depends.map { Depend(it, false) }.exclude { it == null } )
+				return
+			}
+
+			podDepend := findPodDepend(cmdArgs.first)
+			if (podDepend != null) {
+				podDepends.setRunTarget(podDepend)
+				return
+			}
+		}
+		
+		// this is only good for basic 'C:\>fan afEggbox' type cmds
+		// any fant or script / build cmds still need to use alternative means
+		mainMethod := Env.cur.mainMethod 
+		if (mainMethod != null) {
+			podDepend := Depend("${mainMethod.parent.pod.name} 0+")
+			podDepends.setRunTarget(podDepend)
+			return
+		}
+
+		log.warn("Could not parse pod from: ${mainMethod?.qname} ${cmdArgs.first}")
 	}
 
 	static Depend? findPodDepend(Str? arg) {
@@ -99,8 +110,8 @@ internal const class FpmEnvDefault : FpmEnv {
 			return null
 	}
 	
-	static Str[] splitStr(Str? str) {
-		if (str?.trimToNull == null)	return Str#.emptyList
+	static Str[]? splitQuotedStr(Str? str) {
+		if (str?.trimToNull == null)	return null
 		strings	 := Str[,]
 		chars	 := Int[,]
 		prev	 := (Int?) null
