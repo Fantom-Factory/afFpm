@@ -18,8 +18,7 @@ abstract const class FpmEnv : Env {
 	const Str:PodFile		resolvedPodFiles
 	const Str:PodFile		allPodFiles
 	
-	** Will never be null
-	const Str?				targetPod
+	const Str				targetPod
 	const PodConstraint[]	unsatisfiedConstraints
 	
 	private const File[]	fileDirs
