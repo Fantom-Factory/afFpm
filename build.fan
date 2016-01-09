@@ -17,12 +17,11 @@ class Build : BuildPod {
 			"sys   1.0.67 - 1.0",
 			"util  1.0.67 - 1.0",
 			"build 1.0.67 - 1.0",
-//			"fanr        1.0.67 - 1.0",
 			"concurrent 1.0.67 - 1.0",			
 			"compiler   1.0.67 - 1.0",			
 		]
 
-		srcDirs = [`test/`, `fan/`, `fan/public/`, `fan/internal/`, `fan/internal/cmds/`, `fan/afPlastic/`]
+		srcDirs = [`fan/`, `fan/afPlastic/`, `fan/internal/`, `fan/internal/cmds/`, `fan/public/`, `test/`]
 		resDirs = [`doc/`, `res/`]
 	}
 	
@@ -33,8 +32,6 @@ class Build : BuildPod {
 		depends = depends.exclude { testPods.contains(it.split.first) }
 
 		super.compile
-		
-//		afFpm::PublishCmd(this).run
 	}
 }
 

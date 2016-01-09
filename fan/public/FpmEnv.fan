@@ -22,6 +22,8 @@ abstract const class FpmEnv : Env {
 	const Str?				targetPod
 	const PodConstraint[]	unsatisfiedConstraints
 	
+	private const File[]	fileDirs
+	
 	static new make() {
 		FpmEnvDefault()
 	}
@@ -30,6 +32,7 @@ abstract const class FpmEnv : Env {
 		in?.call(this)	// can't do field null comparison without an it-block ctor
 
 		this.fpmConfig	= fpmConfig
+		this.fileDirs	= fpmConfig.podDirs.dup.addAll(fpmConfig.workDirs).add(fpmConfig.homeDir)
 
 		try {
 			podDepends	:= PodDependencies(fpmConfig, f4PodFiles)
@@ -91,18 +94,16 @@ abstract const class FpmEnv : Env {
 
 	override File? findPodFile(Str podName) {
 		// TODO: have option to search all for latest ver in all repos 
-		allPodFiles.get(podName)?.file 
+		allPodFiles.get(podName)?.file
 	}
 
 	override File[] findAllFiles(Uri uri) {
-		// TODO: search in ALL dirs -> podDirs / workDirs / homeDir
-		fpmConfig.workDirs.map { it + uri }.exclude |File f->Bool| { f.exists.not }
+		fileDirs.map { it + uri }.exclude |File f->Bool| { f.exists.not }
 	}
 
 	override File? findFile(Uri uri, Bool checked := true) {
-		// TODO: search in ALL dirs -> podDirs / workDirs / homeDir
 		if (uri.isPathAbs) throw ArgErr("Uri must be rel: $uri")
-		return fpmConfig.workDirs.eachWhile |dir| {
+		return fileDirs.eachWhile |dir| {
 			f := dir.plus(uri, false)
 			return f.exists ? f : null
 		} ?: (checked ? throw UnresolvedErr(uri.toStr) : null)
