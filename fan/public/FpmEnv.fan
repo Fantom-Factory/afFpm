@@ -1,6 +1,6 @@
 
 ** Provides a targeted environment for a pod. 
-** Always provides access to the libs in HomeDir and WorkDirs, as a fail safe! (
+** Always provides access to all the libs in HomeDir and WorkDirs as a fail safe! (
 ** 
 ** Has to cater for 
 **  - building a pod - fan build.fan
@@ -30,7 +30,6 @@ abstract const class FpmEnv : Env {
 		in?.call(this)	// can't do field null comparison without an it-block ctor
 
 		this.fpmConfig	= fpmConfig
-		depends		:= null as PodDependencies
 
 		try {
 			podDepends	:= PodDependencies(fpmConfig, f4PodFiles)
@@ -44,13 +43,14 @@ abstract const class FpmEnv : Env {
 			if (targetPod != null && targetPod.endsWith(" 0"))
 				targetPod += "+"
 
-			// add pods in the the home and work dirs
+			// add all (unresolved) pods from the the home and work dirs
 			podFiles	:= resolvedPodFiles.dup.rw
 			if (podDepends.building != null)
 				podFiles.remove(podDepends.building)
 			podRegex	:= ".+\\.pod".toRegex
 			fpmConfig.podDirs .each {              (it).listFiles(podRegex).each { if (it.isDir.not && podFiles.containsKey(it.basename).not) podFiles[it.basename] = PodFile(it) } }
 			fpmConfig.workDirs.each { (it + `lib/fan/`).listFiles(podRegex).each { if (it.isDir.not && podFiles.containsKey(it.basename).not) podFiles[it.basename] = PodFile(it) } }
+			(fpmConfig.homeDir            + `lib/fan/`).listFiles(podRegex).each { if (it.isDir.not && podFiles.containsKey(it.basename).not) podFiles[it.basename] = PodFile(it) }
 
 			this.allPodFiles = podFiles
 
@@ -85,18 +85,22 @@ abstract const class FpmEnv : Env {
 	}
 	
 	override Str[] findAllPodNames() {
+		// TODO: have option to search all for latest ver in all repos 
 		allPodFiles.keys 
 	}
 
 	override File? findPodFile(Str podName) {
+		// TODO: have option to search all for latest ver in all repos 
 		allPodFiles.get(podName)?.file 
 	}
 
 	override File[] findAllFiles(Uri uri) {
+		// TODO: search in ALL dirs -> podDirs / workDirs / homeDir
 		fpmConfig.workDirs.map { it + uri }.exclude |File f->Bool| { f.exists.not }
 	}
 
 	override File? findFile(Uri uri, Bool checked := true) {
+		// TODO: search in ALL dirs -> podDirs / workDirs / homeDir
 		if (uri.isPathAbs) throw ArgErr("Uri must be rel: $uri")
 		return fpmConfig.workDirs.eachWhile |dir| {
 			f := dir.plus(uri, false)
