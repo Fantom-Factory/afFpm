@@ -132,4 +132,7 @@ internal class PodResolverCache : PodResolver {
 			depend.name == dependency.name && dependency.match(depend.version)
 		}.vals
 	}
+	override PodVersion[] resolveAll() {
+		cache.vals
+	}
 }
