@@ -1,7 +1,7 @@
 using build
 
 internal const class FpmEnvDefault : FpmEnv {
-	private static const Log 	log 	:= FpmEnv#.pod.log
+	private static const Log 	log 	:= FpmEnvDefault#.pod.log
 
 	static new make() {
 		fpmConfig	:= FpmConfig()
@@ -27,9 +27,6 @@ internal const class FpmEnvDefault : FpmEnv {
 			log.debug(fpmEnv.error.traceToStr)
 		}
 
-		if (fpmEnv.allPodFiles.isEmpty)
-			log.warn("Defaulting to PathEnv")
-		
 		return fpmEnv
 	}
 	

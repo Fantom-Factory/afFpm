@@ -22,14 +22,23 @@ internal class PodResolvers {
 			resolvers.map { it.resolve(dependency) }.flatten.unique
 		}
 	}
+	
+	Str:PodFile resolveAll(Str:PodFile podFiles) {
+		resolvers.map { it.resolveAll }.flatten.each |PodVersion podVer| {
+			if (podFiles.containsKey(podVer.name).not)
+				podFiles[podVer.name] = podVer.toPodFile
+		}
+		return podFiles
+	}
 }
 
 internal mixin PodResolver {
 	abstract PodVersion[] resolve(Depend dependency)
+	abstract PodVersion[] resolveAll()
 }
 
 internal class PodResolverFanr : PodResolver {
-	private static const Regex		podRegex		:= "(.+)-(.+)\\.pod".toRegex
+	private static const Regex	podRegex	:= "(.+)-(.+)\\.pod".toRegex
 
 	FileCache	fileCache
 	File 		repoDir
@@ -42,23 +51,56 @@ internal class PodResolverFanr : PodResolver {
 	override PodVersion[] resolve(Depend dependency) {
 		podDir := repoDir.plus(dependency.name.toUri.plusSlash, true)
 		return podDir.listFiles(podRegex).map |file->PodVersion?| {
-			matcher := podRegex.matcher(file.name)
-			if (!matcher.find)
+			podName := PodName(file)
+			if (podName == null)
 				return null
 
-			if (matcher.group(1) != dependency.name)
-				return null
-			
-			version := Version(matcher.group(2), false)
-			if (version == null)
+			if (podName.name != dependency.name)
 				return null
 
-			if (!dependency.match(version))
+			if (!dependency.match(podName.ver))
 				return null
 			
 			return fileCache.get(file)
 
 		}.exclude { it == null }
+	}
+	
+	override PodVersion[] resolveAll() {
+		repoDir.listDirs.map |repoDir->PodName?| {
+			repoDir.listFiles(podRegex).map { PodName(it) }.exclude { it == null }.sort.last
+		}.exclude { it == null }.map |PodName pod->PodVersion| { fileCache.get(pod.file) }
+	}
+}
+
+internal class PodName {
+	private static const Regex	podRegex	:= "(.+)-(.+)\\.pod".toRegex
+
+	Str		name
+	Version	ver
+	File	file
+
+	static new makeFromFile(File file) {
+		matcher := podRegex.matcher(file.name)
+		if (!matcher.find)
+			return null
+
+		name	:= matcher.group(1)
+		version := Version(matcher.group(2), false)
+
+		if (version == null)
+			return null
+
+		return PodName {
+			it.file = file
+			it.name = name
+			it.ver	= version
+		}
+	}
+	new make(|This|in) { in(this) }
+	
+	override Int compare(Obj that) {
+		ver <=> (that as PodName).ver
 	}
 }
 
@@ -81,6 +123,10 @@ internal class PodResolverPath : PodResolver {
 		
 		return podVersion == null ? PodVersion#.emptyList : [podVersion]
 	}
+
+	override PodVersion[] resolveAll() {
+		pathDir.listFiles(Regex.glob("*.pod")).map { fileCache.get(it) }.exclude { it == null }
+	}
 }
 
 internal class PodResolverPod : PodResolver {
@@ -100,5 +146,9 @@ internal class PodResolverPod : PodResolver {
 				podVersion = null
 		
 		return podVersion == null ? PodVersion#.emptyList : [podVersion]
+	}
+	
+	override PodVersion[] resolveAll() {
+		fileCache.get(podFile) ?: PodVersion#.emptyList
 	}
 }

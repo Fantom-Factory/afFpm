@@ -58,7 +58,7 @@ internal class SetupCmd : FpmCmd {
 				log.info("")
 			}
 			
-			log.indent("Now set the following environment variable:\n") |->| {
+			log.indent("To complete installation the following environment variable needs to be set:\n") |->| {
 				if (win)
 					log.info("set FAN_ENV=afFpm::FpmEnv")
 				else

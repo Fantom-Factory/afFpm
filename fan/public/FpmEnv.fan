@@ -13,6 +13,8 @@
 ** 
 ** Creates a targeted environment for a pod
 abstract const class FpmEnv : Env {
+	private static const Log 	log 	:= FpmEnv#.pod.log
+
 	const Err?				error				
 	const FpmConfig			fpmConfig
 	const Str:PodFile		resolvedPodFiles
@@ -32,17 +34,16 @@ abstract const class FpmEnv : Env {
 
 		this.fpmConfig	= fpmConfig
 		this.fileDirs	= fpmConfig.podDirs.dup.addAll(fpmConfig.workDirs).add(fpmConfig.homeDir)
+		podDepends		:= PodDependencies(fpmConfig, f4PodFiles)
 
 		try {
-			podDepends	:= PodDependencies(fpmConfig, f4PodFiles)
-	
 			findTarget(podDepends)
 			podDepends.satisfyDependencies
 			
 			resolvedPodFiles		= podDepends.podFiles
-			targetPod				= podDepends.targetPod
+			targetPod				= podDepends.targetPod ?: "???"
 			unsatisfiedConstraints	= podDepends.unsatisfied
-			if (targetPod != null && targetPod.endsWith(" 0"))
+			if (targetPod.endsWith(" 0"))
 				targetPod += "+"
 
 			// add all (unresolved) pods from the the home and work dirs
@@ -50,9 +51,9 @@ abstract const class FpmEnv : Env {
 			if (podDepends.building != null)
 				podFiles.remove(podDepends.building)
 			podRegex	:= ".+\\.pod".toRegex
+			// note that workDirs includes homeDir
 			fpmConfig.podDirs .each {              (it).listFiles(podRegex).each { if (it.isDir.not && podFiles.containsKey(it.basename).not) podFiles[it.basename] = PodFile(it) } }
 			fpmConfig.workDirs.each { (it + `lib/fan/`).listFiles(podRegex).each { if (it.isDir.not && podFiles.containsKey(it.basename).not) podFiles[it.basename] = PodFile(it) } }
-			(fpmConfig.homeDir            + `lib/fan/`).listFiles(podRegex).each { if (it.isDir.not && podFiles.containsKey(it.basename).not) podFiles[it.basename] = PodFile(it) }
 
 			this.allPodFiles = podFiles
 
@@ -69,6 +70,16 @@ abstract const class FpmEnv : Env {
 			this.resolvedPodFiles		= this.resolvedPodFiles			!= null ? this.resolvedPodFiles			: [:]
 			this.allPodFiles 			= this.allPodFiles				!= null ? this.allPodFiles				: [:]
 			this.targetPod				= this.targetPod				!= null ? this.targetPod				: "???"
+		}
+		
+		if (targetPod == "???") {
+			log.warn("Could not target pod - defaulting to latest pod versions")
+			this.allPodFiles = podDepends.podResolvers.resolveAll(allPodFiles.rw)
+		}
+
+		if (Env.cur.vars["FPM_ALL_PODS"]?.toBool(false) ?: false) {
+			log.warn("FPM_ALL_PODS = true; defaulting to latest pod versions")
+			this.allPodFiles = podDepends.podResolvers.resolveAll(allPodFiles.rw)			
 		}
 	}
 	
@@ -87,12 +98,10 @@ abstract const class FpmEnv : Env {
 	}
 	
 	override Str[] findAllPodNames() {
-		// TODO: have option to search all for latest ver in all repos 
 		allPodFiles.keys 
 	}
 
 	override File? findPodFile(Str podName) {
-		// TODO: have option to search all for latest ver in all repos 
 		allPodFiles.get(podName)?.file
 	}
 
