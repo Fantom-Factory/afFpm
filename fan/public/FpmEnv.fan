@@ -120,12 +120,13 @@ abstract const class FpmEnv : Env {
 	@NoDoc
 	internal abstract Void findTarget(PodDependencies podDepends)
 		
-	Str debug() {
+	** Dumps debug output to a string.
+	Str dump() {
 		str	:= "\n\n"
 		str += "Fantom Pod Manager (FPM ${typeof.pod.version}) Environment\n"
 		str += "\n"
-		str += "Target Pod : ${targetPod}\n"
-		str += fpmConfig.debug
+		str += "   Target Pod : ${targetPod}\n"
+		str += fpmConfig.dump
 
 		str += "\n"
 		str += "Resolved ${resolvedPodFiles.size} pod" + (resolvedPodFiles.size == 1 ? "" : "s") + (resolvedPodFiles.size == 0 ? "" : ":") + "\n"

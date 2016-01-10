@@ -114,12 +114,11 @@ internal class TestDependencySatisfaction : Test {
 	
 	// dependents
 	private Void addDep(Str dependency, Str? dependents := null) {
-		podDependsCache.cache[Depend(dependency)] = PodVersion {
-			it.depend	= Depend(dependency)
-			it.name 	= depend.name
-			it.version	= depend.version
+		podDependsCache.cache[Depend(dependency)] = PodVersion.makeForTesting {
+			it.name 	= Depend(dependency).name
+			it.version	= Depend(dependency).version
 			it.depends	= dependents?.split(',')?.map { Depend(it) } ?: Depend#.emptyList 
-			it.file		= File(``)
+			it.url		= ``
 		}
 	}
 }

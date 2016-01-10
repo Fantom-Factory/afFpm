@@ -7,12 +7,16 @@ const class PodFile {
 	** The version of this pod.
 	const Version	version
 	
-	** The backing file of this pod.
-	const File		file
+	** Where the pod is located.
+	const Uri		url
 	
 	internal new make(|This|in) { in(this) }
-
 	
+	** The backing file of this pod.
+	File file() {
+		url.toFile
+	}
+
 	static new makeFromFile(File file) {
 		zip	:= Zip.read(file.in)
 		try {

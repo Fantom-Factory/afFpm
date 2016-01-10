@@ -2,12 +2,12 @@ using util
 using concurrent
 
 internal abstract class FpmCmd : AbstractMain {
-	override StdLogger 	log 		:= StdLogger()
+	override StdLogger 	log 	:= StdLogger()
 	
-		FpmConfig	config		:= FpmConfig()
+		FpmConfig	fpmConfig	:= FpmConfig()
 		PodManager	podManager	:= PodManager() {
-			it.config	= this.config
-			it.log		= this.log
+			it.fpmConfig	= this.fpmConfig
+			it.log			= this.log
 		}
 
 	new make() : super.make() { }

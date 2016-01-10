@@ -1,26 +1,29 @@
 
 internal class PodDependencies {
 
-	PodResolvers	podResolvers
-	FileCache		fileCache		:= FileCache()
-	PodNode[]		initNodes		:= PodNode[,]
-	Str:PodNode		allNodes		:= Str:PodNode[:] { it.ordered = true }
-	Str:PodFile		podFiles		:= Str:PodFile[:]
-	PodConstraint[]	unsatisfied		:= PodConstraint[,]
-	Str?			targetPod
-	Str?			building
+			Str?			targetPod
+			Str:PodFile		podFiles		:= Str:PodFile[:]
+			PodConstraint[]	unsatisfied		:= PodConstraint[,]
+
+	internal PodResolvers	podResolvers
+	internal Str?			building
+
+	private FileCache		fileCache		:= FileCache()
+	private PodNode[]		initNodes		:= PodNode[,]
+	private Str:PodNode		allNodes		:= Str:PodNode[:] { it.ordered = true }
 
 	new make(FpmConfig config, File[] podFiles) {
 		this.podResolvers	= PodResolvers(config, podFiles, fileCache)
 	}
 
-	Void setBuildTarget(Str name, Version version, Depend[] depends) {
+	Void setBuildTarget(Str name, Version version, Depend[] depends, Bool checkDependencies) {
 		addPod(name) {
 			// check the build dependencies exist
-			depends.each {
-				if (podResolvers.resolve(it).isEmpty)
-					throw UnknownPodErr(ErrMsgs.env_couldNotResolvePod(it))
-			}
+			if (checkDependencies)
+				depends.each {
+					if (podResolvers.resolve(it).isEmpty)
+						throw UnknownPodErr(ErrMsgs.env_couldNotResolvePod(it))
+				}
 
 			it.podVersions = [PodVersion(null, Str:Str[
 				"pod.name"		: name,
@@ -123,7 +126,7 @@ internal class PodDependencies {
 			}
 		}
 
-		podFiles = finNodes?.exclude{ it.file == null }?.map { it.toPodFile } ?: Str:PodFile[:]
+		podFiles = finNodes?.exclude{ it.url == null }?.map { it.toPodFile } ?: Str:PodFile[:]
 		if (podFiles.isEmpty.not)
 			unsatisfied.clear
 		unsatisfied = unsatisfied.unique

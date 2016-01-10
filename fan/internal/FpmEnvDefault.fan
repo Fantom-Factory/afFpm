@@ -11,7 +11,8 @@ internal const class FpmEnvDefault : FpmEnv {
 		f4PodFiles	:= f4PodPaths.map { toFile(it) }
 		fpmEnv 		:= makeManual(fpmConfig, f4PodFiles)
 		
-		log.debug(fpmEnv.debug)
+		// FIXME should we move this logging back into FpmEnv? What does F4 need?
+		log.debug(fpmEnv.dump)
 
 		if (fpmEnv.unsatisfiedConstraints.size > 0) {
 			output	:= "Could not satisfy the following constraints:\n"
@@ -49,7 +50,7 @@ internal const class FpmEnvDefault : FpmEnv {
 		if (fpmArgs != null) {
 			buildPod	:= getBuildPod(cmdArgs.first)		
 			if (buildPod != null) {
-				podDepends.setBuildTarget(buildPod.podName, buildPod.version, buildPod.depends.map { Depend(it, false) }.exclude { it == null } )
+				podDepends.setBuildTarget(buildPod.podName, buildPod.version, buildPod.depends.map { Depend(it, false) }.exclude { it == null }, true )
 				return
 			}
 

@@ -1,21 +1,38 @@
 
+// The public API - manager is a shite name though!
 const class PodManager {
 	const Log 			log 			:= PodManager#.pod.log
 
-	const FpmConfig		config
+	const FpmConfig		fpmConfig
 
 	private const CorePods	corePods	:= CorePods()
 
 	new make(|This|? in := null) {
 		in?.call(this)
-		if (config == null)
-			config = FpmConfig()
+		if (fpmConfig == null)
+			fpmConfig = FpmConfig()
 	}
 
-	PodFile publishPod(File pod, Str repo) {
+	** Publishes a pod file to the given named repository.
+	** 
+	** 'repo' should be the name of a local file repository, or a directory path.
+	** Directory paths may be in URI form or an OS path.
+	** 
+	**   syntax: fantom
+	**   publishPod(podFile, "default") 
+	**   publishPod(podFile, "C:\\repo")
+	**  
+	** 'repo' defaults to 'default' if not specified.
+	PodFile publishPod(File pod, Str? repo := null) {
 		_publishPod(PodFile(pod), repo)
 	}
 
+	** Publishes all pods from the given directory.
+	**  
+	** 'repo' should be the name of a local file repository, or a directory path.
+	** Directory paths may be in URI form or an OS path.
+	**  
+	** 'repo' defaults to 'default' if not specified.
 	Void publishAllPods(File dir, Str? repo := null) {
 		log.info("Publishing pods from ${dir.osPath} into repo '" +  (repo ?: "default") + "'...")
 		podFiles := dir.listFiles(".+\\.pod".toRegex).exclude {
@@ -35,7 +52,7 @@ const class PodManager {
 	}
 
 	PodFile[] findAllPodFiles(Str query) {
-		PodResolvers(config, File#.emptyList, FileCache()).resolve(Depend(query)).sort.map { it.toPodFile }
+		PodResolvers(fpmConfig, File#.emptyList, FileCache()).resolve(Depend(query)).sort.map { it.toPodFile }
 	}
 	
 	private PodFile _publishPod(PodFile podFile, Str? repo := null) {
@@ -43,13 +60,15 @@ const class PodManager {
 			throw IOErr(ErrMsgs.mgr_podFileNotFound(podFile.file))
 
 		// note the manual indent!
-		log.info("  Publishing ${podFile}")
+		repoName := repo ?: "default"
+		log.info("  Publishing ${podFile} to ${repoName}")
 
-		// TODO: allow repo to be a dir path
-		repoFile := config.repoDirs[repo ?: "default"] + `${podFile.name}/${podFile.name}-${podFile.version}.pod`
-		podFile.file.copyTo(repoFile, ["overwrite" : true])
+		// allow repo to be a dir path, but then remove the version suffix
+		repoFile := fpmConfig.fileRepos.containsKey(repoName)
+			? fpmConfig.fileRepos[repoName] + `${podFile.name}/${podFile.name}-${podFile.version}.pod`
+			: FileUtils.toRelDir(File(``), repo) + `${podFile.name}.pod`
+
+		podFile.file.copyTo(repoFile, ["overwrite" : true])			
 		return podFile
 	}
-	
-//	private FileCache fileCache() { FileCache() }
 }

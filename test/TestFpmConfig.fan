@@ -51,25 +51,25 @@ internal class TestFpmConfig : Test {
 		
 		// test default
 		config := FpmConfig.makeInternal(File(``), homeDir, null, [:])
-		verifyEq(config.repoDirs.size, 1)
-		verifyEq(config.repoDirs["default"], homeDir + `repo/`)
+		verifyEq(config.fileRepos.size, 1)
+		verifyEq(config.fileRepos["default"], homeDir + `repo/`)
 
 		// test props add to repoDirs
 		config = FpmConfig.makeInternal(File(``), homeDir, null, ["repoDir.release":"C:\\Projects"])
-		verifyEq(config.repoDirs.size, 2)
-		verifyEq(config.repoDirs["default"], homeDir + `repo/`)		
-		verifyEq(config.repoDirs["release"], `file:/C:/Projects/`.toFile)
+		verifyEq(config.fileRepos.size, 2)
+		verifyEq(config.fileRepos["default"], homeDir + `repo/`)		
+		verifyEq(config.fileRepos["release"], `file:/C:/Projects/`.toFile)
 
 		// test props trump repoDirs
 		config = FpmConfig.makeInternal(File(``), homeDir, null, ["repoDir.release":"C:\\Projects", "repoDir.default":"C:\\Temp"])
-		verifyEq(config.repoDirs.size, 2)
-		verifyEq(config.repoDirs["default"], `file:/C:/Temp/`.toFile)
-		verifyEq(config.repoDirs["release"], `file:/C:/Projects/`.toFile)
+		verifyEq(config.fileRepos.size, 2)
+		verifyEq(config.fileRepos["default"], `file:/C:/Temp/`.toFile)
+		verifyEq(config.fileRepos["release"], `file:/C:/Projects/`.toFile)
 
 		// test uri path
 		config = FpmConfig.makeInternal(File(``), homeDir, null, ["repoDir.default":"file:/C:/Projects/"])
-		verifyEq(config.repoDirs.size, 1)
-		verifyEq(config.repoDirs["default"], `file:/C:/Projects/`.toFile)
+		verifyEq(config.fileRepos.size, 1)
+		verifyEq(config.fileRepos["default"], `file:/C:/Projects/`.toFile)
 
 		// test repoDir not exist
 		verifyErr(ArgErr#) {
