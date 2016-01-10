@@ -13,11 +13,11 @@ internal class SetupCmd : FpmCmd {
 		win := Env.cur.os.startsWith("win")
 
 		log.indent("Running Setup...") |->| {
-			
+
 			log.info("\nCurrent Configuration")
 			log.info("---------------------")
 			log.info(config.debug)
-			
+
 //			log.info("Setup will now copy pods into the repository named 'default'")
 //			Env.cur.prompt("Is this correct? ")
 			ext 		:= win ? ".bat" : ""

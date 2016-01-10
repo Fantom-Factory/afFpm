@@ -30,7 +30,7 @@ internal const class FpmEnvDefault : FpmEnv {
 		return fpmEnv
 	}
 	
-	new makeManual(FpmConfig fpmConfig, File[] podFiles, |This|? in := null) : super.makeManual(fpmConfig, podFiles, in) { }
+	private new makeManual(FpmConfig fpmConfig, File[] podFiles, |This|? in := null) : super.makeManual(fpmConfig, podFiles, in) { }
 
 	override Void findTarget(PodDependencies podDepends) {
 		fanArgs	:= Env.cur.args

@@ -1,0 +1,11 @@
+
+Have named remote fanr repos
+
+Publish to OS dir
+Publish to named remote fanrs
+Publish to http remote fanr
+
+List pods from each repo
+query pods in repo... like fanr
+
+update cmd -> download to which repo?
