@@ -1,20 +1,29 @@
+using fanr
 
 internal class PodResolvers {
+	FpmConfig			fpmConfig
 	PodResolver[] 		resolvers
 	Depend:PodVersion[]	depends		:= Depend:PodVersion[][:]
 	
-	new make(FpmConfig config, File[] podFiles, FileCache fileCache) {
+	new make(FpmConfig fpmConfig, File[] podFiles, FileCache fileCache) {
 		// order matters
-		resolvers =	PodResolver[,]
+		this.resolvers = PodResolver[,]
 			.addAll(
 				podFiles.map { PodResolverPod(it, fileCache) }
 			).addAll(
-				config.repoDirs.vals.map { PodResolverFanr(it, fileCache) }
+				fpmConfig.fileRepos.vals.map { PodResolverFanrLocal(it, fileCache) }
 			).addAll(
-				config.podDirs.map { PodResolverPath(it, fileCache) }
+				fpmConfig.podDirs.map { PodResolverPath(it, fileCache) }
 			).addAll(
-				config.workDirs.map { PodResolverPath(it + `lib/fan/`, fileCache) }
+				fpmConfig.workDirs.map { PodResolverPath(it + `lib/fan/`, fileCache) }
 			)
+		this.fpmConfig = fpmConfig
+	}
+	
+	Void addRemoteRepos() {
+		resolvers.addAll(
+			fpmConfig.fanrRepos.keys.map { PodResolverFanrRemote(fpmConfig, it, 5) }
+		)
 	}
 	
 	PodVersion[] resolve(Depend dependency) {
@@ -37,7 +46,7 @@ internal mixin PodResolver {
 	abstract PodVersion[] resolveAll()
 }
 
-internal class PodResolverFanr : PodResolver {
+internal class PodResolverFanrLocal : PodResolver {
 	private static const Regex	podRegex	:= "(.+)-(.+)\\.pod".toRegex
 
 	FileCache	fileCache
@@ -151,4 +160,27 @@ internal class PodResolverPod : PodResolver {
 	override PodVersion[] resolveAll() {
 		fileCache.get(podFile) ?: PodVersion#.emptyList
 	}
+}
+
+internal class PodResolverFanrRemote : PodResolver {
+	Repo	repo
+	Str		repoName
+	Int		numVersions
+
+	new make(FpmConfig fpmConfig, Str repoName, Int numVersions) {
+		this.repo 		 = fpmConfig.fanrRepo(repoName)
+		this.repoName	 = repoName
+		this.numVersions = numVersions
+	}
+
+	override PodVersion[] resolve(Depend dependency) {
+		echo("Querying ${repoName} for ${dependency}")
+		specs := repo.query(dependency.toStr, numVersions)
+		return specs.map |PodSpec spec->PodVersion| {
+			PodVersion(`fanr://${repoName}/${dependency}`, spec)
+		}
+	}
+
+	// only used for local resolution
+	override PodVersion[] resolveAll() { PodVersion#.emptyList }
 }

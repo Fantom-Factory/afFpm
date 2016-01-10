@@ -1,10 +1,9 @@
+using fanr
 
 const class FpmConfig {
 	private static const Log 	log := FpmConfig#.pod.log
 
 	const File 		homeDir
-
-	const Str:File 	repoDirs
 
 	const File 		tempDir
 
@@ -12,14 +11,18 @@ const class FpmConfig {
 	const File[]	workDirs
 	
 	const File[]	podDirs
+	
+	const Str:File 	fileRepos
+
+	const Str:Uri	fanrRepos
 
 	private new makePrivate(|This|in) { in(this) }
 	
 	static new make() {
-		makeFromDirs(File(``), Env.cur.homeDir, Env.cur.vars["FAN_ENV_PATH"])
+		makeFromDirs(File(`./`), Env.cur.homeDir, Env.cur.vars["FAN_ENV_PATH"])
 	}
 
-	@NoDoc	// ctor used by F4
+	@NoDoc
 	static new makeFromDirs(File baseDir, File homeDir, Str? envPaths) {
 		fpmFile := (File?) baseDir.plus(`fpm.props`).normalize
 		while (fpmFile != null && !fpmFile.exists)
@@ -39,7 +42,7 @@ const class FpmConfig {
 		return makeInternal(baseDir, homeDir, envPaths, fpmProps)
 	}
 
-	@NoDoc	// ctor used by tests
+	@NoDoc
 	internal new makeInternal(File baseDir, File homeDir, Str? envPaths, Str:Str fpmProps) {
 		baseDir = baseDir.normalize
 		if (baseDir.isDir.not || baseDir.exists.not)
@@ -56,15 +59,15 @@ const class FpmConfig {
 		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + homeDir.uri.toStr
 		this.workDirs = workDirs.split(File.pathSep.chars.first).map { toAbsDir(it) }.unique
 
-		repoDirs := (Str:Str) fpmProps.findAll |path, name| {
-			name.startsWith("repoDir.")
-		}.reduce(Str:Str[:]) |Str:Str repos, path, name| {
-			repos[name["repoDir.".size..-1]] = path
+		repoDirs := (Str:File) fpmProps.findAll |path, name| {
+			name.startsWith("fileRepo.")
+		}.reduce(Str:File[:] { ordered=true }) |Str:File repos, Str path, name| {
+			repos[name["fileRepo.".size..-1]] = toAbsDir(path.trim)
 			return repos
 		}
 		if (repoDirs.containsKey("default").not)
-			repoDirs["default"] = this.workDirs.first.plus(`repo/`, false).uri.toStr
-		this.repoDirs = repoDirs.map { toAbsDir(it) }
+			repoDirs["default"] = this.workDirs.first.plus(`repo/`, false)
+		this.fileRepos = repoDirs
 		
 		tempDir := fpmProps["tempDir"]
 		if (tempDir == null)
@@ -72,43 +75,71 @@ const class FpmConfig {
 		this.tempDir = toAbsDir(tempDir)
 
 		podDirs := fpmProps["podDirs"]
-		this.podDirs = podDirs?.split(File.pathSep.chars.first)?.map { toRelDir(baseDir, it) }?.unique ?: File#.emptyList
+		this.podDirs = podDirs?.split(File.pathSep.chars.first)?.map { toRelDir(baseDir, it) }?.findAll |File dir->Bool| { dir.exists }?.unique ?: File#.emptyList
+
+		fanrRepos := (Str:Uri) fpmProps.findAll |path, name| {
+			name.startsWith("fanrRepo.")
+		}.reduce(Str:Uri[:] { ordered=true }) |Str:Uri repos, Str path, key| {
+			url  := path.trim.toUri
+			name := key["fanrRepo.".size..-1]
+			if (url.scheme != "http" && url.scheme != "https")
+				throw Err("Invalid URI scheme for fanr repo '${name}', only http and https permitted: ${url}")
+			repos[name] = url
+			return repos
+		}
+		this.fanrRepos = fanrRepos
 	}
 	
-	Str debug() {
-		str := ""
-		str += "Home Dir   : ${homeDir.osPath}\n"
-		str += "Work Dirs  : " + workDirs.join(", ") { it.osPath } + "\n"
-		str += "Pod  Dirs  : " + podDirs .join(", ") { it.osPath } + "\n"
-		str += "Temp Dir   : ${tempDir.osPath}\n"
-		str += "Repo Dirs  : \n"
+	** Returns a fanr 'Repo' instance for the named repository. 
+	** May be either a 'fileRepo' or a 'fanrRepo'. 
+	Repo fanrRepo(Str repoName) {
+		if (fileRepos.containsKey(repoName))
+			return Repo.makeForUri(fileRepos[repoName].uri)
+		
+		if (fanrRepos.containsKey(repoName)) {
+			url		 := fanrRepos[repoName]
+			userStr	 := url.userInfo == null ? "" : url.userInfo + "@"
+			repoUrl	 := url.toStr.replace(userStr, "").toUri
+			// TODO do proper percent decoding
+			username := url.userInfo?.split(':')?.getSafe(0)?.replace("%40", "@")
+			password := url.userInfo?.split(':')?.getSafe(1)?.replace("%40", "@")
+			return Repo.makeForUri(repoUrl, username, password)
+		}
+		
+		allRepoNames := fileRepos.keys.addAll(fanrRepos.keys).sort
+		throw ArgErr("Cound not find remote repo with name '${repoName}'. Available repos: " + allRepoNames.join(","))
+	}
 
-		maxDir := repoDirs.keys.reduce(10) |Int size, repoName| { size.max(repoName.size) } as Int
-		repoDirs.each |repoDir, repoName| {
+	** Dumps debug output to a string.
+	Str dump() {
+		str := ""
+		str += "   Home Dir   : ${homeDir.osPath}\n"
+		str += "   Work Dirs  : " + (workDirs.join(", ") { it.osPath }.trimToNull ?: "(none)") + "\n"
+		str += "   Pod Dirs   : " + (podDirs .join(", ") { it.osPath }.trimToNull ?: "(none)") + "\n"
+		str += "   Temp Dir   : ${tempDir.osPath}\n"
+
+		str += "   File Repos : " + (fileRepos.isEmpty ? "(none)" : "") + "\n"
+		maxDir := fileRepos.keys.reduce(13) |Int size, repoName| { size.max(repoName.size) } as Int
+		fileRepos.each |repoDir, repoName| {
 			str += repoName.justr(maxDir) + " = " + repoDir.osPath + "\n"
+		}
+
+		str += "   Fanr Repos : " + (fanrRepos.isEmpty ? "(none)" : "") + "\n"
+		maxDir = fanrRepos.keys.reduce(13) |Int size, repoName| { size.max(repoName.size) } as Int
+		fanrRepos.each |repoUrl, repoName| {
+			usr	:= repoUrl.userInfo == null ? "" : repoUrl.userInfo + "@"
+			url	:= repoUrl.toStr.replace(usr, "").toUri
+			str += repoName.justr(maxDir) + " = " + url + "\n"
 		}
 
 		return str
 	}
 
 	private static File toAbsDir(Str dirPath) {
-		dir := toDir(dirPath).normalize
-		if (dir.uri.isPathAbs.not)
-			throw ArgErr("Directory path must be absolute: ${dirPath}")
-		return dir
+		FileUtils.toAbsDir(dirPath)
 	}
 	
 	private static File toRelDir(File baseDir, Str dirPath) {
-		dir := toDir(dirPath)
-		if (dir.uri.isPathAbs.not)
-			dir = baseDir + dir.uri
-		return dir.normalize
-	}
-
-	private static File toDir(Str dirPath) {
-		file := dirPath.startsWith("file:") && dirPath.containsChar('\\').not ? File(dirPath.toUri, false) : File.os(dirPath)
-		if (file.isDir.not)
-			throw ArgErr("Path is not a directory: ${dirPath} (${file.normalize.osPath})")
-		return file
+		FileUtils.toRelDir(baseDir, dirPath)
 	}
 }

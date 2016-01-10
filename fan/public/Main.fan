@@ -15,8 +15,11 @@ class Main {
 			case "setup":
 				SetupCmd().run
 		
+			case "update":
+				UpdateCmd().run
+		
 		  default:
-		    
+		    throw ArgErr("Unknown cmd: ${cmd}")
 		}
 		
 	}

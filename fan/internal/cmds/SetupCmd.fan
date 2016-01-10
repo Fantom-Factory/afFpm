@@ -16,14 +16,14 @@ internal class SetupCmd : FpmCmd {
 
 			log.info("\nCurrent Configuration")
 			log.info("---------------------")
-			log.info(config.debug)
+			log.info(fpmConfig.dump)
 
 //			log.info("Setup will now copy pods into the repository named 'default'")
 //			Env.cur.prompt("Is this correct? ")
 			ext 		:= win ? ".bat" : ""
-			fanFile		:= config.homeDir + `bin/fan${ext}`
+			fanFile		:= fpmConfig.homeDir + `bin/fan${ext}`
 			fanResFile	:= typeof.pod.file(`/res/fan${ext}`)
-			fanOrigFile	:= config.homeDir + `bin/fan-orig${ext}`
+			fanOrigFile	:= fpmConfig.homeDir + `bin/fan-orig${ext}`
 			if (fanOrigFile.exists.not) {
 				log.info("Renaming `${fanFile.osPath}` to `${fanOrigFile.name}`")
 				fanFile.rename(fanOrigFile.name)
@@ -32,7 +32,7 @@ internal class SetupCmd : FpmCmd {
 				log.info("")
 			}
 
-			fpmFile		:= config.homeDir + `bin/fpm${ext}`
+			fpmFile		:= fpmConfig.homeDir + `bin/fpm${ext}`
 			fpmResFile	:= typeof.pod.file(`/res/fpm${ext}`)
 			if (fpmFile.exists.not) {
 				log.info("Creating `${fpmFile.osPath}`")
@@ -40,7 +40,7 @@ internal class SetupCmd : FpmCmd {
 				log.info("")
 			}
 
-			configFile		:= config.workDirs.first + `etc/afFpm/config.props`
+			configFile		:= fpmConfig.workDirs.first + `etc/afFpm/config.props`
 			configResFile	:= typeof.pod.file(`/res/config.props`)
 			if (configFile.exists.not) {
 				log.info("Creating `${configFile.osPath}`")
@@ -48,12 +48,12 @@ internal class SetupCmd : FpmCmd {
 				log.info("")
 			}
 
-			config.workDirs.each {
+			fpmConfig.workDirs.each {
 				podManager.publishAllPods(it.plus(`lib/fan/`), repo)
 				log.info("")
 			}
 
-			config.podDirs.each {
+			fpmConfig.podDirs.each {
 				podManager.publishAllPods(it, repo)
 				log.info("")
 			}
