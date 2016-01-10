@@ -70,7 +70,7 @@ const class FpmConfig {
 		if (tempDir == null)
 			tempDir = this.workDirs.first.plus(`temp/`, false).uri.toStr
 		this.tempDir = toAbsDir(tempDir)
-		
+
 		podDirs := fpmProps["podDirs"]
 		this.podDirs = podDirs?.split(File.pathSep.chars.first)?.map { toRelDir(baseDir, it) }?.unique ?: File#.emptyList
 	}

@@ -1,7 +1,13 @@
 
+** Represents a pod file.
 const class PodFile {
+	** The name of this pod.
 	const Str		name
+	
+	** The version of this pod.
 	const Version	version
+	
+	** The backing file of this pod.
 	const File		file
 	
 	internal new make(|This|in) { in(this) }
@@ -25,7 +31,7 @@ const class PodFile {
 		}	
 	}
 
-	override Str toStr() {
-		"$name $version"
-	}
+	override Str toStr() 			{ "$name $version" }
+	override Int hash() 			{ file.hash }
+	override Bool equals(Obj? that)	{ file == (that as PodFile)?.file }
 }

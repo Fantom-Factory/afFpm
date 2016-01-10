@@ -1,11 +1,21 @@
 
-internal const class PodVersion {
+// will be useful for public APIs.
+** Represents a specific version of a pod.
+const class PodVersion {
+	** The name of the pod.
 	const 	Str				name
+	
+	** The version of the pod.
 	const 	Version			version
-	const	Depend			depend	// convenience for Depend("${name} ${version}")
+	
+	** The backing file of this pod.
 	const	File?			file
+	
+	** The dependencies of this pod
 	const	Depend[]		depends
-	const	PodConstraint[]	constraints
+	
+	internal const	PodConstraint[]	constraints
+	internal const	Depend			depend	// convenience for Depend("${name} ${version}")
 
 	new make(|This|in) {
 		in(this)
