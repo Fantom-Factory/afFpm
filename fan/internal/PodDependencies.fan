@@ -70,7 +70,6 @@ internal class PodDependencies {
 
 		// brute force - try every permutation of pod versions and see which ones work		
 		nos := (PodVersion[][]) allNodes.vals.map { it.podVersions }
-
 		max := nos.map { it.size }
 		cur := Int[,].fill(0, max.size)
 		err := (Str:PodVersion[]) allNodes.map { PodVersion[,] }
