@@ -24,9 +24,12 @@ internal class UpdateCmd : FpmCmd {
 			output	:= "Could not satisfy the following constraints:\n"
 			maxCon	:= podDepends.unsatisfied.reduce(0) |Int size, con| { size.max(con.podName.size + con.podVersion.toStr.size + 1) } as Int
 			podDepends.unsatisfied.each {
-				output += "${it.podName}@${it.podVersion}".justr(maxCon + 2) + " -> ${it.dependsOn}\n"
+				available	:= podDepends.availablePodVersions(it.dependsOn.name).map { it.version }
+				availStr	:= available.isEmpty ? "Not found" : available.join(", ")
+				output += "${it.podName}@${it.podVersion}".justr(maxCon + 2) + " -> ${it.dependsOn} (${availStr})\n"
 			}
 			log.warn(output)
+			return
 		}
 
 		toUpdate := podDepends.podFiles.vals.findAll { it.url.scheme == "fanr" }
