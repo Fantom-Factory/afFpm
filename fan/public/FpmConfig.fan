@@ -93,18 +93,12 @@ const class FpmConfig {
 	** Returns a fanr 'Repo' instance for the named repository. 
 	** May be either a 'fileRepo' or a 'fanrRepo'. 
 	Repo fanrRepo(Str repoName) {
+		// FPM doesn't need / use a local fanr repo, but other may find it useful
 		if (fileRepos.containsKey(repoName))
 			return Repo.makeForUri(fileRepos[repoName].uri)
 		
-		if (fanrRepos.containsKey(repoName)) {
-			url		 := fanrRepos[repoName]
-			userStr	 := url.userInfo == null ? "" : url.userInfo + "@"
-			repoUrl	 := url.toStr.replace(userStr, "").toUri
-			// TODO do proper percent decoding
-			username := url.userInfo?.split(':')?.getSafe(0)?.replace("%40", "@")
-			password := url.userInfo?.split(':')?.getSafe(1)?.replace("%40", "@")
-			return Repo.makeForUri(repoUrl, username, password)
-		}
+		if (fanrRepos.containsKey(repoName))
+			return toFanrRepo(fanrRepos[repoName])
 		
 		allRepoNames := fileRepos.keys.addAll(fanrRepos.keys).sort
 		throw ArgErr("Cound not find remote repo with name '${repoName}'. Available repos: " + allRepoNames.join(","))
@@ -135,6 +129,15 @@ const class FpmConfig {
 		return str
 	}
 
+	internal static Repo toFanrRepo(Uri url) {
+		userStr	 := url.userInfo == null ? "" : url.userInfo + "@"
+		repoUrl	 := url.toStr.replace(userStr, "").toUri
+		// TODO do proper percent decoding
+		username := url.userInfo?.split(':')?.getSafe(0)?.replace("%40", "@")
+		password := url.userInfo?.split(':')?.getSafe(1)?.replace("%40", "@")		
+		return Repo.makeForUri(repoUrl, username, password)
+	}
+	
 	private static File toAbsDir(Str dirPath) {
 		FileUtils.toAbsDir(dirPath)
 	}

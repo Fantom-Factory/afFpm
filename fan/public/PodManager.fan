@@ -63,12 +63,29 @@ const class PodManager {
 		repoName := repo ?: "default"
 		log.info("  Publishing ${podFile} to ${repoName}")
 
-		// allow repo to be a dir path, but then remove the version suffix
-		repoFile := fpmConfig.fileRepos.containsKey(repoName)
-			? fpmConfig.fileRepos[repoName] + `${podFile.name}/${podFile.name}-${podFile.version}.pod`
-			: FileUtils.toRelDir(File(``), repo) + `${podFile.name}.pod`
+		// publish to a file repo
+		if (fpmConfig.fileRepos.containsKey(repoName)) {
+			repoFile := fpmConfig.fileRepos[repoName] + `${podFile.name}/${podFile.name}-${podFile.version}.pod`
+			podFile.file.copyTo(repoFile, ["overwrite" : true])
+		} else
+		
+		// publish to a named fanr repo
+		if (fpmConfig.fanrRepos.containsKey(repoName)) {
+			fpmConfig.fanrRepo(repoName).publish(podFile.file)
+		} else
 
-		podFile.file.copyTo(repoFile, ["overwrite" : true])			
+		// publish to an explicit fanr repo
+		// FIXME fanr doesn't allow https schemes - see fanr::Repo.makeForUri()
+		if (repoName.startsWith("http:") || repoName.startsWith("https:")) {
+			FpmConfig.toFanrRepo(repoName.toUri).publish(podFile.file)
+		}
+
+		// allow repo to be a dir path, but then remove the version suffix
+		else {
+			repoFile := FileUtils.toRelDir(File(``), repo) + `${podFile.name}.pod`
+			podFile.file.copyTo(repoFile, ["overwrite" : true])
+		}
+
 		return podFile
 	}
 }
