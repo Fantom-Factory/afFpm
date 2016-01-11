@@ -3,7 +3,7 @@ using util
 
 internal class PublishCmd : FpmCmd {
 	
-	@Opt { aliases=["r"]; help="Name of the repository to publish to" }
+	@Opt { aliases=["r"]; help="Name of the file / fanr repository to publish to" }
 	Str repo	:= "default"
 
 	@Opt { aliases=["p"]; help="The pod to publish. May be relative and / or OS specific, e.g. pods\\myPod.pod" }

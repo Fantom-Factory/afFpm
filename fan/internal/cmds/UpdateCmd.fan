@@ -48,7 +48,8 @@ internal class UpdateCmd : FpmCmd {
 			finally out.close
 			
 			podManager.publishPod(file, repo)
-		}		
+		}
+		log.info("Done.")
 	}
 	
 	override Bool argsValid() { true }
