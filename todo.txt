@@ -5,3 +5,5 @@ query pods in repo... like fanr
 fanrRepo.fantomFactory	= http://pods.fantomfactory.org/fanr/
 fanrRepo.fantomFactory.username	= username
 fanrRepo.fantomFactory.password	= password
+
+// FIXME !!! Ensure we match on ALL depend.versions(999)!

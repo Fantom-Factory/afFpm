@@ -27,8 +27,19 @@ internal class PodResolvers {
 	}
 	
 	PodVersion[] resolve(Depend dependency) {
-		depends.getOrAdd(dependency) {
-			resolvers.map { it.resolve(dependency) }.flatten.unique
+		depends.getOrAdd(dependency) |->PodVersion[]| {
+			
+			// first lets check if this dependency 'fits' into any existing
+			// we don't want to contact remote fanr repos if we don't have to
+			existing := depends.find |vers, dep->Bool| { Utils.dependFits(dependency, dep) }
+			
+			if (existing != null) {
+				// only return what we need
+				return existing.findAll { dependency.match(it.version) }
+			}
+			
+			// naa, lets do the full resolve hog
+			return resolvers.map { it.resolve(dependency) }.flatten.unique
 		}
 	}
 	

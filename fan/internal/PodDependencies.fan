@@ -1,16 +1,16 @@
 
 internal class PodDependencies {
 
-			Str?			targetPod
-			Str:PodFile		podFiles		:= Str:PodFile[:]
-			PodConstraint[]	unsatisfied		:= PodConstraint[,]
+			Str?				targetPod
+			Str:PodFile			podFiles		:= Str:PodFile[:]
 
-	internal PodResolvers	podResolvers
-	internal Str?			building
+	internal PodResolvers		podResolvers
+	internal Str?				building
 
-	private FileCache		fileCache		:= FileCache()
-	private PodNode[]		initNodes		:= PodNode[,]
-	private Str:PodNode		allNodes		:= Str:PodNode[:] { it.ordered = true }
+	private PodConstraint[][]	allUnsatisfied	:= PodConstraint[][,]
+	private FileCache			fileCache		:= FileCache()
+	private PodNode[]			initNodes		:= PodNode[,]
+	private Str:PodNode			allNodes		:= Str:PodNode[:] { it.ordered = true }
 
 	new make(FpmConfig config, File[] podFiles) {
 		this.podResolvers	= PodResolvers(config, podFiles, fileCache)
@@ -44,6 +44,10 @@ internal class PodDependencies {
 			throw UnknownPodErr(ErrMsgs.env_couldNotResolvePod(podDepend))
 		
 		targetPod	= podDepend.toStr		
+	}
+	
+	PodVersion[] availablePodVersions(Str podName) {
+		allNodes[podName].podVersions
 	}
 	
 	internal PodNode addPod(Str podName) {
@@ -96,7 +100,7 @@ internal class PodDependencies {
 			if (podMap2.any |v, k| { err[k].contains(v) }.not) {
 				res := reduceDomain(podMap2)
 				if (res != null) {
-					unsatisfied.addAll(res)
+					allUnsatisfied.add(res.unique)
 					err[res.first.dependsOn.name].add(res.first.pVersion)
 
 				} else {
@@ -128,27 +132,37 @@ internal class PodDependencies {
 
 		podFiles = finNodes?.exclude{ it.url == null }?.map { it.toPodFile } ?: Str:PodFile[:]
 		if (podFiles.isEmpty.not)
-			unsatisfied.clear
-		unsatisfied = unsatisfied.unique
+			allUnsatisfied.clear
 		return this
 	}
 	
+	PodConstraint[] unsatisfied() {
+		allUnsatisfied.min |c1, c2| { c1.size <=> c2.size } ?: PodConstraint#.emptyList
+	}
+	
 	// see https://en.wikipedia.org/wiki/AC-3_algorithm
-	PodConstraint[]? reduceDomain(Str:PodVersion podVersions) {
+	private PodConstraint[]? reduceDomain(Str:PodVersion podVersions) {
 		worklist := (PodConstraint[]) podVersions.vals.map { it.constraints }.flatten
 		allCons	 := worklist.dup
+		unsatisfied	:= null as PodConstraint[] 
 		
 		while (worklist.isEmpty.not) {
 			con := worklist.pop
 			nod := podVersions[con.dependsOn.name]
-			if (nod == null || con.dependsOn.match(nod.version).not)
+			if (nod == null || con.dependsOn.match(nod.version).not) {
 				// find out who else conflicted / removed the versions we wanted
-				return allCons.findAll { it.dependsOn.name == con.dependsOn.name }.insert(0, con).unique
+				all := allCons.findAll { it.dependsOn.name == con.dependsOn.name }.insert(0, con).unique
+				if (unsatisfied == null)
+					unsatisfied = PodConstraint[,]
+				// collect ALL the errors, so we can report on the solution with the smallest number of errs (if need be)
+				unsatisfied.addAll(all)
+			}
 		}
-		return null
+
+		return unsatisfied
 	}
 	
-	Void expandNode(PodNode node, Depend[] stack) {
+	private Void expandNode(PodNode node, Depend[] stack) {
 		node.podVersions.each |podVersion| {
 			if (stack.contains(podVersion.depend).not) {
 				stack.add(podVersion.depend)			
@@ -160,7 +174,7 @@ internal class PodDependencies {
 		}
 	}
 
-	PodNode? resolveNode(Depend dependency) {
+	private PodNode? resolveNode(Depend dependency) {
 		allNodes.getOrAdd(dependency.name) {
 			PodNode {
 				it.name = dependency.name
