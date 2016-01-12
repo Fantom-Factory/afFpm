@@ -21,7 +21,7 @@ abstract const class FpmEnv : Env {
 	const Str:PodFile		allPodFiles
 	
 	const Str				targetPod
-	const PodConstraint[]	unsatisfiedConstraints
+	const UnresolvedPod[]	unsatisfiedConstraints
 	
 	private const File[]	fileDirs
 	
@@ -139,16 +139,7 @@ abstract const class FpmEnv : Env {
 		}
 		str += "\n"
 		
-		if (unsatisfiedConstraints.size > 0) {
-			str		+= "Could not satisfy the following constraints:\n"
-			maxCon	:= unsatisfiedConstraints.reduce(0) |Int size, con| { size.max(con.podName.size + con.podVersion.toStr.size + 1) } as Int
-			unsatisfiedConstraints.each {
-				str += "${it.podName}@${it.podVersion}".justr(maxCon + 2) + " -> ${it.dependsOn}\n"
-			}
-		}
-		
-		if (error != null)
-			str += error.traceToStr
+		// unsatisfied constraints and errors should be logged separately after this dump 
 
 		return str
 	}

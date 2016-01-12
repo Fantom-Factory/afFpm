@@ -22,4 +22,16 @@ internal class Utils {
 			
 		return false
 	}
+	
+	static Str dumpUnresolved(UnresolvedPod[] unsatisfiedConstraints) {
+		if (unsatisfiedConstraints.isEmpty) return ""
+		
+		output	:= "Could not satisfy the following constraints:\n"
+		maxCon	:= unsatisfiedConstraints.reduce(0) |Int size, con| { size.max(con.name.size + con.version.toStr.size + 1) } as Int
+		unsatisfiedConstraints.each {
+			availStr	:= it.available.isEmpty ? "Not found" : it.available.join(", ")
+			output		+= "${it.name}@${it.version}".justr(maxCon + 2) + " -> ${it.dependsOn} (${availStr})\n"
+		}
+		return output
+	}
 }
