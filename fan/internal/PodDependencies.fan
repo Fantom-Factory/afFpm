@@ -135,8 +135,13 @@ internal class PodDependencies {
 		return this
 	}
 	
-	PodConstraint[] unsatisfied() {
-		allUnsatisfied.min |c1, c2| { c1.size <=> c2.size } ?: PodConstraint#.emptyList
+	UnresolvedPod[] unsatisfied() {
+		(allUnsatisfied.min |c1, c2| { c1.size <=> c2.size } ?: PodConstraint#.emptyList).map |PodConstraint con->UnresolvedPod| { UnresolvedPod {
+			it.name			= con.podName
+			it.version		= con.podVersion
+			it.dependsOn	= con.dependsOn
+			it.available	= availablePodVersions(it.dependsOn.name).map { it.version }
+		} }
 	}
 	
 	// see https://en.wikipedia.org/wiki/AC-3_algorithm

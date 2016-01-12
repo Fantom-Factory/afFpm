@@ -11,21 +11,10 @@ internal const class FpmEnvDefault : FpmEnv {
 		f4PodFiles	:= f4PodPaths.map { toFile(it) }
 		fpmEnv 		:= makeManual(fpmConfig, f4PodFiles)
 		
-		// FIXME should we move this logging back into FpmEnv? What does F4 need?
 		log.debug(fpmEnv.dump)
 
-		if (fpmEnv.unsatisfiedConstraints.size > 0) {
-			output	:= "Could not satisfy the following constraints:\n"
-			maxCon	:= fpmEnv.unsatisfiedConstraints.reduce(0) |Int size, con| { size.max(con.podName.size + con.podVersion.toStr.size + 1) } as Int
-			fpmEnv.unsatisfiedConstraints.each {
-				// FIXME - move to FpmEnv
-//				available	:= podDepends.availablePodVersions(it.dependsOn.name).map { it.version }
-//				availStr	:= available.isEmpty ? "Not found" : available.join(", ")
-//				output += "${it.podName}@${it.podVersion}".justr(maxCon + 2) + " -> ${it.dependsOn} (${availStr})\n"
-				output += "${it.podName}@${it.podVersion}".justr(maxCon + 2) + " -> ${it.dependsOn}\n"
-			}
-			log.warn(output)
-		}
+		if (fpmEnv.unsatisfiedConstraints.size > 0)
+			log.warn(Utils.dumpUnresolved(fpmEnv.unsatisfiedConstraints))
 		
 		if (fpmEnv.error != null) {
 			log.err  (fpmEnv.error.toStr)
