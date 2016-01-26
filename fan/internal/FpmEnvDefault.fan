@@ -28,6 +28,7 @@ internal const class FpmEnvDefault : FpmEnv {
 
 	override Void findTarget(PodDependencies podDepends) {
 		fanArgs	:= Env.cur.args
+		// FIXME change FPM_CMDLINE_ARGS to something better -> FPM_TARGET_POD maybe? 
 		fpmArgs	:= splitQuotedStr(Env.cur.vars["FPM_CMDLINE_ARGS"])
 		cmdArgs	:= fpmArgs ?: fanArgs
 		
@@ -39,7 +40,6 @@ internal const class FpmEnvDefault : FpmEnv {
 			return
 		}
 
-		// FIXME change FPM_CMDLINE_ARGS to something better -> FPM_TARGET_POD maybe? 
 		// FPM_CMDLINE_ARGS - use it if we got it
 		if (fpmArgs != null) {
 			buildPod := getBuildPod(cmdArgs.first)		

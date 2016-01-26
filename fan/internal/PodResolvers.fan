@@ -11,9 +11,9 @@ internal class PodResolvers {
 			.addAll(
 				podFiles.map { PodResolverPod(it, fileCache) }
 			).addAll(
-				fpmConfig.fileRepos.vals.map { PodResolverFanrLocal(it, fileCache) }
-			).addAll(
 				fpmConfig.podDirs.map { PodResolverPath(it, fileCache) }
+			).addAll(
+				fpmConfig.fileRepos.vals.map { PodResolverFanrLocal(it, fileCache) }
 			).addAll(
 				fpmConfig.workDirs.map { PodResolverPath(it + `lib/fan/`, fileCache) }
 			)

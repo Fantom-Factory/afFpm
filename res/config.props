@@ -6,7 +6,7 @@ EXAMPLE FPM FILE
 # If not set then it defaults to whatever is set in '%FAN_HOME%/etc/afFpm/config.props'.
 workDirs				= C:\\Repositories\\Fantom;C:\\Repositories\\Fantom
 
-podDirs					= lib;lib\fan
+podDirs					= lib;lib\\fan
 
 tempDir					= C:\\Repositories\\Fantom\\temp
 

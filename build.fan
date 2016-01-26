@@ -3,7 +3,7 @@ using build
 class Build : BuildPod {
 
 	new make() {
-		podName = "afFpm"
+		podName = "afFpmDev"
 		summary = "Fantom Pod Manager"
 		version = Version("0.0.1")
 

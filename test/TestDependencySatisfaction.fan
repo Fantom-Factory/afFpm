@@ -37,7 +37,7 @@ internal class TestDependencySatisfaction : Test {
 		addDep("afIoc 2.0", "afPlastic 1.2")
 		
 		satisfyDependencies("afIoc 2.0")
-		verifyNull(podDepends.podFiles)
+		verify(podDepends.podFiles.isEmpty)
 	}
 
 	Void testPaths4() {
@@ -47,7 +47,7 @@ internal class TestDependencySatisfaction : Test {
 		addDep("afPlastic 1.2")
 		
 		satisfyDependencies("afBed 2.0, afIoc 2.0")
-		verifyNull(podDepends.podFiles)
+		verify(podDepends.podFiles.isEmpty)
 	}
 	
 	Void testPaths5() {
@@ -57,7 +57,7 @@ internal class TestDependencySatisfaction : Test {
 		addDep("afPlastic 3.0")
 		
 		satisfyDependencies("afBed 2.0, afIoc 3.0")
-		verifyNull(podDepends.podFiles)
+		verify(podDepends.podFiles.isEmpty)
 	}
 
 	Void testPaths6() {
@@ -95,7 +95,11 @@ internal class TestDependencySatisfaction : Test {
 	}
 	
 	private Void satisfyDependencies(Str pods) {
-		pods.split(',').map { Depend(it) }.each { podDepends.addPod(it.toStr) }
+		pods.split(',').map { Depend(it) }.each |Depend d| {
+			podDepends.addPod(d.name) {
+				it.podVersions = podDepends.podResolvers.resolve(d)
+			}
+		}
 		podDepends.satisfyDependencies
 	}
 
