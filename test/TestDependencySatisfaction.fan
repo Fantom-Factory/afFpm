@@ -23,6 +23,9 @@ internal class TestDependencySatisfaction : Test {
 		out3 := list.map |Int int| { return int.toStr }
 		echo(out3)
 		
+		out5 := list.map |int| { int.toStr }
+		echo(out5)
+
 		out4 := list.map |Int int -> Str| { int.toStr }
 		echo(out4)
 		
@@ -126,38 +129,7 @@ internal class TestDependencySatisfaction : Test {
 
 		verifyPodFiles("afBed 2.0, afIoc 3.0")
 	}
-	
-	Void testDeserialiseProblemSpace() {
-		// taken from testEasyHappyPath
-		str := 
-"""[sys::Str:afFpmDev::PodNode][
-   "afBed":afFpmDev::PodNode
-   {
-   name="afBed"
-   podVersions=[afFpmDev::PodVersion
-   {
-   name="afBed"
-   version=sys::Version("2.0")
-   url=``
-   depends=[sys::Depend("afPlastic 1.2")]
-   }]
-   },
-   "afIoc":afFpmDev::PodNode
-   {
-   name="afIoc"
-   podVersions=[afFpmDev::PodVersion
-   {
-   name="afIoc"
-   version=sys::Version("2.0")
-   url=``
-   depends=[sys::Depend("afPlastic 1.2")]
-   }]
-   }]"""
-		podDepends.allNodes = str.toBuf.readObj
-		podDepends.satisfyDependencies
-		verifyPodFiles("afIoc 2.0, afBed 2.0, afPlastic 1.2")
-   	}
-	
+		
 	private Void satisfyDependencies(Str pods) {
 		pods.split(',').map { Depend(it) }.each |Depend d| {
 			podDepends.addPod(d.name) {
@@ -179,7 +151,7 @@ internal class TestDependencySatisfaction : Test {
 			verifyEq(expected, actual)
 		}
 	}
-	
+
 	// dependents
 	private Void addDep(Str dependency, Str? dependents := null) {
 		podDependsCache.cache[Depend(dependency)] = PodVersion.makeForTesting {
