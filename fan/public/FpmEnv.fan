@@ -123,7 +123,7 @@ abstract const class FpmEnv : Env {
 	** Dumps debug output to a string.
 	Str dump() {
 		str	:= "\n\n"
-		str += "Fantom Pod Manager (FPM ${typeof.pod.version}) Environment\n"
+		str += "FPM Environment:\n"
 		str += "\n"
 		str += "   Target Pod : ${targetPod}\n"
 		str += fpmConfig.dump

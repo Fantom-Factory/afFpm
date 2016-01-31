@@ -3,43 +3,118 @@ using fanr::PodSpec
 internal class PodGroup {
 	Str				name
 	Depend[]		depends
-	PodVersion:Bool	podVersions
 	Str				dependsHash
 	
+//			PodVersion[]	podVersions
+//	private PodVersion[]?	matching
+//	private PodVersion[]? 	remove
+//	
+//	new make(PodVersion podVer) {
+//		this.name 			=  podVer.name
+//		this.depends		=  podVer.depends
+//		this.dependsHash	= depends.dup.sort.join(" ")
+//		this.podVersions	= PodVersion[podVer]
+//		this.matching		= PodVersion[,]
+//		this.remove			= PodVersion[,]
+//	}
+//	
+//	Void add(PodVersion podVer) {
+//		podVersions.add(podVer)
+//	}
+//
+//	Void reset() {
+//		matching.clear.addAll(podVersions)
+//	}
+//	
+//	Bool noMatch(Depend dependsOn) {
+//		remove.clear
+//		matching.each {
+//			if (dependsOn.match(it.version).not)
+//				remove.add(it)
+//		}
+//		
+//		if (remove.size > 0) {
+//			echo("removing $remove")
+//			remove.each { matching.remove(it) }
+//			remove.clear
+//		}
+//		
+//		echo("  ==> $dependsOn -> $matching")
+//		return matching.isEmpty
+//	}
+//	
+//	PodVersion latest() {
+//		echo("lat=$matching.sort.last -> $matching.sort + $podVersions")
+//		return matching.sort.last
+//	}
+//	
+//	PodConstraint[] constraints() {
+//		c:=podVersions.first.constraints
+//		echo("con=$c")
+//		return c
+//	}
+//
+//	private Version[] versions() {
+//		podVersions.map { it.version }
+//	}
+	
+
+	
+	private PodVersion:Bool	pods
+	
 	new make(PodVersion podVer) {
-		this.name 		=  podVer.name
-		this.depends	=  podVer.depends
-		this.podVersions= [podVer:true]
-		this.dependsHash= depends.dup.sort.join(" ")
+		this.name 			=  podVer.name
+		this.depends		=  podVer.depends
+		this.dependsHash	= depends.dup.sort.join(" ")
+		this.pods			= PodVersion:Bool[podVer:false]
 	}
 	
-	PodConstraint[] constraints() {
-		podVersions.keys.first.constraints
+	Void add(PodVersion podVer) {
+		pods[podVer] = false
 	}
-	
+
 	Void reset() {
-		podVersions.each |val, key| { podVersions[key] = true }
+		pods.each |val, key| { pods[key] = false }
 	}
-	
-	Void select(Depend dependsOn) {
-		podVersions.each |val, podVer| {
-			if (val == true) {
-//				echo("$dependsOn match $podVer.version = ${dependsOn.match(podVer.version)}")
-				podVersions[podVer] = dependsOn.match(podVer.version)
-			}
+
+	Bool noMatch(Depend dependsOn) {
+		fail := true
+		// pods.all() will *not* iterate through all the keys if false is returned
+		pods.each |val, key| {
+			if (val == true)
+				return
+			out := dependsOn.match(key.version).not
+			if (out)
+				pods[key] = true
+			else
+				fail = false
 		}
-	}
-	
-	Version[] versions() {
-		podVersions.keys.map { it.version }
+		return fail
 	}
 	
 	PodVersion latest() {
-		podVersions.findAll { it == true}.keys.sort.last
+		pods.exclude { it }.keys.sort.last
+	}
+	
+	PodConstraint[] constraints() {
+		return pods.keys.first.constraints
 	}
 
+	private Version[] versions() {
+		pods.keys.map { it.version  }
+	}
+
+	
+	
+	
 	override Str toStr() {
-		name + " " + podVersions.keys.sort.map { it.version }.join(" ")
+		name + " " + versions.join(", ")
+	}
+	
+	override Int hash() { dependsHash.hash }
+	override Bool equals(Obj? obj) {
+		that := obj as PodGroup
+		return that.name == this.name && that.depends == this.depends
 	}
 }
 
@@ -61,20 +136,10 @@ const class PodVersion {
 	** The dependencies of this pod
 	const	Depend[]	depends
 	
-	@Transient
 	internal const	PodConstraint[]	constraints
-	@Transient
 	internal const	Depend			depend	// convenience for Depend("${name} ${version}")
-	@Transient
 	internal const	Str				dependsHash
 
-	new make(|This|in) {
-		in(this)
-		this.depend		 = Depend("${name} ${version}")
-		this.constraints = depends.map |d| { PodConstraint { it.pVersion = this; it.dependsOn = d } }
-		this.dependsHash = depends.dup.sort.join(" ")		
-	}
-	
 	internal new makeForTesting(|This|in) {
 		in(this)
 		this.depend		 = Depend("${name} ${version}")

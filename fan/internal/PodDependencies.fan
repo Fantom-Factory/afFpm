@@ -1,6 +1,6 @@
 
 internal class PodDependencies {
-
+	private static const Log	log				:= PodDependencies#.pod.log
 			Str?				targetPod
 			Str:PodFile			podFiles		:= Str:PodFile[:]
 
@@ -11,6 +11,8 @@ internal class PodDependencies {
 	private FileCache			fileCache		:= FileCache()
 	private PodNode[]			initNodes		:= PodNode[,]
 	internal Str:PodNode		allNodes		:= Str:PodNode[:] { it.ordered = true }
+	
+	private	Duration			startTime		:= Duration.now
 
 	new make(FpmConfig config, File[] podFiles) {
 		this.podResolvers	= PodResolvers(config, podFiles, fileCache)
@@ -64,72 +66,60 @@ internal class PodDependencies {
 	}
 	
 	This satisfyDependencies() {
-//		echo("####")
-//		Buf().writeObj(allNodes).flip.readAllStr.with { echo(it) }
-//		echo("#### -")
-		
-		stack := Depend[,]
-		allNodes.vals.each { expandNode(it, stack) }
-		finNodes := ([Str:PodGroup]?) null
+		title := "Fantom Pod Manager ${typeof.pod.version}"
+		log.debug(title)
+		log.debug("".padl(title.size, '='))
+		log.debug("Resolving pods for $targetPod")
 
+		allNodes.vals.each { expandNode(it, Depend[,]) }
+
+		podPerms  := (Int) allNodes.vals.reduce(1) |Int tot, node| { tot * node.podVersions.size }
+		totalVers := (Int) allNodes.vals.reduce(0) |Int tot, node| { tot + node.podVersions.size }
+		log.debug("Found ${totalVers.toLocale} versions of ${allNodes.size.toLocale} different pods")
+		
 		// reduce PodVersions into groups
-		// this reduces the problem space from 661,348,800,000 dependency permatations to just XXX
-		
-		
-		
-		// brute force - try every permutation of pod versions and see which ones work
-		nos := (PodGroup[][]) allNodes.vals.map { it.reduceProblemSpace }
+		// this reduces the problem space from 661,348,800,000 dependency permutations to just 12,288!		
+		nos := (PodGroup[][]) allNodes.vals.map { it.reduceProblemSpace }.exclude { it->isEmpty }
+
+		grpPerms	:= (Int) nos.reduce(1) |Int tot, vers| { tot * vers.size }
+		podPermsStr	:= podPerms.toLocale
+		grpPermsStr	:= grpPerms.toLocale
+		maxPermSize	:= (podPermsStr.size + 11).max(grpPermsStr.size + 13)
+		log.debug("Calculated "   + podPermsStr.justr(maxPermSize - 11) + " dependency permutations")
+		log.debug("Collapsed to " + grpPermsStr.justr(maxPermSize - 13) + " dependency permutations")
+		log.debug("Problem space stated in ${(Duration.now - startTime).toLocale}")
+		log.debug("Solving...")
+		startTime = Duration.now
+
 		max := nos.map { it.size }
 		cur := Int[,].fill(0, max.size)
-//		err := (Str:PodGroup[]) allNodes.map { PodGroup[,] }
-		fin := false
 		
-		pems := (Int) nos.reduce(1) |Int tot, vers| { tot * vers.size }
-		echo("Solving ${pems.toLocale} dependency permatations")
-		nos.each |groups| {
-			pods := groups.join(", ", |p->Str| { p.podVersions.keys.join(", ") { it.version.toStr } })
-			echo("${groups.size} x ${groups.first?.name} : $pods") 
-		}
-		pem:=0
+		// a single err should be formed from multiple constraints, where A, B, C !==> D
+//		err := (Str:PodVersion[]) allNodes.map { PodVersion[,] }
+		fin := false
+		solutions := [Str:PodFile][,]
 
+		podMap  := Str:PodGroup[:]
+
+		// brute force - try every permutation of pod versions and see which ones work
 		while (fin.not) {
-			pem++
-			podLst := cur.map |v, i| { nos[i].getSafe(v) }.exclude { it == null }
-			podMap := Str:PodGroup[:].addList(podLst) { it.name }
+			podMap.clear
+			cur.each |v, i| { grp := nos[i][v]; podMap[grp.name] = grp }
 
-			// filter out pods that can't be reached with current selection
-			copyPod := (|Str:PodGroup, Str|?) null
-			copyPod = |Str:PodGroup podVers, Str podName| {
-				if (podVers.containsKey(podName)) return	// stack overflow
-				ver := podMap[podName]
-				if (ver != null) {
-					podVers[podName] = ver
-					ver.depends.each {
-						copyPod(podVers, it.name)
-					}
-				}
+			res := reduceDomain(podMap)
+
+			if (res != null) {
+//				allUnsatisfied.add(res.unique)	// FIXME 2 secs here!
+
+			} else {
+				// found a working combination!
+//				fin = true
+				solutions.add(podMap
+					.map { it.latest }
+					.exclude |PodVersion p->Bool| { p.url == null }
+					.map |PodVersion p->PodFile| { p.toPodFile }
+				)
 			}
-			podMap2 := Str:PodGroup[:]
-			initNodes.each |initNode| { 
-				copyPod(podMap2, initNode.name)
-			}
-
-//			echo("Solving $podMap2")
-//			echo("    --> ${reduceDomain(podMap2)}")
-	
-			// check cache of known failures
-//			if (podMap2.any |v, k| { err[k].contains(v) }.not) {
-				res := reduceDomain(podMap2)
-				if (res != null) {
-					allUnsatisfied.add(res.unique)
-//					err[res.first.dependsOn.name].add(res.first.pVersion)
-
-				} else {
-					// found a working combination!
-					finNodes = podMap2
-					fin = true
-				}
-//			}
 
 			// permutate through all versions of pods
 			if (fin.not) {
@@ -151,14 +141,10 @@ internal class PodDependencies {
 			}
 		}
 
-		echo("Solved after ${pem.toLocale} permatations")
-		echo(finNodes)
+		solveTime := Duration.now - startTime
+		log.debug("Found ${solutions.size} solutions in ${solveTime.toLocale}")
 
-		podFiles = finNodes
-			?.map { it.latest }
-			?.exclude |PodVersion p->Bool| { p.url == null }
-			?.map |PodVersion p->PodFile| { p.toPodFile }
-			?: Str:PodFile[:]
+		podFiles = solutions.first ?: Str:PodFile[:]
 
 		if (podFiles.isEmpty.not)
 			allUnsatisfied.clear
@@ -178,30 +164,24 @@ internal class PodDependencies {
 	// see https://en.wikipedia.org/wiki/AC-3_algorithm
 	private PodConstraint[]? reduceDomain(Str:PodGroup podGroups) {
 		podGroups.each { it.reset }
-		worklist := (PodConstraint[]) podGroups.vals.map { it.constraints }.flatten
-		allCons	 := worklist.dup
+		worklist := (PodConstraint[]) podGroups.reduce(PodConstraint[,]) |PodConstraint[] cons, grp->PodConstraint[]| { cons.addAll(grp.constraints) }
+//		allCons	 := worklist.dup
 		unsatisfied	:= null as PodConstraint[] 
-		
+
 		while (worklist.isEmpty.not) {
 			con := worklist.pop
 			nod := podGroups[con.dependsOn.name]
 
-			// FIXME clone pod groups / set Bool markers?
-			// FIXME tidty
-			if (nod != null) {
-				nod.select(con.dependsOn)
-//				nod.podVersions = nod.podVersions.findAll { con.dependsOn.match(it.version) }
-			}
-			
-			// FIXME: versions ANY?? does that mean I need check which final version to use?
-//			if (nod == null || nod.versions.any { con.dependsOn.match(it) }.not) {
-			if (nod == null || nod.podVersions.all { it == false}) {
-				// find out who else conflicted / removed the versions we wanted
-				all := allCons.findAll { it.dependsOn.name == con.dependsOn.name }.insert(0, con).unique
-				if (unsatisfied == null)
-					unsatisfied = PodConstraint[,]
-				// collect ALL the errors, so we can report on the solution with the smallest number of errs (if need be)
-				unsatisfied.addAll(all)
+			if (nod == null || nod.noMatch(con.dependsOn)) {
+//				// find out who else conflicted / removed the versions we wanted
+//				all := allCons.findAll { it.dependsOn.name == con.dependsOn.name }.insert(0, con).unique
+//				if (unsatisfied == null)
+//					unsatisfied = PodConstraint[,]
+//				// collect ALL the errors, so we can report on the solution with the smallest number of errs (if need be)
+//				unsatisfied.addAll(all)
+				
+				unsatisfied = PodConstraint#.emptyList
+				worklist.clear
 			}
 		}
 
@@ -255,7 +235,7 @@ internal class PodNode {
 			if (group == null)
 				groups[pod.dependsHash] = PodGroup(pod)
 			else
-				group.podVersions[pod] = true
+				group.add(pod)
 		}
 		return groups.vals
 	}
