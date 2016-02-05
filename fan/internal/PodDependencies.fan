@@ -1,6 +1,6 @@
 
 internal class PodDependencies {
-	private static const Log	log				:= PodDependencies#.pod.log
+	private const Log			log				:= PodDependencies#.pod.log
 			Str?				targetPod
 			Str:PodFile			podFiles		:= Str:PodFile[:]
 
@@ -14,7 +14,8 @@ internal class PodDependencies {
 	
 	private	Duration			startTime		:= Duration.now
 
-	new make(FpmConfig config, File[] podFiles) {
+	new make(FpmConfig config, File[] podFiles, Log log) {
+		this.log 			= log
 		this.podResolvers	= PodResolvers(config, podFiles, fileCache)
 	}
 

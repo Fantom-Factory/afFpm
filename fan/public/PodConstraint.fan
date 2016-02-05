@@ -1,25 +1,4 @@
 
-//internal const class GroupConstraint {
-//	internal const PodVersion	pVersion
-//			 const Depend		dependsOn
-//
-//	Str podName() {
-//		pVersion.name
-//	}
-//
-//	Version podVersion() {
-//		pVersion.version
-//	}
-//
-//	@NoDoc
-//	override Str toStr() {
-//		"${podName}@${podVersion} -> ${dependsOn}"
-//	}
-//	
-// 	new make(|This|? in) { in?.call(this) }
-//}
-
-//@Serializable
 const class PodConstraint {
 	const Depend	pod
 	const Depend	dependsOn

@@ -16,7 +16,7 @@ internal class UpdateCmd : FpmCmd {
 //	Str all	:= "all"
 
 	override Void go() {
-		podDepends	:= PodDependencies(fpmConfig, File[,])
+		podDepends	:= PodDependencies(fpmConfig, File[,], log)
 
 		if (pod != null) {
 			file := pod.contains("\\") ? File.os(pod) : pod.toUri.toFile
