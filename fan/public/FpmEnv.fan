@@ -21,7 +21,7 @@ abstract const class FpmEnv : Env {
 	const Str:PodFile		allPodFiles
 	
 	const Str				targetPod
-	const UnresolvedPod[]	unsatisfiedConstraints
+	const UnresolvedPod[]	unresolvedPods
 	
 	private const File[]	fileDirs
 	
@@ -42,7 +42,7 @@ abstract const class FpmEnv : Env {
 			
 			resolvedPodFiles		= podDepends.podFiles
 			targetPod				= podDepends.targetPod ?: "???"
-			unsatisfiedConstraints	= podDepends.unsatisfied
+			unresolvedPods			= podDepends.unresolvedPods
 			if (targetPod.endsWith(" 0"))
 				targetPod += "+"
 
@@ -66,10 +66,10 @@ abstract const class FpmEnv : Env {
 			error = err
 
 		} finally {
-			this.unsatisfiedConstraints	= this.unsatisfiedConstraints	!= null ? this.unsatisfiedConstraints	: [,]
-			this.resolvedPodFiles		= this.resolvedPodFiles			!= null ? this.resolvedPodFiles			: [:]
-			this.allPodFiles 			= this.allPodFiles				!= null ? this.allPodFiles				: [:]
-			this.targetPod				= this.targetPod				!= null ? this.targetPod				: "???"
+			this.unresolvedPods		= this.unresolvedPods	!= null ? this.unresolvedPods	: [,]
+			this.resolvedPodFiles	= this.resolvedPodFiles	!= null ? this.resolvedPodFiles	: [:]
+			this.allPodFiles 		= this.allPodFiles		!= null ? this.allPodFiles		: [:]
+			this.targetPod			= this.targetPod		!= null ? this.targetPod		: "???"
 		}
 		
 		if (targetPod == "???") {

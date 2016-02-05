@@ -20,8 +20,8 @@ internal class UpdateCmd : FpmCmd {
 		podDepends.podResolvers.addRemoteRepos
 		podDepends.satisfyDependencies
 
-		if (podDepends.unsatisfied.size > 0)
-			return log.warn(Utils.dumpUnresolved(podDepends.unsatisfied))
+		if (podDepends.unresolvedPods.size > 0)
+			return log.warn(Utils.dumpUnresolved(podDepends.unresolvedPods))
 
 		toUpdate := podDepends.podFiles.vals.findAll { it.url.scheme == "fanr" }
 		if (toUpdate.isEmpty)

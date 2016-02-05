@@ -13,8 +13,8 @@ internal const class FpmEnvDefault : FpmEnv {
 		
 		log.debug(fpmEnv.dump)
 
-		if (fpmEnv.unsatisfiedConstraints.size > 0)
-			log.warn(Utils.dumpUnresolved(fpmEnv.unsatisfiedConstraints))
+		if (fpmEnv.unresolvedPods.size > 0)
+			log.warn(Utils.dumpUnresolved(fpmEnv.unresolvedPods))
 		
 		if (fpmEnv.error != null) {
 			log.err  (fpmEnv.error.toStr)

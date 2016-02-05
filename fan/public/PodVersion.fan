@@ -5,61 +5,6 @@ internal class PodGroup {
 	Depend[]		depends
 	Str				dependsHash
 	
-//			PodVersion[]	podVersions
-//	private PodVersion[]?	matching
-//	private PodVersion[]? 	remove
-//	
-//	new make(PodVersion podVer) {
-//		this.name 			=  podVer.name
-//		this.depends		=  podVer.depends
-//		this.dependsHash	= depends.dup.sort.join(" ")
-//		this.podVersions	= PodVersion[podVer]
-//		this.matching		= PodVersion[,]
-//		this.remove			= PodVersion[,]
-//	}
-//	
-//	Void add(PodVersion podVer) {
-//		podVersions.add(podVer)
-//	}
-//
-//	Void reset() {
-//		matching.clear.addAll(podVersions)
-//	}
-//	
-//	Bool noMatch(Depend dependsOn) {
-//		remove.clear
-//		matching.each {
-//			if (dependsOn.match(it.version).not)
-//				remove.add(it)
-//		}
-//		
-//		if (remove.size > 0) {
-//			echo("removing $remove")
-//			remove.each { matching.remove(it) }
-//			remove.clear
-//		}
-//		
-//		echo("  ==> $dependsOn -> $matching")
-//		return matching.isEmpty
-//	}
-//	
-//	PodVersion latest() {
-//		echo("lat=$matching.sort.last -> $matching.sort + $podVersions")
-//		return matching.sort.last
-//	}
-//	
-//	PodConstraint[] constraints() {
-//		c:=podVersions.first.constraints
-//		echo("con=$c")
-//		return c
-//	}
-//
-//	private Version[] versions() {
-//		podVersions.map { it.version }
-//	}
-	
-
-	
 	private PodVersion:Bool	pods
 	
 	new make(PodVersion podVer) {
@@ -143,7 +88,7 @@ const class PodVersion {
 	internal new makeForTesting(|This|in) {
 		in(this)
 		this.depend		 = Depend("${name} ${version}")
-		this.constraints = depends.map |d| { PodConstraint { it.pVersion = this; it.dependsOn = d } }
+		this.constraints = depends.map |d| { PodConstraint { it.pod = depend; it.dependsOn = d } }
 		this.dependsHash = depends.dup.sort.join(" ")
 	}
 
@@ -153,7 +98,7 @@ const class PodVersion {
 		this.version	= spec.version
 		this.depends	= spec.depends
 		this.depend		= Depend("${name} ${version}")
-		this.constraints= depends.map |d| { PodConstraint { it.pVersion = this; it.dependsOn = d } }
+		this.constraints= depends.map |d| { PodConstraint { it.pod = depend; it.dependsOn = d } }
 		this.dependsHash= depends.dup.sort.join(" ")
 	}
 
@@ -163,7 +108,7 @@ const class PodVersion {
 		this.version	= Version(metaProps["pod.version"], true)
 		this.depends	= metaProps["pod.depends"].split(';').map { Depend(it, false) }.exclude { it == null }
 		this.depend		= Depend("${name} ${version}")
-		this.constraints= depends.map |d| { PodConstraint { it.pVersion = this; it.dependsOn = d } }
+		this.constraints= depends.map |d| { PodConstraint { it.pod = depend; it.dependsOn = d } }
 		this.dependsHash= depends.dup.sort.join(" ")
 	}
 	

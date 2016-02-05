@@ -22,15 +22,33 @@ internal class Utils {
 			
 		return false
 	}
-	
-	static Str dumpUnresolved(UnresolvedPod[] unsatisfiedConstraints) {
-		if (unsatisfiedConstraints.isEmpty) return ""
-		
+
+	** Dumps the output similar to the following:
+	** 
+	** pre>
+	** Could not satisfy the following constraints:
+	** 
+	**     afPlastic (1.2, 1.3)
+	**         afIoc@2.1 ------> afPlastic 1.2
+	**         afBedSheet@1.5 -> afPlastic 1.4
+	** 	
+	**     afEfan (1.5, 1.2, 2.3)
+	**         afIoc@2.1 ------> afEfan 1.2
+	**         afBedSheet@1.5 -> afEfan 1.4
+	** <pre
+	static Str dumpUnresolved(UnresolvedPod[] unresolvedPods) {
+		if (unresolvedPods.isEmpty) return ""
+
 		output	:= "Could not satisfy the following constraints:\n"
-		maxCon	:= unsatisfiedConstraints.reduce(0) |Int size, con| { size.max(con.name.size + con.version.toStr.size + 1) } as Int
-		unsatisfiedConstraints.each {
-			availStr	:= it.available.isEmpty ? "Not found" : it.available.join(", ")
-			output		+= "${it.name}@${it.version}".justr(maxCon + 2) + " -> ${it.dependsOn} (${availStr})\n"
+		unresolvedPods.each |unresolvedPod| {
+			avail	:= unresolvedPod.available.isEmpty ? "Not found" : unresolvedPod.available.join(", ")
+			output	+= "  ${unresolvedPod.name} (${avail})"
+			max		:= unresolvedPod.committee.reduce(0) |Int size, con| {
+				size.max(con.name.size + 1 + con.version.toStr.size + 1)
+			} as Int
+			unresolvedPod.committee.each {
+				output	+= "${it.name}@${it.version} ".padr(max, '-') + "-> ${it.dependsOn}\n"
+			}
 		}
 		return output
 	}

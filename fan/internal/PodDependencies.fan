@@ -6,8 +6,8 @@ internal class PodDependencies {
 
 	internal PodResolvers		podResolvers
 	internal Str?				building
+	internal UnresolvedPod[]	unresolvedPods	:= UnresolvedPod#.emptyList 
 
-	private PodConstraint[][]	allUnsatisfied	:= PodConstraint[][,]
 	private FileCache			fileCache		:= FileCache()
 	private PodNode[]			initNodes		:= PodNode[,]
 	internal Str:PodNode		allNodes		:= Str:PodNode[:] { it.ordered = true }
@@ -101,73 +101,48 @@ internal class PodDependencies {
 
 		podMap  := Str:PodGroup[:] 
 		
-		echo(max)
-		badGroups := Int?[][,]
-		badCnt:=0
+		
+		unsatisfied	:= PodConstraint[,]
+		badGroups	:= Int?[][,]
 
 		// brute force - try every permutation of pod versions and see which ones work
 		while (fin.not) {
-			
 			badIdx := badGroups.findIndex |badGrp->Bool| {
 				cur.all |v, i->Bool| { val := badGrp[i]; return val == null || val == v }
 			}
 
-			bad := badIdx != null
-//			echo(badIdx)
-//			bad = false
-
-			if (bad) {
-				badCnt++
-
-			} else {
+			if (badIdx == null) {
 				podMap.clear
 				cur.each |v, i| { grp := nos[i][v]; podMap[grp.name] = grp }
 	
 				res := reduceDomain(podMap)
-	
+
 				if (res != null) {
-//					depGrps := groupBy(res) |PodConstraint con->Str| { con.dependsOn.name }
-//					depGrps.each |PodConstraint[] naa| {
-//					res.each |naa| {
-
-//						naa := res
-//						names  := naa.map { it.pVersion.name }
-//						badGrp := cur.map |v, i->Int?| {
-//							names.contains(nos[i][v].name) ? v : null
-//						}
-//						badGroups.add(badGrp)
-
-//					}
-					
-					// FIXME need test to prove this fails
 					depGrps := groupBy(res) |PodConstraint con->Str| { con.dependsOn.name }
 					depGrps.each |PodConstraint[] naa| {
-						names  := naa.map { it.pVersion.name }.add(naa.first.dependsOn.name)
+						names  := naa.map { it.name }.add(naa.first.dependsOn.name)
 						badGrp := cur.map |v, i->Int?| {
 							names.contains(nos[i][v].name) ? v : null
 						}
 						badGroups.add(badGrp)
-						badd := badGrp.map |Int? v, i| { v != null ? nos[i][v] : null }.exclude { it == null }
-						echo("- $badd")
-//						echo("= "+badGrp.map { it ?: "_" }.toStr)
-					}
-//					echo("- $cur")
 					
+//						badd := badGrp.map |Int? v, i| { v != null ? nos[i][v] : null }.exclude { it == null }
+//						echo("- $badd")
+//						echo("= " + badGrp.exclude{it==null}.toStr)
+					}
+					// keep the error with the least amount of unsatisfied constraints
+					if (res.size < unsatisfied.size)
+						unsatisfied = res
+
 				} else {
 					// found a working combination!
-	//				fin = true
-					sol := podMap
-						.map { it.latest }
-						.exclude |PodVersion p->Bool| { p.url == null }
-						.map |PodVersion p->PodFile| { p.toPodFile }
-					solutions.add(sol)
-					
-					s:=sol.vals.map |v, i| { [0,19,22,24,30].contains(i) ? v : null }.exclude { it==null }
-					echo(s)
-
-//					echo("+ $sol.vals")
-//					c:=cur.map |v, i| { nos[i][v].name }
-//					echo("+ $c")
+	//				fin = true	// gotta find them all!
+					solutions.add(
+						podMap
+							.map { it.latest }
+							.exclude |PodVersion p->Bool| { p.url == null }
+							.map |PodVersion p->PodFile| { p.toPodFile }
+					)
 				}
 			}
 
@@ -192,26 +167,28 @@ internal class PodDependencies {
 		}
 
 		solveTime := Duration.now - startTime
+		log.debug("          ...Done")
+		log.debug("Cached ${badGroups.size} bad dependency groups")
 		log.debug("Found ${solutions.size} solutions in ${solveTime.toLocale}")
 		
-		log.debug("$badGroups.size BAd groups AND it saved us $badCnt times")
 
+		// FIXME find the best solution
 		podFiles = solutions.first ?: Str:PodFile[:]
+		solutions.each { echo(it)  }
 
-		if (podFiles.isEmpty.not)
-			allUnsatisfied.clear
+
+		if (podFiles.isEmpty) {
+			conGrps := groupBy(unsatisfied) |PodConstraint con->Str| { con.dependsOn.name }
+			unresolvedPods = conGrps.map |PodConstraint[] cons, Str name->UnresolvedPod| {
+				UnresolvedPod {
+					it.name			= name
+					it.available	= availablePodVersions(name).map { it.version }
+					it.committee	= cons
+				}
+			}.vals
+		}
 		
 		return this
-	}
-	
-	UnresolvedPod[] unsatisfied() {
-		[,]
-//		(allUnsatisfied.min |c1, c2| { c1.size <=> c2.size } ?: PodConstraint#.emptyList).map |PodConstraint con->UnresolvedPod| { UnresolvedPod {
-//			it.name			= con.podName
-//			it.version		= con.podVersion
-//			it.dependsOn	= con.dependsOn
-//			it.available	= availablePodVersions(it.dependsOn.name).map { it.version }
-//		} }
 	}
 	
 	// see https://en.wikipedia.org/wiki/AC-3_algorithm
