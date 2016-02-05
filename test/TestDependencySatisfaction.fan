@@ -129,7 +129,30 @@ internal class TestDependencySatisfaction : Test {
 
 		verifyPodFiles("afBed 2.0, afIoc 3.0")
 	}
+
+	Void testPaths9() {
+//		this.typeof.pod.log.level = LogLevel.debug
+//		echo("###########")
+		// ensure we don't just return the first solution found, as it may not contain the latest versions 
+		addDep("afEgg 5.0", "afBed 0+")
+
+		addDep("afBed 2.1", "afIoc 1.7, afPlastic 1.3")
+		addDep("afBed 2.2", "afIoc 1.6, afPlastic 1.2")
+		addDep("afBed 2.3", "afIoc 1.5, afPlastic 1.1")
+
+		addDep("afIoc 1.5")
+		addDep("afIoc 1.6")
+		addDep("afIoc 1.7")
+		addDep("afPlastic 1.1")
+		addDep("afPlastic 1.2")
+		addDep("afPlastic 1.3")
 		
+		satisfyDependencies("afEgg 5.0")
+
+		// I admit there's a bit of luck to the ordering of internal map, as to which solution would get picked first
+		verifyPodFiles("afEgg 5.0, afBed 2.1, afIoc 1.7, afPlastic 1.3")
+	}
+
 	private Void satisfyDependencies(Str pods) {
 		pods.split(',').map { Depend(it) }.each |Depend d| {
 			podDepends.addPod(d.name) {
