@@ -85,9 +85,9 @@ internal class PodDependencies {
 		podPermsStr	:= podPerms.toLocale
 		grpPermsStr	:= grpPerms.toLocale
 		maxPermSize	:= (podPermsStr.size + 11).max(grpPermsStr.size + 13)
-		log.debug("Calculated "   + podPermsStr.justr(maxPermSize - 11) + " dependency permutations")
-		log.debug("Collapsed to " + grpPermsStr.justr(maxPermSize - 13) + " dependency permutations")
-		log.debug("Problem space stated in ${(Duration.now - startTime).toLocale}")
+		log.debug("Calculated "   + podPermsStr.justr(maxPermSize - 11) + " dependency pod permutations")
+		log.debug("Collapsed to " + grpPermsStr.justr(maxPermSize - 13) + " dependency group permutations")
+		log.debug("Stated problem space in ${(Duration.now - startTime).toLocale}")
 		log.debug("Solving...")
 		startTime = Duration.now
 
@@ -99,26 +99,76 @@ internal class PodDependencies {
 		fin := false
 		solutions := [Str:PodFile][,]
 
-		podMap  := Str:PodGroup[:]
+		podMap  := Str:PodGroup[:] 
+		
+		echo(max)
+		badGroups := Int?[][,]
+		badCnt:=0
 
 		// brute force - try every permutation of pod versions and see which ones work
 		while (fin.not) {
-			podMap.clear
-			cur.each |v, i| { grp := nos[i][v]; podMap[grp.name] = grp }
+			
+			badIdx := badGroups.findIndex |badGrp->Bool| {
+				cur.all |v, i->Bool| { val := badGrp[i]; return val == null || val == v }
+			}
 
-			res := reduceDomain(podMap)
+			bad := badIdx != null
+//			echo(badIdx)
+//			bad = false
 
-			if (res != null) {
-//				allUnsatisfied.add(res.unique)	// FIXME 2 secs here!
+			if (bad) {
+				badCnt++
 
 			} else {
-				// found a working combination!
-//				fin = true
-				solutions.add(podMap
-					.map { it.latest }
-					.exclude |PodVersion p->Bool| { p.url == null }
-					.map |PodVersion p->PodFile| { p.toPodFile }
-				)
+				podMap.clear
+				cur.each |v, i| { grp := nos[i][v]; podMap[grp.name] = grp }
+	
+				res := reduceDomain(podMap)
+	
+				if (res != null) {
+//					depGrps := groupBy(res) |PodConstraint con->Str| { con.dependsOn.name }
+//					depGrps.each |PodConstraint[] naa| {
+//					res.each |naa| {
+
+//						naa := res
+//						names  := naa.map { it.pVersion.name }
+//						badGrp := cur.map |v, i->Int?| {
+//							names.contains(nos[i][v].name) ? v : null
+//						}
+//						badGroups.add(badGrp)
+
+//					}
+					
+					// FIXME need test to prove this fails
+					depGrps := groupBy(res) |PodConstraint con->Str| { con.dependsOn.name }
+					depGrps.each |PodConstraint[] naa| {
+						names  := naa.map { it.pVersion.name }.add(naa.first.dependsOn.name)
+						badGrp := cur.map |v, i->Int?| {
+							names.contains(nos[i][v].name) ? v : null
+						}
+						badGroups.add(badGrp)
+						badd := badGrp.map |Int? v, i| { v != null ? nos[i][v] : null }.exclude { it == null }
+						echo("- $badd")
+//						echo("= "+badGrp.map { it ?: "_" }.toStr)
+					}
+//					echo("- $cur")
+					
+				} else {
+					// found a working combination!
+	//				fin = true
+					sol := podMap
+						.map { it.latest }
+						.exclude |PodVersion p->Bool| { p.url == null }
+						.map |PodVersion p->PodFile| { p.toPodFile }
+					solutions.add(sol)
+					
+					s:=sol.vals.map |v, i| { [0,19,22,24,30].contains(i) ? v : null }.exclude { it==null }
+					echo(s)
+
+//					echo("+ $sol.vals")
+//					c:=cur.map |v, i| { nos[i][v].name }
+//					echo("+ $c")
+				}
 			}
 
 			// permutate through all versions of pods
@@ -143,6 +193,8 @@ internal class PodDependencies {
 
 		solveTime := Duration.now - startTime
 		log.debug("Found ${solutions.size} solutions in ${solveTime.toLocale}")
+		
+		log.debug("$badGroups.size BAd groups AND it saved us $badCnt times")
 
 		podFiles = solutions.first ?: Str:PodFile[:]
 
@@ -153,19 +205,20 @@ internal class PodDependencies {
 	}
 	
 	UnresolvedPod[] unsatisfied() {
-		(allUnsatisfied.min |c1, c2| { c1.size <=> c2.size } ?: PodConstraint#.emptyList).map |PodConstraint con->UnresolvedPod| { UnresolvedPod {
-			it.name			= con.podName
-			it.version		= con.podVersion
-			it.dependsOn	= con.dependsOn
-			it.available	= availablePodVersions(it.dependsOn.name).map { it.version }
-		} }
+		[,]
+//		(allUnsatisfied.min |c1, c2| { c1.size <=> c2.size } ?: PodConstraint#.emptyList).map |PodConstraint con->UnresolvedPod| { UnresolvedPod {
+//			it.name			= con.podName
+//			it.version		= con.podVersion
+//			it.dependsOn	= con.dependsOn
+//			it.available	= availablePodVersions(it.dependsOn.name).map { it.version }
+//		} }
 	}
 	
 	// see https://en.wikipedia.org/wiki/AC-3_algorithm
 	private PodConstraint[]? reduceDomain(Str:PodGroup podGroups) {
 		podGroups.each { it.reset }
 		worklist := (PodConstraint[]) podGroups.reduce(PodConstraint[,]) |PodConstraint[] cons, grp->PodConstraint[]| { cons.addAll(grp.constraints) }
-//		allCons	 := worklist.dup
+		allCons	 := worklist.dup
 		unsatisfied	:= null as PodConstraint[] 
 
 		while (worklist.isEmpty.not) {
@@ -173,18 +226,12 @@ internal class PodDependencies {
 			nod := podGroups[con.dependsOn.name]
 
 			if (nod == null || nod.noMatch(con.dependsOn)) {
-//				// find out who else conflicted / removed the versions we wanted
-//				all := allCons.findAll { it.dependsOn.name == con.dependsOn.name }.insert(0, con).unique
-//				if (unsatisfied == null)
-//					unsatisfied = PodConstraint[,]
-//				// collect ALL the errors, so we can report on the solution with the smallest number of errs (if need be)
-//				unsatisfied.addAll(all)
-				
-				unsatisfied = PodConstraint#.emptyList
+				// find out who else conflicted / removed the versions we wanted
+				// collect ALL the errors, so we can report on the solution with the smallest number of errs (if need be)
+				unsatisfied = allCons.findAll { it.dependsOn.name == con.dependsOn.name }
 				worklist.clear
 			}
 		}
-
 		return unsatisfied
 	}
 	
@@ -206,7 +253,15 @@ internal class PodDependencies {
 				it.name = dependency.name
 			}
 		}.addPodVersions(podResolvers.resolve(dependency))
-	}	
+	}
+	
+	static Obj:Obj[] groupBy(Obj[] list, |Obj item, Int index->Obj| keyFunc) {
+		list.reduce(Obj:Obj[][:] { it.ordered = true}) |Obj:Obj[] bucketList, val, i| {
+			key := keyFunc(val, i)
+			bucketList.getOrAdd(key) { Obj[,] }.add(val)
+			return bucketList
+		}
+	}
 }
 
 

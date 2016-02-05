@@ -27,6 +27,7 @@ internal class UpdateCmd : FpmCmd {
 		if (toUpdate.isEmpty)
 			return log.info("All pods are up to date!")
 
+		// TODO only use fanr pods that are greater than our current env 
 //		toUpdate.each |podFile| {
 //			log.info("  Downloading ${podFile} from ${podFile.url.host}")
 //
