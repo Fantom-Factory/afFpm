@@ -34,7 +34,7 @@ abstract const class FpmEnv : Env {
 
 		this.fpmConfig	= fpmConfig
 		this.fileDirs	= fpmConfig.podDirs.dup.addAll(fpmConfig.workDirs).add(fpmConfig.homeDir)
-		podDepends		:= PodDependencies(fpmConfig, f4PodFiles)
+		podDepends		:= PodDependencies(fpmConfig, f4PodFiles, log)
 
 		try {
 			findTarget(podDepends)

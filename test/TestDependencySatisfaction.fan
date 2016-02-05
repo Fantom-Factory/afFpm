@@ -6,7 +6,7 @@ internal class TestDependencySatisfaction : Test {
 
 	override Void setup() {
 		podDependsCache	= PodResolverCache()
-		podDepends = PodDependencies(FpmConfig(), File#.emptyList) {
+		podDepends = PodDependencies(FpmConfig(), File#.emptyList, typeof.pod.log) {
 			it.podResolvers.resolvers = [podDependsCache]
 		}
 	}
