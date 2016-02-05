@@ -16,6 +16,15 @@ const class PodFile {
 	File file() {
 		url.toFile
 	}
+	
+	** This pod versions expressed as a dependency.
+	** Convenience for:
+	** 
+	**   syntax: fantom
+	**   Depend("$name $version")
+	Depend asDepend() {
+		Depend("$name $version")
+	}
 
 	static new makeFromFile(File file) {
 		zip	:= Zip.read(file.in)

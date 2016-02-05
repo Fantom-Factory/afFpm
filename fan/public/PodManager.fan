@@ -52,7 +52,10 @@ const class PodManager {
 	}
 
 	PodFile[] findAllPodFiles(Str query) {
-		PodResolvers(fpmConfig, File#.emptyList, FileCache()).resolve(Depend(query)).sort.map { it.toPodFile }
+		query = query.replace("@", " ")
+		if (query.contains(" ").not)
+			query += " 0+" 
+		return PodResolvers(fpmConfig, File#.emptyList, FileCache()).resolve(Depend(query)).sort.map { it.toPodFile }
 	}
 	
 	private PodFile _publishPod(PodFile podFile, Str? repo := null) {
