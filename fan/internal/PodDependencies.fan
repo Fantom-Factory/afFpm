@@ -172,11 +172,28 @@ internal class PodDependencies {
 		log.debug("Found ${solutions.size} solutions in ${solveTime.toLocale}")
 		
 
-		// FIXME find the best solution
-		podFiles = solutions.first ?: Str:PodFile[:]
-		solutions.each { echo(it)  }
-
-
+		// find the best solution -> the one with the greatest number of higher pod versions
+		if (solutions.size > 0) {
+			// rank all the pod versions
+			podRanks := Str:Version[][:]
+			solutions.each |solution| {
+				solution.each |PodFile podFile, name| {
+					podRanks.getOrAdd(name) { Version[,] }.add(podFile.version)
+				}
+			}
+			podRanks.each { it.sortr }	// sort() sorts in place
+			
+			// score each solution according to the pod ranks
+			solRanks := solutions.map |solution->Obj| {
+				// we could normalise the rank index for each pod to 1 -> 10
+				// but pfft - why bother complicate things further!?
+				score := solution.reduce(0) |Int score, PodFile pod->Int| { score + podRanks[pod.name].index(pod.version) }
+				return [score, solution]
+			} as Obj[][]
+			podFiles = solRanks.min |s1, s2->Int| { s1[0] <=> s2[0] }.last
+		}
+		
+		// convert errors to UnresolvedPods
 		if (podFiles.isEmpty) {
 			conGrps := groupBy(unsatisfied) |PodConstraint con->Str| { con.dependsOn.name }
 			unresolvedPods = conGrps.map |PodConstraint[] cons, Str name->UnresolvedPod| {
