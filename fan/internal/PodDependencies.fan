@@ -66,6 +66,11 @@ internal class PodDependencies {
 	}
 	
 	This satisfyDependencies() {
+		// turn off debug when we're analysing ourself!
+		oldLogLevel := log.level
+		if (targetPod.startsWith("afFpm"))
+			log.level = LogLevel.info
+		
 		title := "Fantom Pod Manager ${typeof.pod.version}"
 		log.debug(title)
 		log.debug("".padl(title.size, '='))
@@ -73,6 +78,8 @@ internal class PodDependencies {
 
 		allNodes.vals.each { expandNode(it, Depend[,]) }
 
+		// there's an opportunity for podPerms to overflow here! (Scary!) 
+		// but there's no Err, the number just wraps round to zero
 		podPerms  := (Int) allNodes.vals.reduce(1) |Int tot, node| { tot * node.podVersions.size }
 		totalVers := (Int) allNodes.vals.reduce(0) |Int tot, node| { tot + node.podVersions.size }
 		log.debug("Found ${totalVers.toLocale} versions of ${allNodes.size.toLocale} different pods")
@@ -205,6 +212,7 @@ internal class PodDependencies {
 			}.vals
 		}
 		
+		log.level = oldLogLevel
 		return this
 	}
 	

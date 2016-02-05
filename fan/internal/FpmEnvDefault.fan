@@ -11,7 +11,8 @@ internal const class FpmEnvDefault : FpmEnv {
 		f4PodFiles	:= f4PodPaths.map { toFile(it) }
 		fpmEnv 		:= makeManual(fpmConfig, f4PodFiles)
 		
-		log.debug(fpmEnv.dump)
+		if (fpmEnv.targetPod.startsWith("afFpm").not)
+			log.debug(fpmEnv.dump)
 
 		if (fpmEnv.unresolvedPods.size > 0)
 			log.warn(Utils.dumpUnresolved(fpmEnv.unresolvedPods))

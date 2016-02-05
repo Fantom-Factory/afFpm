@@ -1,6 +1,8 @@
 using fanr
 
 internal class PodResolvers {
+	private FileCache 	fileCache
+	private File[]		podFiles
 	FpmConfig			fpmConfig
 	PodResolver[] 		resolvers
 	Depend:PodVersion[]	depends		:= Depend:PodVersion[][:]
@@ -17,12 +19,15 @@ internal class PodResolvers {
 			).addAll(
 				fpmConfig.workDirs.map { PodResolverPath(it + `lib/fan/`, fileCache) }
 			)
-		this.fpmConfig = fpmConfig
+		this.fpmConfig	= fpmConfig
+		this.podFiles	= podFiles
+		this.fileCache	= fileCache
 	}
 	
 	Void addRemoteRepos() {
+		localResolvers := PodResolvers(fpmConfig, podFiles, fileCache)
 		resolvers.addAll(
-			fpmConfig.fanrRepos.keys.map { PodResolverFanrRemote(fpmConfig, it, 5) }
+			fpmConfig.fanrRepos.keys.map { PodResolverFanrRemote(fpmConfig, it, 5, localResolvers) }
 		)
 	}
 	
@@ -39,6 +44,7 @@ internal class PodResolvers {
 			}
 			
 			// naa, lets do the full resolve hog
+			// TODO when 'unique-ing' ensure local podVersions trump remote ones 
 			return resolvers.map { it.resolve(dependency) }.flatten.unique
 		}
 	}
@@ -177,19 +183,29 @@ internal class PodResolverFanrRemote : PodResolver {
 	Repo	repo
 	Str		repoName
 	Int		numVersions
+	PodResolvers localResolvers
 
-	new make(FpmConfig fpmConfig, Str repoName, Int numVersions) {
-		this.repo 		 = fpmConfig.fanrRepo(repoName)
-		this.repoName	 = repoName
-		this.numVersions = numVersions
+	new make(FpmConfig fpmConfig, Str repoName, Int numVersions, PodResolvers localResolvers) {
+		this.repo 		 	= fpmConfig.fanrRepo(repoName)
+		this.repoName	 	= repoName
+		this.numVersions 	= numVersions
+		this.localResolvers	= localResolvers
 	}
 
 	override PodVersion[] resolve(Depend dependency) {
-		echo("Querying ${repoName} for ${dependency}")
+		latest := localResolvers.resolve(dependency).sort.last
+		echo("Querying ${repoName} for ${dependency} ( > $latest.version)")
 		specs := repo.query(dependency.toStr, numVersions)
-		return specs.map |PodSpec spec->PodVersion| {
-			PodVersion(`fanr://${repoName}/${dependency}`, spec)
-		}
+		vers  := specs
+			.findAll |PodSpec spec->Bool| {
+				spec.version > latest.version
+			}
+			.map |PodSpec spec->PodVersion| {
+				PodVersion(`fanr://${repoName}/${dependency}`, spec)
+			}.sort as PodVersion[]
+		if (vers.size > 0)
+			echo("  Found ${dependency.name} " + vers.join(", ") { it.version.toStr })
+		return vers
 	}
 
 	// only used for local resolution
