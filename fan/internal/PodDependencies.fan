@@ -67,9 +67,13 @@ internal class PodDependencies {
 	}
 	
 	This satisfyDependencies() {
+		// TODO have some sort of trace / verbose flag where we show *everything*!
+		if (targetPod == null)
+			return this
+		
 		// turn off debug when we're analysing ourself!
 		oldLogLevel := log.level
-		if (targetPod.startsWith("afFpm"))
+		if (targetPod != null && targetPod.startsWith("afFpm"))
 			log.level = LogLevel.info
 		
 		title := "Fantom Pod Manager ${typeof.pod.version}"
