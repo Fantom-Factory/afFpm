@@ -14,7 +14,7 @@ class Build : BuildPod {
 		]
 
 		depends = [
-			"sys        1.0.68 - 1.0",
+			"sys        1.0.67 - 1.0",
 			"build      1.0.67 - 1.0",
 			"fanr       1.0.67 - 1.0",
 			"util       1.0.67 - 1.0",
