@@ -13,7 +13,8 @@
 ** 
 ** Creates a targeted environment for a pod
 abstract const class FpmEnv : Env {
-	private static const Log 	log 	:= FpmEnv#.pod.log
+	@NoDoc	// so F4 can set it's own
+	const Log 				log 	:= FpmEnv#.pod.log
 
 	const Err?				error				
 	const FpmConfig			fpmConfig
@@ -79,7 +80,23 @@ abstract const class FpmEnv : Env {
 
 		if (Env.cur.vars["FPM_ALL_PODS"]?.toBool(false) ?: false) {
 			log.warn("FPM_ALL_PODS = true; defaulting to latest pod versions")
-			this.allPodFiles = podDepends.podResolvers.resolveAll(allPodFiles.rw)			
+			this.allPodFiles = podDepends.podResolvers.resolveAll(allPodFiles.rw)
+		}
+		
+		// ---- dump info to logs ----
+		
+		if (targetPod.startsWith("afFpm").not)
+			log.debug(dump)
+
+		if (unresolvedPods.size > 0) {
+			log.warn(Utils.dumpUnresolved(unresolvedPods))
+			// FIXME we should use the semi-resolved pods
+			this.allPodFiles = podDepends.podResolvers.resolveAll(allPodFiles.rw)
+		}
+		
+		if (error != null) {
+			log.err  (error.toStr)
+			log.debug(error.traceToStr)
 		}
 	}
 	

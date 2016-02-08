@@ -1,7 +1,6 @@
 using build
 
 internal const class FpmEnvDefault : FpmEnv {
-	private static const Log 	log 	:= FpmEnvDefault#.pod.log
 
 	static new make() {
 		fpmConfig	:= FpmConfig()
@@ -10,17 +9,6 @@ internal const class FpmEnvDefault : FpmEnv {
 		f4PodPaths	:= Env.cur.vars["F4PODENV_POD_LOCATIONS"]?.trimToNull?.split(File.pathSep.chars.first, true) ?: Str#.emptyList
 		f4PodFiles	:= f4PodPaths.map { toFile(it) }
 		fpmEnv 		:= makeManual(fpmConfig, f4PodFiles)
-		
-		if (fpmEnv.targetPod.startsWith("afFpm").not)
-			log.debug(fpmEnv.dump)
-
-		if (fpmEnv.unresolvedPods.size > 0)
-			log.warn(Utils.dumpUnresolved(fpmEnv.unresolvedPods))
-		
-		if (fpmEnv.error != null) {
-			log.err  (fpmEnv.error.toStr)
-			log.debug(fpmEnv.error.traceToStr)
-		}
 
 		return fpmEnv
 	}
