@@ -1,6 +1,6 @@
 
 internal class PodDependencies {
-	private const Log			log				:= PodDependencies#.pod.log
+	private const Log			log
 			Str?				targetPod
 			Str:PodFile			podFiles		:= Str:PodFile[:]
 
@@ -143,7 +143,7 @@ internal class PodDependencies {
 //						echo("= " + badGrp.exclude{it==null}.toStr)
 					}
 					// keep the error with the least amount of unsatisfied constraints
-					if (res.size < unsatisfied.size)
+					if (unsatisfied.isEmpty || res.size < unsatisfied.size)
 						unsatisfied = res
 
 				} else {
@@ -212,7 +212,7 @@ internal class PodDependencies {
 				UnresolvedPod {
 					it.name			= name
 					it.available	= availablePodVersions(name).map { it.version }
-					it.committee	= cons
+					it.committee	= cons.sort
 				}
 			}.vals
 		}
