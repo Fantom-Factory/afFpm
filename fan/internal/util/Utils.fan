@@ -46,10 +46,10 @@ internal class Utils {
 			avail	:= unresolvedPod.available.isEmpty ? "Not found" : unresolvedPod.available.join(", ")
 			output	+= "  ${unresolvedPod.name} (${avail})\n"
 			max		:= unresolvedPod.committee.reduce(0) |Int size, con| {
-				size.max(con.name.size + 1 + con.version.toStr.size + 1)
+				size.max(con.pod.name.size + 1 + con.pod.version.toStr.size + 1)
 			} as Int
 			unresolvedPod.committee.each {
-				output	+= "    " + "${it.name}@${it.version} ".padr(max, '-') + "-> ${it.dependsOn}\n"
+				output	+= "    " + "${it.pod.name}@${it.pod.version} ".padr(max, '-') + "-> ${it.dependsOn}\n"
 			}
 		}
 		return output

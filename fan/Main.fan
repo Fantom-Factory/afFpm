@@ -1,6 +1,6 @@
 using util
 
-class Main {
+internal class Main {
 	
 	Void main(Str[] args) {
 		

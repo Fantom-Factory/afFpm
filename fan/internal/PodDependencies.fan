@@ -132,7 +132,7 @@ internal class PodDependencies {
 				if (res != null) {
 					depGrps := groupBy(res) |PodConstraint con->Str| { con.dependsOn.name }
 					depGrps.each |PodConstraint[] naa| {
-						names  := naa.map { it.name }.add(naa.first.dependsOn.name)
+						names  := naa.map { it.pod.name }.add(naa.first.dependsOn.name)
 						badGrp := cur.map |v, i->Int?| {
 							names.contains(nos[i][v].name) ? v : null
 						}

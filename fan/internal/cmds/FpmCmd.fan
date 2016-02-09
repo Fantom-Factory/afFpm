@@ -36,7 +36,7 @@ internal abstract class FpmCmd : AbstractMain {
 	}
 }
 
-const class StdLogger : Log {
+internal const class StdLogger : Log {
 	private const AtomicRef lead := AtomicRef("")
 
 	new make() : super.make("StdLogger", false) { }

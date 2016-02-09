@@ -1,39 +1,26 @@
 
+** Models a dependency from one pod to another.
 const class PodConstraint {
+	
+	** The pod with the dependency. 
+	** This is always a single, simple version, e.g. 'foo 1.2'
 	const Depend	pod
+	
+	** The dependency. May be multiple and complex, e.g. 'bar 0.2-0.8, 1.1.2, 1.6+'
 	const Depend	dependsOn
-
-	Str name() {
-		pod.name
-	}
-
-	Version version() {
-		pod.version
-	}
 
 	@NoDoc
 	override Str toStr() {
-		"${name}@${version} -> ${dependsOn}"
+		"${pod.name}@${pod.version} -> ${dependsOn}"
 	}
 	
+	@NoDoc
 	override Int compare(Obj that) {
 		pod.name <=> (that as PodConstraint).pod.name
 	}
 	
+	@NoDoc
  	new make(|This|? in) { in?.call(this) }
 }
 
-const class UnresolvedPod {
-	const Str 				name		// what can't be resolved
-	const Version[]			available
-	const PodConstraint[]	committee	// 'cos they can't decide the outcome!
-	
- 	new make(|This| in) { in(this) }
-
-	@NoDoc
-	override Str toStr() {
-		availStr := available.isEmpty ? "Not found" : available.join(", ")
-		return "Could not resolve ${name} (${availStr})\n" + committee.join("") { "  ${it}\n" }
-	}
-}
 

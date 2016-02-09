@@ -1,6 +1,6 @@
 
 ** Generates snippets of source code, often used to report errors.
-const class SrcCodeSnippet {
+internal const class SrcCodeSnippet {
 	
 	** An arbitrary uri of where the source code originated from. 
 	const Uri	srcCodeLocation

@@ -1,23 +1,32 @@
 using fanr
 
+** Represents configuration as parsed from a hierarchy of 'fpm.props' files.
 const class FpmConfig {
 	private static const Log 	log := FpmConfig#.pod.log
 
+	** The Fantom installation.
 	const File 		homeDir
 
+	** The temp directory.
 	const File 		tempDir
 
-	** homeDir is always the last entry, so this list is never empty
+	** A list of working directories.
+	** The 'workDir' as returned by 'FpmEnv' is is always first item in this list.
+	** 'homeDir' is always the last entry in the list, so it is never empty.
 	const File[]	workDirs
 	
+	** A list of directories where pods are picked up from.
 	const File[]	podDirs
 	
+	** A map of named local file system repositories.
 	const Str:File 	fileRepos
 
+	** A map of named remote fanr repositories.
 	const Str:Uri	fanrRepos
 
 	private new makePrivate(|This|in) { in(this) }
 	
+	@NoDoc
 	static new make() {
 		makeFromDirs(File(`./`), Env.cur.homeDir, Env.cur.vars["FAN_ENV_PATH"])
 	}
@@ -104,7 +113,23 @@ const class FpmConfig {
 		throw ArgErr("Cound not find remote repo with name '${repoName}'. Available repos: " + allRepoNames.join(","))
 	}
 
-	** Dumps debug output to a string.
+	** Dumps debug output to a string. The string will look similar to:
+	** 
+	** pre>
+	** FPM Environment:
+	** 
+	**    Target Pod : shStackHubAdmin 0+
+	**    Home Dir   : C:\Apps\fantom-1.0.68
+	**    Work Dirs  : C:\Repositories\Fantom, C:\Apps\fantom-1.0.68
+	**    Pod Dirs   : C:\Projects\StackHub\stackhub-admin\lib
+	**    Temp Dir   : C:\Repositories\Fantom\temp
+	**    File Repos :
+	**       default = C:\Repositories\Fantom\repo-default
+	**       release = C:\Repositories\Fantom\repo-release
+	**    Fanr Repos :
+	** fantomFactory = http://pods.fantomfactory.org/fanr/
+	**       repo302 = http://repo.status302.com/fanr/
+	** <pre
 	Str dump() {
 		str := ""
 		str += "   Home Dir   : ${homeDir.osPath}\n"
