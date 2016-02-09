@@ -1,5 +1,5 @@
 
-** Provides a targeted environment for a pod. 
+** Provides a targeted environment for a specific pod. 
 ** Always provides access to all the libs in HomeDir and WorkDirs as a fail safe! (
 ** 
 ** Has to cater for 
@@ -16,20 +16,33 @@ abstract const class FpmEnv : Env {
 	@NoDoc	// so F4 can set it's own
 	const Log 				log 	:= FpmEnv#.pod.log
 
-	const Err?				error				
+	** The error, if any, encountered when resolving pods for the target environment.
+	const Err?				error
+	
+	** The config used for this environment.
 	const FpmConfig			fpmConfig
+	
+	** A map of dependent pods that have been resolved specifically for the 'targetPod'. 
 	const Str:PodFile		resolvedPodFiles
+	
+	** A map of all pods used in this environment.
+	** Similar to 'resolvedPodFiles' but additionally includes all pods from 'podDirs', 'workDirs', and the 'homeDir'.  
 	const Str:PodFile		allPodFiles
 	
+	** The name of the pod this environment is targeted to.
 	const Str				targetPod
+	
+	** A list of unsatisfied pods for this targeted environment.
 	const UnresolvedPod[]	unresolvedPods
 	
 	private const File[]	fileDirs
 	
+	@NoDoc
 	static new make() {
 		FpmEnvDefault()
 	}
 
+	@NoDoc
 	new makeManual(FpmConfig fpmConfig, File[] f4PodFiles, |This|? in := null) : super.make() {
 		in?.call(this)	// can't do field null comparison without an it-block ctor
 
@@ -99,33 +112,33 @@ abstract const class FpmEnv : Env {
 			log.debug(error.traceToStr)
 		}
 	}
-	
-	**
-	** Working directory is always first item in `path`.
-	**
+
+	@NoDoc
 	override File workDir() {
 		fpmConfig.workDirs.first
 	}
 
-	**
-	** Temp directory is always under `workDir`.
-	**
+	@NoDoc
 	override File tempDir() {
 		fpmConfig.tempDir
 	}
 	
+	@NoDoc
 	override Str[] findAllPodNames() {
 		allPodFiles.keys 
 	}
 
+	@NoDoc
 	override File? findPodFile(Str podName) {
 		allPodFiles.get(podName)?.file
 	}
 
+	@NoDoc
 	override File[] findAllFiles(Uri uri) {
 		fileDirs.map { it + uri }.exclude |File f->Bool| { f.exists.not }
 	}
 
+	@NoDoc
 	override File? findFile(Uri uri, Bool checked := true) {
 		if (uri.isPathAbs) throw ArgErr("Uri must be rel: $uri")
 		return fileDirs.eachWhile |dir| {
@@ -137,7 +150,7 @@ abstract const class FpmEnv : Env {
 	@NoDoc
 	internal abstract Void findTarget(PodDependencies podDepends)
 		
-	** Dumps debug output to a string.
+	** Dumps the FPM environment to a string. This includes the FPM Config and a list of resolved pods.
 	Str dump() {
 		str	:= "\n\n"
 		str += "FPM Environment:\n"

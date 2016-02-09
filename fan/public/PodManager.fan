@@ -1,5 +1,6 @@
 
-// The public API - manager is a shite name though!
+** (Service) -
+** The public API - manager is a shite name though!
 const class PodManager {
 	const Log 			log 			:= PodManager#.pod.log
 
@@ -7,6 +8,7 @@ const class PodManager {
 
 	private const CorePods	corePods	:= CorePods()
 
+	@NoDoc
 	new make(|This|? in := null) {
 		in?.call(this)
 		if (fpmConfig == null)

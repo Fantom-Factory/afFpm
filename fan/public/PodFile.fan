@@ -1,5 +1,5 @@
 
-** Represents a pod file.
+** Represents a pod version with a backing file.
 const class PodFile {
 	** The name of this pod.
 	const Str		name
@@ -8,25 +8,12 @@ const class PodFile {
 	const Version	version
 	
 	** Where the pod is located.
+	** May have a local 'file:' or a remote 'http:' scheme.
 	const Uri		url
 	
 	internal new make(|This|in) { in(this) }
 	
-	** The backing file of this pod.
-	File file() {
-		url.toFile
-	}
-	
-	** This pod versions expressed as a dependency.
-	** Convenience for:
-	** 
-	**   syntax: fantom
-	**   Depend("$name $version")
-	Depend asDepend() {
-		Depend("$name $version")
-	}
-
-	static new makeFromFile(File file) {
+	internal static new makeFromFile(File file) {
 		zip	:= Zip.read(file.in)
 		try {
 			File? 		entry
@@ -43,8 +30,28 @@ const class PodFile {
 			zip.close
 		}	
 	}
+	
+	** The backing file for this pod.
+	** Convenience for 'podFile.url.toFile'.
+	File file() {
+		url.toFile
+	}
+	
+	** This pod version expressed as a dependency.
+	** Convenience for:
+	** 
+	**   syntax: fantom
+	**   Depend("$name $version")
+	Depend asDepend() {
+		Depend("$name $version")
+	}
 
+	@NoDoc
 	override Str toStr() 			{ "$name $version" }
+	
+	@NoDoc
 	override Int hash() 			{ file.hash }
+	
+	@NoDoc
 	override Bool equals(Obj? that)	{ file == (that as PodFile)?.file }
 }

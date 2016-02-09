@@ -1,5 +1,5 @@
 
-const class CompilationErr : Err, SrcCodeErr {
+internal const class CompilationErr : Err, SrcCodeErr {
 	const override SrcCodeSnippet 	srcCode
 	const override Int 				errLineNo
 	const override Int 				linesOfPadding
@@ -34,7 +34,7 @@ const class CompilationErr : Err, SrcCodeErr {
 }
 
 ** A mixin for Errs that report errors in source code.
-const mixin SrcCodeErr {
+internal const mixin SrcCodeErr {
 	
 	** The source code where the error occurred.
 	abstract SrcCodeSnippet	srcCode()
