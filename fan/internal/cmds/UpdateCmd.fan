@@ -30,7 +30,7 @@ internal class UpdateCmd : FpmCmd {
 			if (buildPod == null) {
 				return log.err("Could not find / load 'build.fan'")
 			}
-			podDepends.setBuildTarget(buildPod.podName, buildPod.version, buildPod.depends.map { Depend(it, false) }.exclude { it == null }, false)
+			podDepends.setBuildTargetFromBuildPod(buildPod, false)
 		}		
 
 		

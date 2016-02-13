@@ -1,4 +1,3 @@
-using build
 using util
 
 internal class PublishCmd : FpmCmd {
@@ -11,8 +10,10 @@ internal class PublishCmd : FpmCmd {
 	
 	new make() { }
 
-	new makeFromBuild(BuildPod buildPod) {
-		this.pod = buildPod.outPodDir.plusName("${buildPod.podName}.pod").toFile
+	new makeFromBuild(Obj buildPod) {
+		podName		:= (Str) buildPod->podName 
+		outPodDir	:= (Uri) buildPod->outPodDir 
+		this.pod = outPodDir.plusName("${podName}.pod").toFile
 	}
 
 	override Void go() {

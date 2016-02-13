@@ -1,4 +1,3 @@
-using build
 
 internal const class FpmEnvDefault : FpmEnv {
 
@@ -33,7 +32,7 @@ internal const class FpmEnvDefault : FpmEnv {
 		if (fpmArgs != null) {
 			buildPod := getBuildPod(cmdArgs.first)		
 			if (buildPod != null) {
-				podDepends.setBuildTarget(buildPod.podName, buildPod.version, buildPod.depends.map { Depend(it, false) }.exclude { it == null }, true )
+				podDepends.setBuildTargetFromBuildPod(buildPod, true)
 				return
 			}
 
@@ -53,13 +52,13 @@ internal const class FpmEnvDefault : FpmEnv {
 	
 				// make a HUGE assumption here that the build script is the one in the current directory
 				// FIXME ask Brian how to get the running script file location
-				if (mainMethod == BuildScript#main) {
-					buildPod := getBuildPod("build.fan")		
-					if (buildPod != null) {
-						podDepends.setBuildTarget(buildPod.podName, buildPod.version, buildPod.depends.map { Depend(it, false) }.exclude { it == null }, true )
-						return
-					}
-				}
+//				if (mainMethod == BuildScript#main) {
+//					buildPod := getBuildPod("build.fan")		
+//					if (buildPod != null) {
+//						podDepends.setBuildTarget(buildPod.podName, buildPod.version, buildPod.depends.map { Depend(it, false) }.exclude { it == null }, true )
+//						return
+//					}
+//				}
 				
 				podDepend := Depend("${mainMethod.parent.pod.name} 0+")
 				podDepends.setRunTarget(podDepend)
@@ -91,7 +90,8 @@ internal const class FpmEnvDefault : FpmEnv {
 		return Depend(dependStr, true)
 	}
 
-	static BuildPod? getBuildPod(Str? filePath) {
+	** Returns build::BuildPod but we can't be arsed with a dependency on build
+	static Obj? getBuildPod(Str? filePath) {
 		try {
 			if (filePath == null)
 				return null
@@ -100,10 +100,11 @@ internal const class FpmEnvDefault : FpmEnv {
 				return null
 			
 			// use Plastic because the default pod name when running a script (e.g. 'build_0') is already taken == Err
-			obj := PlasticCompiler().compileCode(file.readAllStr).types.find { it.fits(BuildPod#) }?.make
+			buildPodType := Type.find("build::BuildPod")
+			obj := PlasticCompiler().compileCode(file.readAllStr).types.find { it.fits(buildPodType) }?.make
 			
 			// if it's not a BuildPod instance, return null - e.g. it may just be a BuildScript instance!
-			return obj as BuildPod
+			return obj
 		} catch
 			return null
 	}

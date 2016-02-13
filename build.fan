@@ -3,7 +3,7 @@ using build
 class Build : BuildPod {
 
 	new make() {
-		podName = "afFpm"
+		podName = "afFpmDev"
 		summary = "Fantom Pod Manager"
 		version = Version("0.0.1.002")
 
@@ -15,7 +15,6 @@ class Build : BuildPod {
 
 		depends = [
 			"sys        1.0.67 - 1.0",
-			"build      1.0.67 - 1.0",
 			"fanr       1.0.67 - 1.0",
 			"util       1.0.67 - 1.0",
 			"concurrent 1.0.67 - 1.0",			
