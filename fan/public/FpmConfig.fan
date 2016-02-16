@@ -147,10 +147,10 @@ const class FpmConfig {
 		maxDir = fanrRepos.keys.reduce(13) |Int size, repoName| { size.max(repoName.size) } as Int
 		fanrRepos.each |repoUrl, repoName| {
 			usr	:= repoUrl.userInfo == null ? "" : repoUrl.userInfo + "@"
-			url	:= repoUrl.toStr.replace(usr, "").toUri
+			// Fantom Str.replace() bug - see http://fantom.org/forum/topic/2413
+			url	:= usr.isEmpty ? repoUrl.toStr : repoUrl.toStr.replace(usr, "")
 			str += repoName.justr(maxDir) + " = " + url + "\n"
 		}
-
 		return str
 	}
 
@@ -158,8 +158,8 @@ const class FpmConfig {
 		userStr	 := url.userInfo == null ? "" : url.userInfo + "@"
 		repoUrl	 := url.toStr.replace(userStr, "").toUri
 		// TODO do proper percent decoding
-		username := url.userInfo?.split(':')?.getSafe(0)?.replace("%40", "@")
-		password := url.userInfo?.split(':')?.getSafe(1)?.replace("%40", "@")		
+		username := Uri.decode(url.userInfo?.split(':')?.getSafe(0)?.replace("%40", "@") ?: "").toStr.trimToNull	// decode percent encoding
+		password := Uri.decode(url.userInfo?.split(':')?.getSafe(1)?.replace("%40", "@") ?: "").toStr.trimToNull
 		return Repo.makeForUri(repoUrl, username, password)
 	}
 	

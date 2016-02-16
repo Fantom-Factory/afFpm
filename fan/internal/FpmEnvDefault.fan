@@ -5,7 +5,7 @@ internal const class FpmEnvDefault : FpmEnv {
 		fpmConfig	:= FpmConfig()
 
 		// add F4 pod locations
-		f4PodPaths	:= Env.cur.vars["F4PODENV_POD_LOCATIONS"]?.trimToNull?.split(File.pathSep.chars.first, true) ?: Str#.emptyList
+		f4PodPaths	:= Env.cur.vars["FAN_ENV_PODS"]?.trimToNull?.split(File.pathSep.chars.first, true) ?: Str#.emptyList
 		f4PodFiles	:= f4PodPaths.map { toFile(it) }
 		fpmEnv 		:= makeManual(fpmConfig, f4PodFiles)
 
@@ -16,8 +16,7 @@ internal const class FpmEnvDefault : FpmEnv {
 
 	override Void findTarget(PodDependencies podDepends) {
 		fanArgs	:= Env.cur.args
-		// FIXME change FPM_CMDLINE_ARGS to something better -> FPM_TARGET_POD maybe? 
-		fpmArgs	:= splitQuotedStr(Env.cur.vars["FPM_CMDLINE_ARGS"])
+		fpmArgs	:= splitQuotedStr(Env.cur.vars["FPM_TARGET"])
 		cmdArgs	:= fpmArgs ?: fanArgs
 		
 		// a fail safe / get out jail card for pin pointing the targeted environment 
@@ -28,7 +27,7 @@ internal const class FpmEnvDefault : FpmEnv {
 			return
 		}
 
-		// FPM_CMDLINE_ARGS - use it if we got it
+		// FPM_TARGET - use it if we got it
 		if (fpmArgs != null) {
 			buildPod := getBuildPod(cmdArgs.first)		
 			if (buildPod != null) {
@@ -42,7 +41,7 @@ internal const class FpmEnvDefault : FpmEnv {
 				return
 			}
 		}
-		
+
 		// this is only good for basic 'C:\>fan afEggbox' type cmds
 		// any fant or script / build cmds still need to use alternative means
 		mainMethod := null as Method 
@@ -51,14 +50,14 @@ internal const class FpmEnvDefault : FpmEnv {
 			if (mainMethod != null) {
 	
 				// make a HUGE assumption here that the build script is the one in the current directory
-				// FIXME ask Brian how to get the running script file location
-//				if (mainMethod == BuildScript#main) {
-//					buildPod := getBuildPod("build.fan")		
-//					if (buildPod != null) {
-//						podDepends.setBuildTarget(buildPod.podName, buildPod.version, buildPod.depends.map { Depend(it, false) }.exclude { it == null }, true )
-//						return
-//					}
-//				}
+				// TODO ask Brian how to get the running script file location
+				if (mainMethod.qname == "build::BuildPod.main") {
+					buildPod := getBuildPod("build.fan")		
+					if (buildPod != null) {
+						podDepends.setBuildTargetFromBuildPod(buildPod, true)
+						return
+					}
+				}
 				
 				podDepend := Depend("${mainMethod.parent.pod.name} 0+")
 				podDepends.setRunTarget(podDepend)
@@ -66,7 +65,7 @@ internal const class FpmEnvDefault : FpmEnv {
 			}
 		}
 
-		log.warn("Could not parse pod from: ${mainMethod?.qname} ${cmdArgs.first}")
+		log.warn("Could not parse pod from: mainMethod: ${mainMethod?.qname} or args: ${cmdArgs.first} / $Env.cur.args")
 	}
 
 	static Depend? findPodDepend(Str? arg) {
