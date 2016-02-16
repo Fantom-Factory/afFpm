@@ -88,12 +88,12 @@ abstract const class FpmEnv : Env {
 		
 		if (targetPod == "???") {
 			log.warn("Could not target pod - defaulting to latest pod versions")
-			this.allPodFiles = podDepends.podResolvers.resolveAll(allPodFiles.rw)
+			this.allPodFiles = podDepends.podResolvers.resolveAll(allPodFiles.rw) { remove(targetPod.split.first) }
 		}
 
 		if (Env.cur.vars["FPM_ALL_PODS"]?.toBool(false) ?: false) {
 			log.warn("FPM_ALL_PODS = true; defaulting to latest pod versions")
-			this.allPodFiles = podDepends.podResolvers.resolveAll(allPodFiles.rw)
+			this.allPodFiles = podDepends.podResolvers.resolveAll(allPodFiles.rw) { remove(targetPod.split.first) }
 		}
 		
 		// ---- dump info to logs ----
@@ -104,7 +104,7 @@ abstract const class FpmEnv : Env {
 		if (unresolvedPods.size > 0) {
 			log.warn(Utils.dumpUnresolved(unresolvedPods))
 			// FIXME we should use the semi-resolved pods
-			this.allPodFiles = podDepends.podResolvers.resolveAll(allPodFiles.rw)
+			this.allPodFiles = podDepends.podResolvers.resolveAll(allPodFiles.rw) { remove(targetPod.split.first) }
 		}
 		
 		if (error != null) {
@@ -149,7 +149,7 @@ abstract const class FpmEnv : Env {
 
 	@NoDoc
 	internal abstract Void findTarget(PodDependencies podDepends)
-		
+
 	** Dumps the FPM environment to a string. This includes the FPM Config and a list of resolved pods.
 	Str dump() {
 		str	:= "\n\n"
@@ -157,7 +157,6 @@ abstract const class FpmEnv : Env {
 		str += "\n"
 		str += "   Target Pod : ${targetPod}\n"
 		str += fpmConfig.dump
-
 		str += "\n"
 		str += "Resolved ${resolvedPodFiles.size} pod" + (resolvedPodFiles.size == 1 ? "" : "s") + (resolvedPodFiles.size == 0 ? "" : ":") + "\n"
 		

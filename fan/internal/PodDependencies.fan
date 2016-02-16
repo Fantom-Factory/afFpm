@@ -94,7 +94,7 @@ internal class PodDependencies {
 		// but there's no Err, the number just wraps round to zero
 		podPerms  := (Int) allNodes.vals.reduce(1) |Int tot, node| { tot * node.podVersions.size }
 		totalVers := (Int) allNodes.vals.reduce(0) |Int tot, node| { tot + node.podVersions.size }
-		log.debug("Found ${totalVers.toLocale} versions of ${allNodes.size.toLocale} different pods")
+		log.debug("Found ${totalVers.toLocale} versions of ${allNodes.size.toLocale} different pod" + s(allNodes.size))
 		
 		// reduce PodVersions into groups
 		// this reduces the problem space from 661,348,800,000 dependency permutations to just 12,288!		
@@ -104,8 +104,8 @@ internal class PodDependencies {
 		podPermsStr	:= podPerms.toLocale
 		grpPermsStr	:= grpPerms.toLocale
 		maxPermSize	:= (podPermsStr.size + 11).max(grpPermsStr.size + 13)
-		log.debug("Calculated "   + podPermsStr.justr(maxPermSize - 11) + " dependency pod permutations")
-		log.debug("Collapsed to " + grpPermsStr.justr(maxPermSize - 13) + " dependency group permutations")
+		log.debug("Calculated "   + podPermsStr.justr(maxPermSize - 11) + " dependency pod permutation" + s(podPerms))
+		log.debug("Collapsed to " + grpPermsStr.justr(maxPermSize - 13) + " dependency group permutation" + s(grpPerms))
 		log.debug("Stated problem space in ${(Duration.now - startTime).toLocale}")
 		log.debug("Solving...")
 		startTime = Duration.now
@@ -144,10 +144,6 @@ internal class PodDependencies {
 							names.contains(nos[i][v].name) ? v : null
 						}
 						badGroups.add(badGrp)
-					
-//						badd := badGrp.map |Int? v, i| { v != null ? nos[i][v] : null }.exclude { it == null }
-//						echo("- $badd")
-//						echo("= " + badGrp.exclude{it==null}.toStr)
 					}
 					// keep the error with the least amount of unsatisfied constraints
 					if (unsatisfied.isEmpty || res.size < unsatisfied.size)
@@ -187,8 +183,8 @@ internal class PodDependencies {
 
 		solveTime := Duration.now - startTime
 		log.debug("          ...Done")
-		log.debug("Cached ${badGroups.size} bad dependency groups")
-		log.debug("Found ${solutions.size} solutions in ${solveTime.toLocale}")
+		log.debug("Cached ${badGroups.size} bad dependency group" + s(badGroups.size))
+		log.debug("Found ${solutions.size} solution${s(solutions.size)} in ${solveTime.toLocale}")
 		
 
 		// find the best solution -> the one with the greatest number of higher pod versions
@@ -213,7 +209,7 @@ internal class PodDependencies {
 		}
 		
 		// convert errors to UnresolvedPods
-		if (podFiles.isEmpty) {
+		if (solutions.isEmpty) {
 			conGrps := groupBy(unsatisfied) |PodConstraint con->Str| { con.dependsOn.name }
 			unresolvedPods = conGrps.map |PodConstraint[] cons, Str name->UnresolvedPod| {
 				UnresolvedPod {
@@ -269,7 +265,11 @@ internal class PodDependencies {
 		}.addPodVersions(podResolvers.resolve(dependency))
 	}
 	
-	static Obj:Obj[] groupBy(Obj[] list, |Obj item, Int index->Obj| keyFunc) {
+	private static Str s(Int size) {
+		size == 1 ? "" : "s"
+	}
+	
+	private static Obj:Obj[] groupBy(Obj[] list, |Obj item, Int index->Obj| keyFunc) {
 		list.reduce(Obj:Obj[][:] { it.ordered = true}) |Obj:Obj[] bucketList, val, i| {
 			key := keyFunc(val, i)
 			bucketList.getOrAdd(key) { Obj[,] }.add(val)

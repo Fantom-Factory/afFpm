@@ -3,7 +3,7 @@ using build
 class Build : BuildPod {
 
 	new make() {
-		podName = "afFpmDev"
+		podName = "afFpm"
 		summary = "Fantom Pod Manager"
 		version = Version("0.0.1.002")
 
@@ -18,11 +18,14 @@ class Build : BuildPod {
 			"fanr       1.0.67 - 1.0",
 			"util       1.0.67 - 1.0",
 			"concurrent 1.0.67 - 1.0",			
-			"compiler   1.0.67 - 1.0"	// for afPlastic			
+			"compiler   1.0.67 - 1.0",	// for afPlastic			
 		]
 
 		srcDirs = [`fan/`, `fan/afPlastic/`, `fan/internal/`, `fan/internal/cmds/`, `fan/internal/util/`, `fan/public/`, `test/`]
 		resDirs = [`doc/`, `res/`]
+		
+		docApi	= true
+		docSrc	= true
 	}
 	
 	@Target { help = "Compile to pod file and associated natives" }
