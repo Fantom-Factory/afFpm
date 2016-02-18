@@ -21,6 +21,9 @@ internal class Main {
 			case "install":
 				InstallCmd().run
 		
+			case "uninstall":
+				UnInstallCmd().run
+
 		  default:
 		    throw ArgErr("Unknown cmd: ${cmd}")
 		}
