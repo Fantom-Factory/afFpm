@@ -99,14 +99,18 @@ abstract const class FpmEnv : Env {
 		// ---- dump info to logs ----
 		
 		if (targetPod.startsWith("afFpm").not)
-			log.debug(dump)
+			// if there's something wrong, then make sure the user sees the dump
+			if (error != null || unresolvedPods.size > 0)
+				log.info(dump)
+			else
+				log.debug(dump)
 
 		if (unresolvedPods.size > 0) {
 			log.warn(Utils.dumpUnresolved(unresolvedPods))
 			// FIXME we should use the semi-resolved pods
 			this.allPodFiles = podDepends.podResolvers.resolveAll(allPodFiles.rw) { remove(targetPod.split.first) }
 		}
-		
+
 		if (error != null) {
 			log.err  (error.toStr)
 			log.debug(error.traceToStr)
