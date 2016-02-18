@@ -42,26 +42,25 @@ internal class UpdateCmd : FpmCmd {
 			return log.warn(Utils.dumpUnresolved(podDepends.unresolvedPods))
 
 		toUpdate := podDepends.podFiles.vals.findAll { it.url.scheme == "fanr" }
-		if (toUpdate.isEmpty)
-			return log.info("All pods are up to date!")
 
-		// TODO only use fanr pods that are greater than our current env 
 		toUpdate.each |podFile| {
 			log.info("  Downloading ${podFile} from ${podFile.url.host}")
 
-//			in := fpmConfig.fanrRepo(podFile.url.host).read(PodSpec([
-//				"pod.name"		: podFile.name,
-//				"pod.version"	: podFile.version.toStr,
-//				"pod.depends"	: "",
-//				"pod.summary"	: "",
-//			], null))
-//			file := File.createTemp("${podFile.name}-", ".pod")
-//			out  := file.out(false, 16 * 1024)
-//			try	in.pipe(out)
-//			finally out.close
-//			
-//			podManager.publishPod(file, repo)
+			in := fpmConfig.fanrRepo(podFile.url.host).read(PodSpec([
+				"pod.name"		: podFile.name,
+				"pod.version"	: podFile.version.toStr,
+				"pod.depends"	: "",
+				"pod.summary"	: "",
+			], null))
+			file := File.createTemp("${podFile.name}-", ".pod")
+			out  := file.out(false, 16 * 1024)
+			try	in.pipe(out)
+			finally out.close
+			
+			podManager.publishPod(file, repo)
 		}
+		log.info("\n")
+		log.info("All pods are up to date!")
 		log.info("Done.")
 	}
 	

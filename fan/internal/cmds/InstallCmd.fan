@@ -1,17 +1,24 @@
 using util
 using fanr
 
+** Installs a pod to a repository.
 internal class InstallCmd : FpmCmd {
 	
-	@Opt { aliases=["r"]; help="Name of the file / fanr repository to publish to" }
+	@Opt { aliases=["r"]; help="Name or location of the repository to install to." }
 	Str repo	:= "default"
 
-	@Opt { aliases=["p"]; help="The pod to query for" }
+	@Opt { aliases=["p"]; help="The pod to install. May be a file location or a search query." }
 	Str? pod
 
 	new make() { }
 
-	override Void go() {		
+	override Void go() {
+//		if (pod.exists.not)
+//			pod = podManager.findPodFile(pod.toStr, false)?.file ?: pod
+//		podManager.publishPod(pod, repo)
+
+		
+		// TODO check if pod is a local file
 		query := pod.replace("@", " ")
 		fpmConfig.fanrRepos.find |url, name->Bool| {
 			
@@ -28,6 +35,25 @@ internal class InstallCmd : FpmCmd {
 			podManager.publishPod(temp, this.repo)
 			return true
 		}		
+	}
+	
+	override Bool argsValid() {
+		pod != null
+	}	
+}
+
+internal class UnInstallCmd : FpmCmd {
+	
+	@Opt { aliases=["r"]; help="Name of the file / fanr repository to unpublish to" }
+	Str repo	:= "default"
+
+	@Opt { aliases=["p"]; help="The name of the pod to unpublish. e.g. myPod@1.2" }
+	Str? pod
+	
+	new make() { }
+
+	override Void go() {
+		podManager.uninstallPod(pod, repo)
 	}
 	
 	override Bool argsValid() {

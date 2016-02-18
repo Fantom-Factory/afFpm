@@ -194,11 +194,11 @@ internal class PodResolverFanrRemote : PodResolver {
 
 	override PodVersion[] resolve(Depend dependency) {
 		latest := localResolvers.resolve(dependency).sort.last
-		echo("Querying ${repoName} for ${dependency} ( > $latest.version)")
+		echo("Querying ${repoName} for ${dependency}" + ((latest == null) ? "" : " ( > $latest.version)"))
 		specs := repo.query(dependency.toStr, numVersions)
 		vers  := specs
 			.findAll |PodSpec spec->Bool| {
-				spec.version > latest.version
+				(latest == null) ? true : spec.version > latest.version
 			}
 			.map |PodSpec spec->PodVersion| {
 				PodVersion(`fanr://${repoName}/${dependency}`, spec)
