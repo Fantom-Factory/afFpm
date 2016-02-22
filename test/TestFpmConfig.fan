@@ -5,44 +5,44 @@ internal class TestFpmConfig : Test {
 		homeDir := Env.cur.homeDir
 		
 		// test default
-		config := FpmConfig.makeInternal(File(``), homeDir, null, [:])
+		config := makeFpmConfig(null, [:])
 		verifyEq(config.workDirs.size, 1)
 		verifyEq(config.workDirs.first, homeDir)
 
 		// test default 2
-		config = FpmConfig.makeInternal(File(``), homeDir, "", [:])
+		config = makeFpmConfig("", [:])
 		verifyEq(config.workDirs.size, 1)
 		verifyEq(config.workDirs.first, homeDir)
 		
 		// test 1 os path
-		config = FpmConfig.makeInternal(File(``), homeDir, "C:\\Projects", [:])
+		config = makeFpmConfig("C:\\Projects", [:])
 		verifyEq(config.workDirs.size, 2)
 		verifyEq(config.workDirs[0], `file:/C:/Projects/`.toFile)
 		verifyEq(config.workDirs[1], homeDir)
 
 		// test 2 os path
-		config = FpmConfig.makeInternal(File(``), homeDir, "C:\\Projects;C:\\Temp", [:])
+		config = makeFpmConfig("C:\\Projects;C:\\Temp", [:])
 		verifyEq(config.workDirs.size, 3)
 		verifyEq(config.workDirs[0], `file:/C:/Projects/`.toFile)
 		verifyEq(config.workDirs[1], `file:/C:/Temp/`.toFile)
 		verifyEq(config.workDirs[2], homeDir)
 
 		// test props trump workDir
-		config = FpmConfig.makeInternal(File(``), homeDir, "C:\\Projects", ["workDirs":"C:\\Temp"])
+		config = makeFpmConfig("C:\\Projects", ["workDirs":"C:\\Temp"])
 		verifyEq(config.workDirs.size, 3)
 		verifyEq(config.workDirs[0], `file:/C:/Temp/`.toFile)
 		verifyEq(config.workDirs[1], `file:/C:/Projects/`.toFile)
 		verifyEq(config.workDirs[2], homeDir)
 
 		// test uri path
-		config = FpmConfig.makeInternal(File(``), homeDir, "file:/C:/Projects/", [:])
+		config = makeFpmConfig("file:/C:/Projects/", [:])
 		verifyEq(config.workDirs.size, 2)
 		verifyEq(config.workDirs[0], `file:/C:/Projects/`.toFile)
 		verifyEq(config.workDirs[1], homeDir)
 
 		// test workDir not exist
 		verifyErr(ArgErr#) {
-			config = FpmConfig.makeInternal(File(``), homeDir, "wotever/", [:])
+			config = makeFpmConfig("wotever/", [:])
 		}
 	}
 	
@@ -50,30 +50,30 @@ internal class TestFpmConfig : Test {
 		homeDir := Env.cur.homeDir
 		
 		// test default
-		config := FpmConfig.makeInternal(File(``), homeDir, null, [:])
+		config := makeFpmConfig(null, [:])
 		verifyEq(config.fileRepos.size, 1)
 		verifyEq(config.fileRepos["default"], homeDir + `repo/`)
 
 		// test props add to repoDirs
-		config = FpmConfig.makeInternal(File(``), homeDir, null, ["repoDir.release":"C:\\Projects"])
+		config = makeFpmConfig(null, ["repoDir.release":"C:\\Projects"])
 		verifyEq(config.fileRepos.size, 2)
 		verifyEq(config.fileRepos["default"], homeDir + `repo/`)		
 		verifyEq(config.fileRepos["release"], `file:/C:/Projects/`.toFile)
 
 		// test props trump repoDirs
-		config = FpmConfig.makeInternal(File(``), homeDir, null, ["repoDir.release":"C:\\Projects", "repoDir.default":"C:\\Temp"])
+		config = makeFpmConfig(null, ["repoDir.release":"C:\\Projects", "repoDir.default":"C:\\Temp"])
 		verifyEq(config.fileRepos.size, 2)
 		verifyEq(config.fileRepos["default"], `file:/C:/Temp/`.toFile)
 		verifyEq(config.fileRepos["release"], `file:/C:/Projects/`.toFile)
 
 		// test uri path
-		config = FpmConfig.makeInternal(File(``), homeDir, null, ["repoDir.default":"file:/C:/Projects/"])
+		config = makeFpmConfig(null, ["repoDir.default":"file:/C:/Projects/"])
 		verifyEq(config.fileRepos.size, 1)
 		verifyEq(config.fileRepos["default"], `file:/C:/Projects/`.toFile)
 
 		// test repoDir not exist
 		verifyErr(ArgErr#) {
-			config = FpmConfig.makeInternal(File(``), homeDir, null, ["repoDir.wot":"ever/"])
+			config = makeFpmConfig(null, ["repoDir.wot":"ever/"])
 		}
 	}
 
@@ -81,33 +81,37 @@ internal class TestFpmConfig : Test {
 		homeDir := Env.cur.homeDir
 		
 		// test default
-		config := FpmConfig.makeInternal(File(``), homeDir, null, [:])
+		config := makeFpmConfig(null, [:])
 		verifyEq(config.podDirs.size, 0)
 
 		// test 1 pod dir
-		config = FpmConfig.makeInternal(File(``), homeDir, null, ["podDirs":"C:\\Projects"])
+		config = makeFpmConfig(null, ["podDirs":"C:\\Projects"])
 		verifyEq(config.podDirs.size, 1)
 		verifyEq(config.podDirs[0], `file:/C:/Projects/`.toFile)
 
 		// test 2 pod dirs
-		config = FpmConfig.makeInternal(File(``), homeDir, null, ["podDirs":"C:\\Projects;C:\\Temp"])
+		config = makeFpmConfig(null, ["podDirs":"C:\\Projects;C:\\Temp"])
 		verifyEq(config.podDirs.size, 2)
 		verifyEq(config.podDirs[0], `file:/C:/Projects/`.toFile)
 		verifyEq(config.podDirs[1], `file:/C:/Temp/`.toFile)
 
 		// test uri path
-		config = FpmConfig.makeInternal(File(``), homeDir, null, ["podDirs":"file:/C:/Projects/"])
+		config = makeFpmConfig(null, ["podDirs":"file:/C:/Projects/"])
 		verifyEq(config.podDirs.size, 1)
 		verifyEq(config.podDirs[0], `file:/C:/Projects/`.toFile)
 
 		// test relative path
-		config = FpmConfig.makeInternal(File(``), homeDir, null, ["podDirs":"fan/"])
+		config = makeFpmConfig(null, ["podDirs":"fan/"])
 		verifyEq(config.podDirs.size, 1)
 		verifyEq(config.podDirs[0], `file:/C:/Projects/Fantom-Factory/FantomPodManager/fan/`.toFile)
 
 		// test podDir not exist
 		verifyErr(ArgErr#) {
-			config = FpmConfig.makeInternal(File(``), homeDir, null, ["podDirs":"wotever/"])
+			config = makeFpmConfig(null, ["podDirs":"wotever/"])
 		}
+	}
+	
+	private FpmConfig makeFpmConfig(Str? envPaths, Str:Str fpmProps) {
+		FpmConfig.makeInternal(File(``), Env.cur.homeDir, envPaths, fpmProps, File#.emptyList)
 	}
 }

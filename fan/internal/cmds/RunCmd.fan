@@ -1,5 +1,8 @@
 using util
 
+**
+** Executes a pod / method, within the FPM environment.
+** 
 internal class RunCmd : FpmCmd {
 	
 	@Arg
@@ -12,6 +15,10 @@ internal class RunCmd : FpmCmd {
 		cmds[0] = fanCmd
 		log.info("Running " + cmds[1..-1].join(" "))
 		
+		// launch pods
+		// FIXME remove @version
+		// FIXME cater for BedSHeet
+		// FIXME cater for Reflux
 		// FIXME remove @version
 		
 		process := Process(cmds)

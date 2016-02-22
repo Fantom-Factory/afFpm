@@ -2,38 +2,38 @@ using util
 
 internal class Main {
 	
-	Void main(Str[] args) {
+	Int main(Str[] args) {
 		
 		cmd := args.first
-
-		// TODO: print out some basic FPM info, like repo dir & paths
+		
+		if (cmd == null)
+			return HelpCmd().run
 		
 		switch (cmd) {
 			case "run":
-				RunCmd().run
+				return RunCmd().run
 
 			case "test":
-				TestCmd().run
+				return TestCmd().run
 
 			case "publish":
-				PublishCmd().run
+				return PublishCmd().run
 
 			case "setup":
-				SetupCmd().run
+				return SetupCmd().run
 		
 			case "update":
-				UpdateCmd().run
+				return UpdateCmd().run
 		
 			case "install":
-				InstallCmd().run
+				return InstallCmd().run
 		
 			case "uninstall":
-				UnInstallCmd().run
+				return UnInstallCmd().run
 
 		  default:
 		    throw ArgErr("Unknown cmd: ${cmd}")
 		}
-		
 	}
 }
 

@@ -24,6 +24,9 @@ Fpm Config should list the fpm config files
 FPM Config
 ****
 
+Config files are *not* addative. Config found in a higher priority file *replaces* the value of the lower.
+
+
 
 FPM Runtime Env
 ****

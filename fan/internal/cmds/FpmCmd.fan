@@ -3,8 +3,7 @@ using concurrent
 
 internal abstract class FpmCmd : AbstractMain {
 	override StdLogger 	log 	:= StdLogger()
-	
-		FpmConfig	fpmConfig	:= FpmConfig()
+		FpmConfig	fpmConfig	:= (Env.cur as FpmEnv)?.fpmConfig ?: FpmEnv().fpmConfig
 		PodManager	podManager	:= PodManager() {
 			it.fpmConfig	= this.fpmConfig
 			it.log			= this.log
@@ -14,10 +13,10 @@ internal abstract class FpmCmd : AbstractMain {
 	
 	final override Int run() {
 		title := "Fantom Pod Manager ${typeof.pod.version}"
-		echo("\n${title}")
-		echo("".padl(title.size, '=') + "\n")
-		
-		argsOk := super.parseArgs(Env.cur.args[1..-1])
+		log.info("\n${title}")
+		log.info("".padl(title.size, '=') + "\n")
+
+		argsOk := Env.cur.args.isEmpty ? true : super.parseArgs(Env.cur.args[1..-1])
 		if (!argsOk || !argsValid || helpOpt) {
 			usage
 			if (!helpOpt) log.err("Missing arguments")
@@ -29,7 +28,7 @@ internal abstract class FpmCmd : AbstractMain {
 
 	virtual Int go() { return 0 }
 	virtual Bool argsValid() { false }
-	
+
 	override Str appName() {
 		this.typeof.name.replace("Cmd", "").fromDisplayName
 	}

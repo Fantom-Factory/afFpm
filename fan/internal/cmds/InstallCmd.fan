@@ -10,8 +10,6 @@ internal class InstallCmd : FpmCmd {
 	@Opt { aliases=["p"]; help="The pod to install. May be a file location or a search query." }
 	Str? pod
 
-	new make() { }
-
 	override Int go() {
 //		if (pod.exists.not)
 //			pod = podManager.findPodFile(pod.toStr, false)?.file ?: pod
@@ -42,24 +40,4 @@ internal class InstallCmd : FpmCmd {
 	override Bool argsValid() {
 		pod != null
 	}	
-}
-
-internal class UnInstallCmd : FpmCmd {
-	
-	@Opt { aliases=["r"]; help="Name of the file / fanr repository to unpublish to" }
-	Str repo	:= "default"
-
-	@Opt { aliases=["p"]; help="The name of the pod to unpublish. e.g. myPod@1.2" }
-	Str? pod
-	
-	new make() { }
-
-	override Int go() {
-		podManager.uninstallPod(pod, repo)
-		return 0
-	}
-	
-	override Bool argsValid() {
-		pod != null
-	}
 }
