@@ -12,7 +12,7 @@ internal class InstallCmd : FpmCmd {
 
 	new make() { }
 
-	override Void go() {
+	override Int go() {
 //		if (pod.exists.not)
 //			pod = podManager.findPodFile(pod.toStr, false)?.file ?: pod
 //		podManager.publishPod(pod, repo)
@@ -34,7 +34,9 @@ internal class InstallCmd : FpmCmd {
 			
 			podManager.publishPod(temp, this.repo)
 			return true
-		}		
+		}
+		
+		return 0
 	}
 	
 	override Bool argsValid() {
@@ -52,8 +54,9 @@ internal class UnInstallCmd : FpmCmd {
 	
 	new make() { }
 
-	override Void go() {
+	override Int go() {
 		podManager.uninstallPod(pod, repo)
+		return 0
 	}
 	
 	override Bool argsValid() {

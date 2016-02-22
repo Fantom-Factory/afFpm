@@ -9,6 +9,12 @@ internal class Main {
 		// TODO: print out some basic FPM info, like repo dir & paths
 		
 		switch (cmd) {
+			case "run":
+				RunCmd().run
+
+			case "test":
+				TestCmd().run
+
 			case "publish":
 				PublishCmd().run
 

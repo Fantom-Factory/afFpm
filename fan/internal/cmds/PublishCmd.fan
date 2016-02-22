@@ -16,13 +16,14 @@ internal class PublishCmd : FpmCmd {
 		this.pod = outPodDir.plusName("${podName}.pod").toFile
 	}
 
-	override Void go() {
+	override Int go() {
 		// allow the moving of pods between repos, e.g.
 		//     fan afFpm publish -p afIocEnv -r default 
 		//     fan afFpm publish -p "afIocEnv 1.1" -r default 
 		if (pod.exists.not)
 			pod = podManager.findPodFile(pod.toStr, false)?.file ?: pod
 		podManager.publishPod(pod, repo)
+		return 0
 	}
 	
 	override Bool argsValid() {

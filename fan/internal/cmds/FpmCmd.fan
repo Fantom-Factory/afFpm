@@ -24,11 +24,10 @@ internal abstract class FpmCmd : AbstractMain {
 			return 1
 		}
 
-		go
-		return 0
+		return go
 	}
 
-	virtual Void go() { }
+	virtual Int go() { return 0 }
 	virtual Bool argsValid() { false }
 	
 	override Str appName() {

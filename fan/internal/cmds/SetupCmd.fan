@@ -9,7 +9,7 @@ internal class SetupCmd : FpmCmd {
 	@Opt { aliases=["r"]; help="Name of the repository to publish to" }
 	Str repo	:= "default"
 
-	override Void go() {
+	override Int go() {
 		win := Env.cur.os.startsWith("win")
 
 		log.indent("Running Setup...") |->| {
@@ -66,6 +66,7 @@ internal class SetupCmd : FpmCmd {
 			}
 		}
 		log.info("\nDone.\n")
+		return 0
 	}
 	
 	override Bool argsValid() { true }

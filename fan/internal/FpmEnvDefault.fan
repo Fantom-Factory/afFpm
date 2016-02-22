@@ -16,7 +16,7 @@ internal const class FpmEnvDefault : FpmEnv {
 
 	override Void findTarget(PodDependencies podDepends) {
 		fanArgs	:= Env.cur.args
-		fpmArgs	:= splitQuotedStr(Env.cur.vars["FPM_TARGET"])
+		fpmArgs	:= Utils.splitQuotedStr(Env.cur.vars["FPM_TARGET"])
 		cmdArgs	:= fpmArgs ?: fanArgs
 		
 		// a fail safe / get out jail card for pin pointing the targeted environment 
@@ -44,7 +44,7 @@ internal const class FpmEnvDefault : FpmEnv {
 
 		// this is only good for basic 'C:\>fan afEggbox' type cmds
 		// any fant or script / build cmds still need to use alternative means
-		mainMethod := null as Method 
+		mainMethod := null as Method
 		if (Pod.find("sys").version >= Version("1.0.68")) {
 			mainMethod = Env.cur.mainMethod 
 			if (mainMethod != null) {
@@ -65,7 +65,7 @@ internal const class FpmEnvDefault : FpmEnv {
 			}
 		}
 
-		log.warn("Could not parse pod from: mainMethod: ${mainMethod?.qname} or args: ${cmdArgs.first} / $Env.cur.args")
+		log.warn("Could not parse pod from: mainMethod: ${mainMethod?.qname ?: Str.defVal} or args: ${cmdArgs.first ?: Str.defVal} - ${Env.cur.args}")
 	}
 
 	static Depend? findPodDepend(Str? arg) {
@@ -106,42 +106,6 @@ internal const class FpmEnvDefault : FpmEnv {
 			return obj
 		} catch
 			return null
-	}
-	
-	static Str[]? splitQuotedStr(Str? str) {
-		if (str?.trimToNull == null)	return null
-		strings	 := Str[,]
-		chars	 := Int[,]
-		prev	 := (Int?) null
-		inQuotes := false
-		str.each |c| {
-			if (c.isSpace && inQuotes.not) { 
-				if (chars.isEmpty.not) {
-					strings.add(Str.fromChars(chars))
-					chars.clear
-				}
-			} else if (c == '"') {
-				if (inQuotes.not)
-					if (chars.isEmpty)
-						inQuotes = true
-					else
-						chars.add(c)
-				else {
-					inQuotes = false
-					strings.add(Str.fromChars(chars))
-					chars.clear					
-				}
-				
-			} else
-				chars.add(c)
-
-			prev = null
-		}
-
-		if (chars.isEmpty.not)
-			strings.add(Str.fromChars(chars))
-
-		return strings
 	}
 
 	static File toFile(Str filePath) {
