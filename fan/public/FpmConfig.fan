@@ -23,6 +23,12 @@ const class FpmConfig {
 
 	** A map of named remote fanr repositories.
 	const Str:Uri	fanrRepos
+	
+	** A list of libraries used to launch applications
+	const Str[]		launchPods
+
+	** The config files used to generate this class.
+	const File[]	configFiles
 
 	private new makePrivate(|This|in) { in(this) }
 	
@@ -48,11 +54,11 @@ const class FpmConfig {
 		fpmProps := Str:Str[:] { it.ordered = true }
 		workFile.eachr { if (it.exists) fpmProps.setAll(it.readProps) }
 
-		return makeInternal(baseDir, homeDir, envPaths, fpmProps)
+		return makeInternal(baseDir, homeDir, envPaths, fpmProps, workFile.reverse)
 	}
 
 	@NoDoc
-	internal new makeInternal(File baseDir, File homeDir, Str? envPaths, Str:Str fpmProps) {
+	internal new makeInternal(File baseDir, File homeDir, Str? envPaths, Str:Str fpmProps, File[]? configFiles) {
 		baseDir = baseDir.normalize
 		if (baseDir.isDir.not || baseDir.exists.not)
 			throw ArgErr("Base directory is not valid: ${baseDir.osPath}")
@@ -97,6 +103,10 @@ const class FpmConfig {
 			return repos
 		}
 		this.fanrRepos = fanrRepos
+		
+		this.launchPods = fpmProps["launchPods"].split(',')
+		
+		this.configFiles	= configFiles ?: File[,]
 	}
 	
 	** Returns a fanr 'Repo' instance for the named repository. 
@@ -119,10 +129,11 @@ const class FpmConfig {
 	** FPM Environment:
 	** 
 	**    Target Pod : shStackHubAdmin 0+
-	**    Home Dir   : C:\Apps\fantom-1.0.68
-	**    Work Dirs  : C:\Repositories\Fantom, C:\Apps\fantom-1.0.68
-	**    Pod Dirs   : C:\Projects\StackHub\stackhub-admin\lib
-	**    Temp Dir   : C:\Repositories\Fantom\temp
+	**      Home Dir : C:\Apps\fantom-1.0.68
+	**     Work Dirs : C:\Repositories\Fantom, C:\Apps\fantom-1.0.68
+	**      Pod Dirs : C:\Projects\StackHub\stackhub-admin\lib
+	**      Temp Dir : C:\Repositories\Fantom\temp
+	**  Config Files : C:\Apps\fantom-1.0.68\etc\afFpm\config.props
 	**    File Repos :
 	**       default = C:\Repositories\Fantom\repo-default
 	**       release = C:\Repositories\Fantom\repo-release
@@ -132,25 +143,43 @@ const class FpmConfig {
 	** <pre
 	Str dump() {
 		str := ""
-		str += "   Home Dir   : ${homeDir.osPath}\n"
-		str += "   Work Dirs  : " + (workDirs.join(", ") { it.osPath }.trimToNull ?: "(none)") + "\n"
-		str += "   Pod Dirs   : " + (podDirs .join(", ") { it.osPath }.trimToNull ?: "(none)") + "\n"
-		str += "   Temp Dir   : ${tempDir.osPath}\n"
+		str += "      Home Dir : ${homeDir.osPath}\n"
+		str += "     Work Dirs : " + dumpList(workDirs)
+		str += "      Pod Dirs : " + dumpList(podDirs)
+		str += "      Temp Dir : ${tempDir.osPath}\n"
+		str += "  Config Files : " + dumpList(configFiles)
 
-		str += "   File Repos : " + (fileRepos.isEmpty ? "(none)" : "") + "\n"
-		maxDir := fileRepos.keys.reduce(13) |Int size, repoName| { size.max(repoName.size) } as Int
+		if (fileRepos.size > 0)
+			str += "\n"
+		str += "    File Repos : " + (fileRepos.isEmpty ? "(none)" : "") + "\n"
+		maxDir := fileRepos.keys.reduce(14) |Int size, repoName| { size.max(repoName.size) } as Int
 		fileRepos.each |repoDir, repoName| {
 			str += repoName.justr(maxDir) + " = " + repoDir.osPath + "\n"
 		}
 
-		str += "   Fanr Repos : " + (fanrRepos.isEmpty ? "(none)" : "") + "\n"
-		maxDir = fanrRepos.keys.reduce(13) |Int size, repoName| { size.max(repoName.size) } as Int
+		if (fanrRepos.size > 0)
+			str += "\n"
+		str += "    Fanr Repos : " + (fanrRepos.isEmpty ? "(none)" : "") + "\n"
+		maxDir = fanrRepos.keys.reduce(14) |Int size, repoName| { size.max(repoName.size) } as Int
 		fanrRepos.each |repoUrl, repoName| {
 			usr	:= repoUrl.userInfo == null ? "" : repoUrl.userInfo + "@"
 			// Fantom Str.replace() bug - see http://fantom.org/forum/topic/2413
 			url	:= usr.isEmpty ? repoUrl.toStr : repoUrl.toStr.replace(usr, "")
 			str += repoName.justr(maxDir) + " = " + url + "\n"
 		}
+
+		return str
+	}
+
+	private Str dumpList(File[] files) {
+		if (files.isEmpty)
+			return "(none)\n"
+
+		str := "${files.first.osPath}\n"
+		if (files.size > 1)
+			files[1..-1].each {
+				str += "".justr(14) + "   ${it.osPath}\n"
+			}
 		return str
 	}
 
