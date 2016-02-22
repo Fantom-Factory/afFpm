@@ -15,7 +15,7 @@ internal class UpdateCmd : FpmCmd {
 //	@Opt { aliases=["a"]; help="By default FPM will only query for pods newer than the ones on your file system. This option will look for ALL pods, but at the expense of a much slower resolution." }
 //	Str all	:= "all"
 
-	override Void go() {
+	override Int go() {
 		podDepends	:= PodDependencies(fpmConfig, File[,], log)
 
 		if (pod != null) {
@@ -28,7 +28,8 @@ internal class UpdateCmd : FpmCmd {
 			// TODO download dependencies for a specific build file
 			buildPod	:= FpmEnvDefault.getBuildPod("build.fan")		
 			if (buildPod == null) {
-				return log.err("Could not find / load 'build.fan'")
+				log.err("Could not find / load 'build.fan'")
+				return 101
 			}
 			podDepends.setBuildTargetFromBuildPod(buildPod, false)
 		}		
@@ -38,8 +39,10 @@ internal class UpdateCmd : FpmCmd {
 		podDepends.podResolvers.addRemoteRepos
 		podDepends.satisfyDependencies
 
-		if (podDepends.unresolvedPods.size > 0)
-			return log.warn(Utils.dumpUnresolved(podDepends.unresolvedPods))
+		if (podDepends.unresolvedPods.size > 0) {
+			log.warn(Utils.dumpUnresolved(podDepends.unresolvedPods))
+			return 102
+		}
 
 		toUpdate := podDepends.podFiles.vals.findAll { it.url.scheme == "fanr" }
 
@@ -62,6 +65,7 @@ internal class UpdateCmd : FpmCmd {
 		log.info("\n")
 		log.info("All pods are up to date!")
 		log.info("Done.")
+		return 0
 	}
 	
 	override Bool argsValid() { true }

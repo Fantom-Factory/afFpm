@@ -54,4 +54,40 @@ internal class Utils {
 		}
 		return output
 	}
+	
+	static Str[]? splitQuotedStr(Str? str) {
+		if (str?.trimToNull == null)	return null
+		strings	 := Str[,]
+		chars	 := Int[,]
+		prev	 := (Int?) null
+		inQuotes := false
+		str.each |c| {
+			if (c.isSpace && inQuotes.not) { 
+				if (chars.isEmpty.not) {
+					strings.add(Str.fromChars(chars))
+					chars.clear
+				}
+			} else if (c == '"') {
+				if (inQuotes.not)
+					if (chars.isEmpty)
+						inQuotes = true
+					else
+						chars.add(c)
+				else {
+					inQuotes = false
+					strings.add(Str.fromChars(chars))
+					chars.clear					
+				}
+				
+			} else
+				chars.add(c)
+
+			prev = null
+		}
+
+		if (chars.isEmpty.not)
+			strings.add(Str.fromChars(chars))
+
+		return strings
+	}
 }
