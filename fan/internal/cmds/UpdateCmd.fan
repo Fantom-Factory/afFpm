@@ -3,7 +3,8 @@ using fanr::PodSpec
 
 // can this install from scratch AND update an existing?
 ** Updates dependencies for a named pod / build file.
-internal class UpdateCmd : FpmCmd {
+@NoDoc
+class UpdateCmd : FpmCmd {
 
 	@Opt { aliases=["r"]; help="Name of the local repository to publish pods to" }
 	Str repo	:= "default"

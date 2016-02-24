@@ -1,5 +1,0 @@
-#!/bin/bash
-
-export FPM_CMDLINE_ARGS="$@"
-
-fan-orig.bat "$@"

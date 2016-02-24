@@ -31,6 +31,28 @@ const class PodManager {
 		_publishPod(PodFile(pod), repo)
 	}
 
+//	Void installToLocal() {
+//		// TODO check if pod is a local file
+//		query := pod.replace("@", " ")
+//		fpmConfig.fanrRepos.find |url, name->Bool| {
+//			
+//			repo  := fpmConfig.fanrRepo(name)
+//			specs := repo.query(query, 1)
+//			if (specs.isEmpty) return false
+//			
+//			log.info("  Downloading ${specs.first} from ${name}")
+//			temp := File.createTemp("afFpm-", ".pod")
+//			out  := temp.out
+//			repo.read(specs.first).pipe(out)
+//			out.close
+//			
+//			podManager.publishPod(temp, this.repo)
+//			return true
+//		}
+//		
+//	}
+
+
 	Void uninstallPod(Str pod, Str repo) {
 		// TODO check repo exists
 		podDep := Depend(pod.replace("@", " "), true)
@@ -49,7 +71,7 @@ const class PodManager {
 	** Directory paths may be in URI form or an OS path.
 	**  
 	** 'repo' defaults to 'default' if not specified.
-	Void publishAllPods(File dir, Str? repo := null) {
+	Void installAllPodsFromDir(File dir, Str? repo := null) {
 		log.info("Publishing pods from ${dir.osPath} into repo '" +  (repo ?: "default") + "'...")
 		podFiles := dir.listFiles(".+\\.pod".toRegex).exclude {
 			corePods.isCorePod(it.basename) || it.basename == "afFpm"
