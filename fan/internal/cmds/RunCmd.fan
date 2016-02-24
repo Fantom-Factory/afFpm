@@ -3,7 +3,8 @@ using util
 **
 ** Executes a pod / method, within the FPM environment.
 ** 
-internal class RunCmd : FpmCmd {
+@NoDoc
+class RunCmd : FpmCmd {
 	
 	@Arg
 	Str[]?	args
