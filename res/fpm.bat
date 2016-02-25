@@ -1,7 +1,6 @@
 @setlocal
 
-@set FPM_CMDLINE_ARGS=afFpm %*
-
-@call fan-orig.cmd afFpm %*
+@set FPM_TARGET=afFpm
+@call fan afFpm %*
 
 @endlocal

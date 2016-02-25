@@ -1,8 +1,9 @@
 using util
 using concurrent
 
-internal abstract class FpmCmd : AbstractMain {
-	override StdLogger 	log 	:= StdLogger()
+** Needs to be public to retain the type doc
+abstract class FpmCmd : AbstractMain {
+	override Log	log 	:= StdLogger()
 		FpmConfig	fpmConfig	:= (Env.cur as FpmEnv)?.fpmConfig ?: FpmEnv().fpmConfig
 		PodManager	podManager	:= PodManager() {
 			it.fpmConfig	= this.fpmConfig
@@ -32,6 +33,10 @@ internal abstract class FpmCmd : AbstractMain {
 	override Str appName() {
 		this.typeof.name.replace("Cmd", "").fromDisplayName
 	}
+	
+	Int err(Str msg) {
+		throw CmdErr(msg)
+	}
 }
 
 internal const class StdLogger : Log {
@@ -51,4 +56,8 @@ internal const class StdLogger : Log {
 		finally
 			lead.val = lead.val.toStr[0..<-2]
 	}
+}
+
+internal const class CmdErr : Err {
+	new make(Str msg) : super(msg) { }
 }

@@ -1,6 +1,7 @@
 using util
 
-internal class UnInstallCmd : FpmCmd {
+@NoDoc
+class UnInstallCmd : FpmCmd {
 	
 	@Opt { aliases=["r"]; help="Name of the file / fanr repository to un-install from" }
 	Str repo	:= "default"

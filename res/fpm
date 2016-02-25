@@ -1,5 +1,5 @@
 #!/bin/bash
 
-export FPM_CMDLINE_ARGS=afFpm "$@"
+export FPM_TARGET=afFpm
 
-fan-orig.bat afFpm "$@"
+fan afFpm "$@"
