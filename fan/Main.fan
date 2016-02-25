@@ -16,9 +16,6 @@ internal class Main {
 			case "test":
 				return TestCmd().run
 
-			case "publish":
-				return PublishCmd().run
-
 			case "setup":
 				return SetupCmd().run
 		
@@ -30,6 +27,9 @@ internal class Main {
 		
 			case "uninstall":
 				return UnInstallCmd().run
+
+			case "help":
+				return HelpCmd().run
 
 		  default:
 		    throw ArgErr("Unknown cmd: ${cmd}")

@@ -15,15 +15,18 @@ internal const class FileUtils {
 			dir = baseDir + dir.uri
 		return dir.normalize
 	}
+	
+	static File toFile(Str path) {
+		path.startsWith("file:") && path.containsChar('\\').not ? File(path.toUri, true) : File.os(path)
+	}
 
 	private static File toDir(Str dirPath) {
-		file := dirPath.startsWith("file:") && dirPath.containsChar('\\').not ? File(dirPath.toUri, false) : File.os(dirPath)
+		file := toFile(dirPath)
 		// trailing slashes aren't added to dir paths that don't exist
 		if (file.exists.not)
 			file = file.uri.plusSlash.toFile
 		if (file.isDir.not)
 			throw ArgErr("Path is not a directory: ${dirPath} (${file.normalize.osPath})")
 		return file
-	}	
-
+	}
 }
