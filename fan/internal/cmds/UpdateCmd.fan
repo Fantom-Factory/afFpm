@@ -6,7 +6,7 @@ using fanr::PodSpec
 @NoDoc
 class UpdateCmd : FpmCmd {
 
-	@Opt { aliases=["r"]; help="Name of the local repository to publish pods to" }
+	@Opt { aliases=["r"]; help="Name or location of the local repository to publish pods to" }
 	Str repo	:= "default"
 
 	@Opt { aliases=["p"]; help="The pod whose dependencies are to be updated. Examples, afIoc, afBedSheet@1.5, pods\\myPod.pod" }
