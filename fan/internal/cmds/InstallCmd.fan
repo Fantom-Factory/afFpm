@@ -56,21 +56,66 @@ class InstallCmd : FpmCmd {
 			installToLocal(repoDir)
 
 		// if no repo is specified, then we assume pod is a search query to install
-//		download(repoDir)
-//		podFile := FileUtils.toFile(pod)
-//			
-//		// TODO be nice here
-//		err("Unknown repository: ${repo}")
-
-		return 0
-	}
-	
-	private Int installToRemote(Repo repo) {
+		doRemoteToLocal(pod, fpmConfig.fileRepos["default"])
+		
 		return 0
 	}
 	
 	private Int installToLocal(File repoDir) {
-//		podManager.install(pod, repo)
+		podFile := FileUtils.toFile(pod)
+		return podFile.exists
+			? doLocalToLocal(podFile, repoDir.normalize)
+			: doRemoteToLocal(pod, repoDir.normalize)
+	}
+
+	private Int installToRemote(Repo fanr) {
+		podFile := FileUtils.toFile(pod)
+		return podFile.exists
+			? doLocalToRemote(podFile, fanr)
+			: doRemoteToRemote(pod, fanr)
+	}
+
+	private Int doLocalToLocal(File podFile, File repoDir) {
+		// installing a local file to a local repo
+		podManager.publishPod(podFile, repoDir.osPath)
+		return 0
+	}
+	
+	private Int doRemoteToLocal(Str podQuery, File repoDir) {
+		// query remote repos, download, & install to local repo
+		query := podQuery.replace("@", " ")
+		fpmConfig.fanrRepos.find |url, name->Bool| {
+			repo  := fpmConfig.fanrRepo(name)
+			specs := repo.query(query, 1)
+			if (specs.isEmpty) return false
+			
+			// FIXME need to download dependencies too!
+			
+			log.info("  Downloading ${specs.first} from ${name}")
+			temp := File.createTemp("afFpm-", ".pod").deleteOnExit
+			out  := temp.out
+			repo.read(specs.first).pipe(out)
+			out.close
+			
+			podManager.publishPod(temp, repoDir.osPath)
+			return true
+		}
+		return 0
+	}
+	
+	private Int doLocalToRemote(File podFile, Repo fanr) {
+		// publish the local file to a remote repo
+		fanr.publish(podFile)
+		return 0
+	}
+	
+	private Int doRemoteToRemote(Str podQuery, Repo fanr) {
+		// a misnomer, we actually...
+		// query the local repos and publish it to a remote repo
+		// thinking of pod URIs to specify which repo to search -> fanr:release/afIoc@2.0 ???
+		podFile := podManager.findPodFile(podQuery, false)
+		if (podFile != null)
+			fanr.publish(podFile.file)
 		return 0
 	}
 	
