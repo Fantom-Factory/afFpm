@@ -1,0 +1,139 @@
+Overview
+********
+Fantom Pod Manager provides a targetted environment for running and compiling Fantom pods.
+
+It maintains a local, file based repository of pods.
+
+and cherry picks versions as needed
+
+
+Quick Start
+***********
+Setup should create the fpm.props file.
+if exists, it should log the location and exit - telling the user to delete it.
+Run setup to move / publish non-sys pods from Fan Home to repo.
+
+set 'FAN_ENV'
+
+
+set DEBUG to on
+
+Fpm Config should list the fpm config files
+
+
+FPM Config
+****
+
+Config files are *not* addative. Config found in a higher priority file *replaces* the value of the lower.
+
+
+
+FPM Runtime Env
+****
+To run a fantom application, script, or build, FPM needs to know which pod it should resolve dependencies for. This is known as the *target pod*.
+
+In most common cases FPM is able to infer the target pod from what is being run. In other cases you should set the environment variable 'FPM_TARGET'.
+
+In Windows:
+
+  C:\> set FPM_TARGET=myApp
+
+In Linux:
+
+  $ export FPM_TARGET=myApp
+
+FPM will always use the 'FPM_TARGET' environment variable if it is set.
+
+If FPM fails to resolve a target pod then it falls back to providing the latest versions of all pods.
+
+
+
+Run a Fantom Application
+====
+Where it can FPM uses [Env.mainMethod()]`sys::Env.mainMethod` to determine the target pod. For example, all the following commands would all resolve 'myApp' as the target pod.
+
+  C:\> fan myApp
+
+  C:\> fan myApp::Example
+
+  C:\> fan myApp::Example.main
+
+If using a library to kick start an app, such as BedSheet, like below:
+
+  C:\> fan afBedSheet myApp
+
+Then FPM would resolve 'afBedSheet' as the target pod, not 'myApp', so you would need to use the 'FPM_TARGET' environement variable.
+
+
+
+Run a Fantom Script
+====
+When running a file as Fantom script, such as:
+
+  C:\> fan myScript.fan
+
+Then FPM has no knowledge of the script's dependencies, so it defaults to providing the latest pod versions, or using 'FPM_TARGET' if defined.
+
+
+
+Build a Fantom Pod
+====
+FPM can detect when a 'build.fan' script is being run, but it doesn't know which one! So it assumes it is the 'build.fan' file in the *current* directory. It then loads the build script and parses the dependencies from it.
+
+In general, running a standard build script, as shown below, will work as expected:
+
+  C:\> fan build.fan
+
+But running a build script in a different directory or with a different name will yield unexpected results:
+
+  Will not work:
+
+  C:\> fan some\other\dir\build.fan
+
+  C:\> fan customBuild.fan
+
+
+
+Run Fantom Tests
+====
+When running Fantom tests using the 'fant' runner, there is no 'main' method per-se, so FPM can't infer the target pod. When running tests the 'FPM_TARGET' environment variable should be used instead.
+
+  C:\> set FPM_TARGET=myApp
+  C:\> fant myApp
+
+
+
+Fantom 1.0.67
+====
+FPM makes heavy use of the 'Env.mainMethod()' method which was only introduced in Fantom 1.0.68. If using a Fantom version prior to 1.0.68 then the 'FPM_TARGET' environement variable would need to be set in all cirsumstances.
+
+If 'FPM_TARGET' is not set then FPM falls back to its default of providing just the latest pod versions.
+
+
+
+FPM Cmds
+****
+
+  C:\> fan afFpm <cmd> -p <pod> -r <repo>
+
+  fan afFpm on its own should just dump fpm config
+
+
+
+Setup
+====
+
+Install
+====
+
+Uninstall
+====
+
+Publish
+====
+delete - use install instead
+
+Update
+====
+
+
