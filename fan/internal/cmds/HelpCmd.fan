@@ -16,9 +16,9 @@ internal class HelpCmd : FpmCmd {
 		if (cmd != null) {
 			cmdType := Type.find("afFpm::${cmd.capitalize}Cmd", false)
 			if (cmdType != null && cmdType.doc?.trimToNull != null) {
-				log.info(cmd.toDisplayName)
-				log.info("".padl(cmd.toDisplayName.size, '#'))
 				log.info("")
+				log.info(cmd.toDisplayName)
+				log.info("".padl(cmd.toDisplayName.size, '-'))
 				log.info(cmdType.doc)
 			}
 		}
