@@ -93,7 +93,7 @@ abstract const class FpmEnv : Env {
 
 		if (Env.cur.vars["FPM_ALL_PODS"]?.toBool(false) ?: false) {
 			log.warn("FPM_ALL_PODS = true; defaulting to latest pod versions")
-			this.allPodFiles = podDepends.podResolvers.resolveAll(allPodFiles.rw) { remove(targetPod.split.first) }
+			this.allPodFiles = podDepends.podResolvers.resolveAll(allPodFiles.rw)
 		}
 		
 		// ---- dump info to logs ----
@@ -108,7 +108,10 @@ abstract const class FpmEnv : Env {
 		if (unresolvedPods.size > 0) {
 			log.warn(Utils.dumpUnresolved(unresolvedPods))
 			// FIXME we should use the semi-resolved pods
-			this.allPodFiles = podDepends.podResolvers.resolveAll(allPodFiles.rw) { remove(targetPod.split.first) }
+			if (targetPod == "???")
+				this.allPodFiles = podDepends.podResolvers.resolveAll(allPodFiles.rw) { remove(targetPod.split.first) }
+			else
+				this.allPodFiles = podDepends.podResolvers.resolveAll(allPodFiles.rw)
 		}
 
 		if (error != null) {

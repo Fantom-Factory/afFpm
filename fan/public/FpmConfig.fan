@@ -104,7 +104,7 @@ const class FpmConfig {
 		}
 		this.fanrRepos = fanrRepos
 		
-		this.launchPods = fpmProps["launchPods"].split(',')
+		this.launchPods = fpmProps["launchPods"]?.split(',') ?: Str#.emptyList
 		
 		this.configFiles	= configFiles ?: File[,]
 	}

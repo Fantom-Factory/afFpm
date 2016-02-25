@@ -3,7 +3,7 @@ internal class FileCache {
 	
 	File:PodVersion?	files	:= File:PodVersion?[:]
 	
-	PodVersion? get(File file) {
+	PodVersion? getOrMake(File file) {
 		files.getOrAdd(file) { readFile(file) }
 	}
 	

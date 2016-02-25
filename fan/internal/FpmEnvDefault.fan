@@ -2,14 +2,22 @@
 internal const class FpmEnvDefault : FpmEnv {
 
 	static new make() {
-		fpmConfig	:= FpmConfig()
-
-		// add F4 pod locations
-		f4PodPaths	:= Env.cur.vars["FAN_ENV_PODS"]?.trimToNull?.split(File.pathSep.chars.first, true) ?: Str#.emptyList
-		f4PodFiles	:= f4PodPaths.map { toFile(it) }
-		fpmEnv 		:= makeManual(fpmConfig, f4PodFiles)
-
-		return fpmEnv
+		try {
+			fpmConfig	:= FpmConfig()
+	
+			// add F4 pod locations
+			f4PodPaths	:= Env.cur.vars["FAN_ENV_PODS"]?.trimToNull?.split(File.pathSep.chars.first, true) ?: Str#.emptyList
+			f4PodFiles	:= f4PodPaths.map { toFile(it) }
+			fpmEnv 		:= makeManual(fpmConfig, f4PodFiles)
+	
+			return fpmEnv
+			
+		} catch (Err e) {
+			// this is really just belts and braces for FPM development as
+			// otherwise we don't get a useful stack trace
+			Env.cur.err.print(e.traceToStr)
+			throw e
+		}
 	}
 	
 	private new makeManual(FpmConfig fpmConfig, File[] podFiles, |This|? in := null) : super.makeManual(fpmConfig, podFiles, in) { }
