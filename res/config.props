@@ -19,6 +19,8 @@ fanrRepo.fantom			= http://fantom.org/fanr/
 fanrRepo.fantomFactory	= http://username:password@pods.fantomfactory.org/fanr/
 fanrRepo.status302		= http://repo.status302.com/fanr/
 
+launchPods				= afBedSheet, afReflux
+
 pod.afIoc				= repo:afIoc 2.0
 
 
