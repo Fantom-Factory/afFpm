@@ -35,7 +35,7 @@ class UpdateCmd : FpmCmd {
 		
 		if (pod == null) {
 			// TODO download dependencies for a specific build file
-			buildPod	:= FpmEnvDefault.getBuildPod("build.fan")		
+			buildPod	:= BuildPod("build.fan")		
 			if (buildPod == null) {
 				log.err("Could not find / load 'build.fan'")
 				return 101

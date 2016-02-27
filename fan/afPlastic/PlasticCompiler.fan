@@ -1,3 +1,4 @@
+using concurrent
 using compiler
 
 ** (Service) - 
@@ -6,7 +7,7 @@ using compiler
 ** Note: This class is available as a service in IoC v3 under the 'root' scope with an ID of 'afPlastic::PlasticCompiler'.
 internal class PlasticCompiler {
 	
-	private Int podIndex	:= 1
+	private static const AtomicInt podIndex	:= AtomicInt(1)
 
 	** When generating code snippets to report compilation Errs, this is the number of lines of src 
 	** code the erroneous line should be padded with. 
@@ -50,7 +51,7 @@ internal class PlasticCompiler {
 	** Different pod names prevents "sys::Err: Duplicate pod name: <podName>".
 	** We internalise podName so we can guarantee no duplicate pod names
 	Str generatePodName() {
-		index := (podIndex++).toStr.padl(3, '0')		
+		index := podIndex.getAndIncrement.toStr.padl(3, '0')		
 		return "afPlastic${index}"
 	}
 }

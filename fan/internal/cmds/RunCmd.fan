@@ -31,6 +31,7 @@ class RunCmd : FpmCmd {
 		if (js)
 			cmds.insert(0, "compilerJs::Runner")
 		cmds.insert(0, fanCmd)
+
 		log.info("Running " + cmds[1..-1].join(" "))
 
 		process := Process(cmds)

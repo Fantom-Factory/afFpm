@@ -24,6 +24,7 @@ class TestCmd : FpmCmd {
 		if (js)
 			cmds.insert(0, "-js")
 		cmds.insert(0, fanCmd)
+
 		log.info("Testing " + cmds[1..-1].join(" "))
 		
 		process := Process(cmds)

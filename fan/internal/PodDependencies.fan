@@ -19,10 +19,10 @@ internal class PodDependencies {
 		this.podResolvers	= PodResolvers(config, podFiles, fileCache)
 	}
 
-	Void setBuildTargetFromBuildPod(Obj buildPod, Bool checkDependencies) {
-		podName	:= (Str)	 buildPod->podName 
-		version	:= (Version) buildPod->version 
-		depends	:= (Str[])	 buildPod->depends 
+	Void setBuildTargetFromBuildPod(BuildPod buildPod, Bool checkDependencies) {
+		podName	:= buildPod.podName 
+		version	:= buildPod.version 
+		depends	:= buildPod.depends 
 		setBuildTarget(podName, version, depends.map { Depend(it, false) }.exclude { it == null }, checkDependencies)
 	}
 
