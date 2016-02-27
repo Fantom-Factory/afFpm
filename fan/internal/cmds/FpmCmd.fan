@@ -5,7 +5,7 @@ using concurrent
 abstract class FpmCmd : AbstractMain {
 	override Log	log 	:= StdLogger()
 		FpmConfig	fpmConfig	:= (Env.cur as FpmEnv)?.fpmConfig ?: FpmEnv().fpmConfig
-		PodManager	podManager	:= PodManager() {
+		PodManager	podManager	:= PodManagerImpl {
 			it.fpmConfig	= this.fpmConfig
 			it.log			= this.log
 		}

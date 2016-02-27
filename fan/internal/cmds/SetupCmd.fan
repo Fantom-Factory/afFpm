@@ -7,6 +7,8 @@ using util
 @NoDoc
 class SetupCmd : FpmCmd {
 
+	private const CorePods	corePods	:= CorePods()
+
 	@Opt { aliases=["r"]; help="Name of the repository to publish to" }
 	Str repo	:= "default"
 
@@ -45,12 +47,12 @@ class SetupCmd : FpmCmd {
 			}
 
 			fpmConfig.workDirs.each {
-				podManager.installAllPodsFromDir(it.plus(`lib/fan/`), repo)
+				installAllPodsFromDir(it.plus(`lib/fan/`), repo)
 				log.info("")
 			}
 
 			fpmConfig.podDirs.each {
-				podManager.installAllPodsFromDir(it, repo)
+				installAllPodsFromDir(it, repo)
 				log.info("")
 			}			
 //		}
@@ -59,4 +61,24 @@ class SetupCmd : FpmCmd {
 	}
 	
 	override Bool argsValid() { true }
+	
+	** Publishes all pods from the given directory.
+	**  
+	** 'repo' should be the name of a local file repository, or a directory path.
+	** Directory paths may be in URI form or an OS path.
+	**  
+	** 'repo' defaults to 'default' if not specified.
+	private Void installAllPodsFromDir(File dir, Str? repo := null) {
+		log.info("Publishing pods from ${dir.osPath} into repo '" +  (repo ?: "default") + "'...")
+		podFiles := dir.listFiles(".+\\.pod".toRegex).exclude {
+			corePods.isCorePod(it.basename) || it.basename == "afFpm"
+		}
+		if (podFiles.isEmpty)
+			log.info("  No pods found")
+		
+		podFiles.each |file| {
+			podManager.publishPod(file, repo)
+		}
+	}
+
 }
