@@ -3,7 +3,7 @@ using fanr::PodSpec
 // will be useful for public APIs.
 ** Represents a specific version of a pod.
 @Serializable
-const class PodVersion {
+internal const class PodVersion {
 	
 	** The name of this pod.
 	const 	Str			name

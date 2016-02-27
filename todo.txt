@@ -11,20 +11,3 @@ fanrRepo.fantomFactory.password	= password
 
 Docs
 ----
-
-publish pod
-fan afFpm publish   [-r default] afAtom.pod
-fan afFpm unpublish [-r default] afAtom@1.0.2
-fan afFpm unpublish [-r default] afAtom-1.0.2 ???
-
-install pod (and all its dependencies)
-fan afFpm install [-r default] afAtom
-fan afFpm install [-r default] afAtom@1.0.2
-
-update dependencies
-fan afFpm update [-r default] afAtom@1.0.2
-
-download dependencies
-fan afFpm download lib/
-fan afFpm download lib/ [build.fan / afAtom@1.0.2]
-

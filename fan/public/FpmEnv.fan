@@ -1,17 +1,7 @@
 
 ** Provides a targeted environment for a specific pod. 
-** Always provides access to all the libs in HomeDir and WorkDirs as a fail safe! (
 ** 
-** Has to cater for 
-**  - building a pod - fan build.fan
-**  - running a pod - fan afEggbox
-**  - compiling in F4
-**  - running from F4
-** 
-** Does not cater for 
-**  - running a script - fan appBuild.fan (should just take latest?)
-** 
-** Creates a targeted environment for a pod
+** The WorkDirs and HomeDir are always queried if a pod is not found in a local repostitory..
 abstract const class FpmEnv : Env {
 	@NoDoc	// so F4 can set it's own
 	const Log 				log 	:= FpmEnv#.pod.log
@@ -130,22 +120,23 @@ abstract const class FpmEnv : Env {
 		fpmConfig.tempDir
 	}
 	
-	@NoDoc
+	** Return the list of pod names for all the pods currently installed in this environment.
 	override Str[] findAllPodNames() {
 		allPodFiles.keys 
 	}
 
-	@NoDoc
+	** Resolve the pod file for the given pod name.
 	override File? findPodFile(Str podName) {
 		allPodFiles.get(podName)?.file
 	}
 
-	@NoDoc
+	** Find all the files in the environment which match a relative path such as 'etc/foo/config.props'. 
 	override File[] findAllFiles(Uri uri) {
-		fileDirs.map { it + uri }.exclude |File f->Bool| { f.exists.not }
+		if (uri.isPathAbs) throw ArgErr("Uri must be rel: $uri")
+		return fileDirs.map { it + uri }.exclude |File f->Bool| { f.exists.not }
 	}
 
-	@NoDoc
+	** Find a file in the environment using a relative path such as 'etc/foo/config.props'. 
 	override File? findFile(Uri uri, Bool checked := true) {
 		if (uri.isPathAbs) throw ArgErr("Uri must be rel: $uri")
 		return fileDirs.eachWhile |dir| {

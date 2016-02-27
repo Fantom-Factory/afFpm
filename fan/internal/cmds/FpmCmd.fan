@@ -2,6 +2,7 @@ using util
 using concurrent
 
 ** Needs to be public to retain the type doc
+@NoDoc
 abstract class FpmCmd : AbstractMain {
 	override Log	log 	:= StdLogger()
 		FpmConfig	fpmConfig	:= (Env.cur as FpmEnv)?.fpmConfig ?: FpmEnv().fpmConfig

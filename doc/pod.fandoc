@@ -2,9 +2,11 @@ Overview
 ********
 Fantom Pod Manager provides a targetted environment for running and compiling Fantom pods.
 
-It maintains a local, file based repository of pods.
+It is one of those boring system libraries that you quickly find you can't do without.
 
-and cherry picks versions as needed
+A typical Fantom installation only allows one version of any given pod. This is fine when you only have one application. But when developing multiple applications, each requiring different versions of the same pod, then you need multiple Fantom environments. A seperate environment for each application. That is... until now.
+
+FPM maintains a [fanr file repository]`docFanr::FileRepos` (or several) of Fantom pods, where multiple versions of the same pod are kept. When a Fantom application, test, or build script is run via the [FPM Env]`afFpm::FpmEnv` it then cherry picks the pod versions required.
 
 
 Quick Start
