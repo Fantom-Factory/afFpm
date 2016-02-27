@@ -10,39 +10,6 @@ internal class TestDependencySatisfaction : Test {
 			it.podResolvers.resolvers = [podDependsCache]
 		}
 	}
-
-	Void testUglyFantomBug() {
-		list := [1, 2, 3]
-		
-		out1 := list.map { it.toStr }
-		echo(out1)
-
-		out2 := list.map |Int int| { int.toStr }
-		echo(out2)
-		
-		out3 := list.map |Int int| { return int.toStr }
-		echo(out3)
-		
-		out5 := list.map |int| { int.toStr }
-		echo(out5)
-
-		out4 := list.map |Int int -> Str| { int.toStr }
-		echo(out4)
-		
-//		.find ???
-		
-//		[1, 2, 3]
-//		[null, null, null]
-//		[1, 2, 3]
-
-//		list := [1, 2, 3]
-//		
-//		list.map { it.toStr }                    // --> [1, 2, 3]
-//		list.map |Int int| { int.toStr }         // --> [null, null, null]
-//		list.map |Int int| { return int.toStr }  // --> [null, null, null]
-//		list.map |Int int -> Str| { int.toStr }  // --> [1, 2, 3]
-
-	}
 	
 	Void testEasyHappyPath() {
 		// everyone depends on the same versions
@@ -162,6 +129,7 @@ internal class TestDependencySatisfaction : Test {
 				it.podVersions = podDepends.podResolvers.resolve(d)
 			}
 		}
+		podDepends.targetPod = "TestPod"
 		podDepends.satisfyDependencies
 	}
 
