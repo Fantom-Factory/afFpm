@@ -20,8 +20,16 @@ class UpdateCmd : FpmCmd {
 		podDepends	:= PodDependencies(fpmConfig, File[,], log)
 
 		if (pod != null) {
-			file := pod.contains("\\") ? File.os(pod) : pod.toUri.toFile
-			podFile := file.exists ? PodFile(file) : podManager.findPodFile(pod, true)
+			podFile	:= null as PodFile
+			file	:= FileUtils.toFile(pod)
+			if (file.exists)
+				podFile = PodFile(file)
+			else {
+				podFiles := podManager.queryLocalRepositories(pod)
+				if (podFiles.isEmpty)
+					throw Err("Could not find pod '${pod}'")
+				podFile = podFiles.first
+			}			
 			podDepends.setRunTarget(podFile.asDepend)
 		}
 		

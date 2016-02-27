@@ -12,7 +12,7 @@ class UnInstallCmd : FpmCmd {
 	new make() { }
 
 	override Int go() {
-		podManager.uninstallPod(pod, repo)
+		podManager.unPublishPod(pod, repo)
 		return 0
 	}
 	
