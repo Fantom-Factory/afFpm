@@ -5,7 +5,9 @@ const mixin PodManager {
 	
 	** Creates a 'PodManager' instance.
 	static new make(FpmConfig? fpmConfig := null) {
-		PodManagerImpl { it.fpmConfig = fpmConfig }
+		fpmConfig == null
+			? PodManagerImpl()
+			: PodManagerImpl { it.fpmConfig = fpmConfig }
 	}
 	
 	** Returns 'PodFiles' from the local repositories that match the given query.

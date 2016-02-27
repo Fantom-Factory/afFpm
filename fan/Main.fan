@@ -10,6 +10,9 @@ internal class Main {
 			return HelpCmd().run
 		
 		switch (cmd) {
+			case "build":
+				return BuildCmd().run
+
 			case "run":
 				return RunCmd().run
 
