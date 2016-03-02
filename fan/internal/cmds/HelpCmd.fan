@@ -21,6 +21,9 @@ internal class HelpCmd : FpmCmd {
 				log.info("".padl(cmd.toDisplayName.size, '-'))
 				log.info(cmdType.doc)
 			}
+		} else {
+			
+			// FIXME print cmd synopsis 
 		}
 
 					// http://stackoverflow.com/a/24121322/1532548

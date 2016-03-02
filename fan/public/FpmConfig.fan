@@ -31,7 +31,10 @@ const class FpmConfig {
 	const File[]	configFiles
 
 	** The raw FPM config gleaned from the 'configFiles'.
+	** Does not include fanr credentials.
 	const Str:Str	rawConfig
+
+	private const Str:Str	_rawConfig
 
 	private new makePrivate(|This|in) { in(this) }
 	
@@ -53,9 +56,10 @@ const class FpmConfig {
 		workFile := workDirs.split(File.pathSep.chars.first).map { toAbsDir(it) + `etc/afFpm/fpm.props` }.unique as File[]
 		if (fpmFile != null)
 			workFile.insert(0, fpmFile)
+		workFile = workFile.findAll { it.exists }
 
 		fpmProps := Str:Str[:] { it.ordered = true }
-		workFile.eachr { if (it.exists) fpmProps.setAll(it.readProps) }
+		workFile.eachr { fpmProps.setAll(it.readProps) }
 
 		return makeInternal(baseDir, homeDir, envPaths, fpmProps, workFile.reverse)
 	}
@@ -96,7 +100,7 @@ const class FpmConfig {
 		this.podDirs = podDirs?.split(File.pathSep.chars.first)?.map { toRelDir(baseDir, it) }?.findAll |File dir->Bool| { dir.exists }?.unique ?: File#.emptyList
 
 		fanrRepos := (Str:Uri) fpmProps.findAll |path, name| {
-			name.startsWith("fanrRepo.")
+			name.startsWith("fanrRepo.") && name.endsWith(".username").not && name.endsWith(".password").not
 		}.reduce(Str:Uri[:] { ordered=true }) |Str:Uri repos, Str path, key| {
 			url  := path.trim.toUri
 			name := key["fanrRepo.".size..-1]
@@ -111,7 +115,11 @@ const class FpmConfig {
 		
 		this.configFiles	= configFiles ?: File[,]
 		
-		this.rawConfig		= fpmProps
+		this._rawConfig		= fpmProps
+		
+		// as Env is available to the entire FVM, be nice and remove any credentials
+		// it's just lip service really, as anyone could re-read the fpm.config files
+		this.rawConfig		= fpmProps.exclude |val, key| { key.endsWith(".username") || key.endsWith(".password") }
 	}
 	
 	** Returns a fanr 'Repo' instance for the named repository. 
@@ -125,9 +133,9 @@ const class FpmConfig {
 		
 		if (fanrRepos.containsKey(repoName)) {
 			if (username == null)
-				username = rawConfig["${repoName}.username"]
+				username = _rawConfig["fanrRepo.${repoName}.username"]
 			if (password == null)
-				password = rawConfig["${repoName}.password"]
+				password = _rawConfig["fanrRepo.${repoName}.password"]
 			return toFanrRepo(fanrRepos[repoName], username, password)
 		}
 		
