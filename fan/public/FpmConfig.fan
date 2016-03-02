@@ -30,6 +30,9 @@ const class FpmConfig {
 	** The config files used to generate this class.
 	const File[]	configFiles
 
+	** The raw FPM config gleaned from the 'configFiles'.
+	const Str:Str	rawConfig
+
 	private new makePrivate(|This|in) { in(this) }
 	
 	@NoDoc
@@ -47,7 +50,7 @@ const class FpmConfig {
 		workDirs := "" as Str
 		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + (envPaths ?: "")
 		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + homeDir.uri.toStr
-		workFile := workDirs.split(File.pathSep.chars.first).map { toAbsDir(it) + `etc/afFpm/config.props` }.unique as File[]
+		workFile := workDirs.split(File.pathSep.chars.first).map { toAbsDir(it) + `etc/afFpm/fpm.props` }.unique as File[]
 		if (fpmFile != null)
 			workFile.insert(0, fpmFile)
 
@@ -81,7 +84,7 @@ const class FpmConfig {
 			return repos
 		}
 		if (repoDirs.containsKey("default").not)
-			repoDirs["default"] = this.workDirs.first.plus(`repo/`, false)
+			repoDirs["default"] = this.workDirs.first.plus(`fpmRepo/`, false)
 		this.fileRepos = repoDirs
 		
 		tempDir := fpmProps["tempDir"]
@@ -102,22 +105,31 @@ const class FpmConfig {
 			repos[name] = url
 			return repos
 		}
-		this.fanrRepos = fanrRepos
+		this.fanrRepos		= fanrRepos
 		
-		this.launchPods = fpmProps["launchPods"]?.split(',') ?: Str#.emptyList
+		this.launchPods 	= fpmProps["launchPods"]?.split(',') ?: Str#.emptyList
 		
 		this.configFiles	= configFiles ?: File[,]
+		
+		this.rawConfig		= fpmProps
 	}
 	
 	** Returns a fanr 'Repo' instance for the named repository. 
 	** May be either a 'fileRepo' or a 'fanrRepo'. 
-	Repo fanrRepo(Str repoName) {
-		// FPM doesn't need / use a local fanr repo, but other may find it useful
+	** 
+	** 'username' and 'password' are only used if a 'fanrRepo' is returned.
+	Repo fanrRepo(Str repoName, Str? username := null, Str? password := null) {
+		// FPM doesn't need / use a local fanr repo, but others may find it useful
 		if (fileRepos.containsKey(repoName))
 			return Repo.makeForUri(fileRepos[repoName].uri)
 		
-		if (fanrRepos.containsKey(repoName))
-			return toFanrRepo(fanrRepos[repoName])
+		if (fanrRepos.containsKey(repoName)) {
+			if (username == null)
+				username = rawConfig["${repoName}.username"]
+			if (password == null)
+				password = rawConfig["${repoName}.password"]
+			return toFanrRepo(fanrRepos[repoName], username, password)
+		}
 		
 		allRepoNames := fileRepos.keys.addAll(fanrRepos.keys).sort
 		throw ArgErr("Cound not find remote repo with name '${repoName}'. Available repos: " + allRepoNames.join(","))
@@ -183,12 +195,14 @@ const class FpmConfig {
 		return str
 	}
 
-	internal static Repo toFanrRepo(Uri url) {
+	internal static Repo toFanrRepo(Uri url, Str? usr := null, Str? pwd := null) {
 		userStr	 := url.userInfo == null ? "" : url.userInfo + "@"
 		repoUrl	 := url.toStr.replace(userStr, "").toUri
 		// TODO do proper percent decoding
 		username := Uri.decode(url.userInfo?.split(':')?.getSafe(0)?.replace("%40", "@") ?: "").toStr.trimToNull	// decode percent encoding
 		password := Uri.decode(url.userInfo?.split(':')?.getSafe(1)?.replace("%40", "@") ?: "").toStr.trimToNull
+		if (usr != null)	username = usr
+		if (pwd != null)	password = pwd
 		return Repo.makeForUri(repoUrl, username, password)
 	}
 	

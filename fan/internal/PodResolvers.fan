@@ -140,7 +140,7 @@ internal class PodResolverPath : PodResolver {
 	}
 
 	override PodVersion[] resolve(Depend dependency) {
-		file 		:= pathDir.plus(`${dependency.name}.pod`)	
+		file 		:= pathDir.plus(`${dependency.name}.pod`)
 		podVersion	:= fileCache.getOrMake(file)
 
 		if (podVersion != null)
