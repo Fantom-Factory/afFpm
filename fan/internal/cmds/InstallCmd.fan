@@ -7,7 +7,7 @@ using fanr
 **  - a named local repository. Example, 'default'
 **  - a named remote repository. Example, 'fantomFactory'
 **  - the directory of a local repository. Example, 'C:\repo-release\'
-**  - the URL of a remote repositry. Example, 'http://pods.fantomfactory.org/fanr/'
+**  - the URL of a remote repository. Example, 'http://pods.fantomfactory.org/fanr/'
 ** 
 ** The pod may be:
 **  - a file location, absolute or relative. Example, 'lib/myAweseomeGame.pod'
@@ -17,19 +17,15 @@ using fanr
 ** 
 ** To download the latest pod from a remote repository:
 ** 
-**   > fpm install -p afIoc
+**   > fpm install afIoc
 ** 
 ** To download a specific pod version to a local repository:
 ** 
-**   > fpm install -p afIoc@2.0.10 -r release
+**   > fpm install -r release afIoc@2.0.10
 ** 
 ** To publish (upload) a pod to the Fantom-Factory repository:
 ** 
-**   > fpm install -p lib/myGame.pod -r fantomFactory
-** 
-** To publish (upload) a specific pod version to the Fantom-Factory repository:
-** 
-**   > fpm install -p myGame@2.0 -r fantomFactory
+**   > fpm install -r fantomFactory lib/myGame.pod
 ** 
 @NoDoc
 class InstallCmd : FpmCmd {
@@ -37,11 +33,11 @@ class InstallCmd : FpmCmd {
 	@Opt { aliases=["r"]; help="Name or location of the repository to install to." }
 	Str? repo
 
-	@Opt { aliases=["p"]; help="The pod to install. May be a file location or search query." }
-	Str? pod
+	@Arg
+	Str[]? args
 
 	override Int go() {
-
+		pod 	:= args.join(" ")
 		podFile := FileUtils.toFile(pod)
 		if (podFile.exists) {
 			podManager.publishPod(podFile, repo)
@@ -50,21 +46,24 @@ class InstallCmd : FpmCmd {
 
 		// if the dest repo is remote, 
 		// ...query the local repos and publish to the remote
-		fanrUrl	:= repo.toUri
-		if (fpmConfig.fanrRepos.containsKey(repo) || fanrUrl.scheme == "http" || fanrUrl.scheme == "https") {
-			podFiles := podManager.queryLocalRepositories(pod)
-			if (podFiles.isEmpty)
-				throw Err("Could not find pod '${pod}'")
-			podFile = podFiles.first.file
-			podManager.publishPod(podFile)
+		if (repo != null) {
+			fanrUrl	:= repo?.toUri
+			if (fpmConfig.fanrRepos.containsKey(repo) || fanrUrl.scheme == "http" || fanrUrl.scheme == "https") {
+				podFiles := podManager.queryLocalRepositories(pod)
+				if (podFiles.isEmpty)
+					throw Err("Could not find pod '${pod}'")
+				podFile = podFiles.first.file
+				podManager.publishPod(podFile, repo)
+			}
 		}
 
 		// TODO pod URIs to specify which repo to search -> fanr:release/afIoc@2.0 ???
 		
 		// ...query the remote repos, download, and publish to local
 		query := pod.replace("@", " ")
-		fpmConfig.fanrRepos.find |url, name->Bool| {
+		installed := fpmConfig.fanrRepos.any |url, name->Bool| {
 			repo  := fpmConfig.fanrRepo(name)
+			log.info("  Querying ${name} for: ${query}")
 			specs := repo.query(query, 1)
 			if (specs.isEmpty) return false
 			
@@ -79,10 +78,16 @@ class InstallCmd : FpmCmd {
 			podManager.publishPod(temp, this.repo)
 			return true
 		}
+		
+		if (!installed) {
+			log.info("")
+			log.info("Could not find: ${query}")
+		}
+		
 		return 0		
 	}
 		
 	override Bool argsValid() {
-		pod != null
+		args != null && args.size > 0
 	}
 }

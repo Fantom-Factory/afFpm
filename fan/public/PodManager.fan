@@ -24,7 +24,7 @@ const mixin PodManager {
 	** Returns a 'PodFile' representing the newly published pod.
 	** 
 	** 'repo' defaults to 'default' if not specified.
-	abstract PodFile publishPod(File pod, Str? repo := null)
+	abstract PodFile publishPod(File pod, Str? repo := null, Str? username := null, Str? password := null)
 	
 	** Deletes the named pod from the local repository.
 	abstract Void unPublishPod(Str pod, Str repo)
@@ -50,7 +50,7 @@ internal const class PodManagerImpl : PodManager {
 		return PodResolvers(fpmConfig, File#.emptyList, FileCache()).resolve(Depend(query)).sort.map { it.toPodFile }
 	}
 	
-	override PodFile publishPod(File file, Str? repo := null) {
+	override PodFile publishPod(File file, Str? repo := null, Str? username := null, Str? password := null) {
 		if (file.exists.not)
 			throw IOErr(ErrMsgs.mgr_podFileNotFound(file))
 
@@ -70,7 +70,7 @@ internal const class PodManagerImpl : PodManager {
 		
 		// publish to a named fanr repo
 		if (fpmConfig.fanrRepos.containsKey(repoName)) {
-			fpmConfig.fanrRepo(repoName).publish(podFile.file)
+			fpmConfig.fanrRepo(repoName, username, password).publish(podFile.file)
 			dstPodUrl = fpmConfig.fanrRepos[repoName].plusSlash + `pod/${podFile.name}/${podFile.version}`
 		} else
 
