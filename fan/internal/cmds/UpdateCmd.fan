@@ -3,7 +3,7 @@ using fanr::PodSpec
 
 // can this install from scratch AND update an existing?
 ** Updates dependencies for a named pod / build file.
-@NoDoc
+@NoDoc	// Fandoc is only saved for public classes
 class UpdateCmd : FpmCmd {
 
 	@Opt { aliases=["r"]; help="Name or location of the local repository to publish pods to" }

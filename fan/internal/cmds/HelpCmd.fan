@@ -1,6 +1,8 @@
 using util
 
-internal class HelpCmd : FpmCmd {
+** Prints help on a given command.
+@NoDoc	// Fandoc is only saved for public classes
+class HelpCmd : FpmCmd {
 
 	@Arg
 	Str? cmd
@@ -8,20 +10,20 @@ internal class HelpCmd : FpmCmd {
 	override Bool argsValid	:= true
 
 	override Int go() {
-		log.info("FPM Environment")
-		log.info("---------------")
-		log.info(fpmConfig.dump)
-
+		
 		cmd := Env.cur.args.getSafe(1)
 		if (cmd != null) {
 			cmdType := Type.find("afFpm::${cmd.capitalize}Cmd", false)
 			if (cmdType != null && cmdType.doc?.trimToNull != null) {
-				log.info("")
-				log.info(cmd.toDisplayName)
-				log.info("".padl(cmd.toDisplayName.size, '-'))
+				title := "Help: ${cmd.toDisplayName}"
+				log.info(title)
+				log.info("".padl(title.size, '-'))
 				log.info(cmdType.doc)
 			}
 		} else {
+			log.info("FPM Environment")
+			log.info("---------------")
+			log.info(fpmConfig.dump)
 			
 			// FIXME print cmd synopsis 
 		}

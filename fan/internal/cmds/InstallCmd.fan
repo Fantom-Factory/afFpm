@@ -27,7 +27,7 @@ using fanr
 ** 
 **   > fpm install -r fantomFactory lib/myGame.pod
 ** 
-@NoDoc
+@NoDoc	// Fandoc is only saved for public classes
 class InstallCmd : FpmCmd {
 	
 	@Opt { aliases=["r"]; help="Name or location of the repository to install to." }

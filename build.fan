@@ -1,3 +1,4 @@
+using afBuild
 using build
 
 class Build : BuildPod {
@@ -9,6 +10,7 @@ class Build : BuildPod {
 
 		meta = [
 			"proj.name"		: "Fantom Pod Manager",	
+			"testPods"		: "afBounce afSizzle",
 			"repo.tags"		: "sys",
 			"repo.public"	: "false"
 		]
@@ -30,11 +32,12 @@ class Build : BuildPod {
 	
 	@Target { help = "Compile to pod file and associated natives" }
 	override Void compile() {
-		// remove test pods from final build
-		testPods := "afBounce afSizzle".split
-		depends = depends.exclude { testPods.contains(it.split.first) }
+		BuildTask(this).run
+	}
 
-		super.compile
+	@Target { help = "Builds, publishes, and Hg tags a new pod release" }
+	Void release() {
+		ReleaseTask(this).run
 	}
 }
 

@@ -3,7 +3,7 @@ using util
 **
 ** Executes a pod / method, within the FPM environment.
 ** 
-@NoDoc
+@NoDoc	// Fandoc is only saved for public classes
 class RunCmd : FpmCmd {
 	
 	@Opt { help="Run in Javascript environment" }

@@ -1,6 +1,6 @@
 using util
 
-@NoDoc
+@NoDoc	// Fandoc is only saved for public classes
 class UnInstallCmd : FpmCmd {
 	
 	@Opt { aliases=["r"]; help="Name of the file / fanr repository to un-install from" }
