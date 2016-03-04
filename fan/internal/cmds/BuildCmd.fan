@@ -1,7 +1,7 @@
 using util
 
-** Runs a build task from 'build.fan' and should a pod be built, installs it to the named repository. 
-@NoDoc
+** Runs a build task from 'build.fan'. Should a pod be built, it is installed to the named repository. 
+@NoDoc	// Fandoc is only saved for public classes
 class BuildCmd : FpmCmd {
 	
 	@Opt { aliases=["r"]; help="Name or location of the repository to install to." }

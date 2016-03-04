@@ -1,27 +1,76 @@
 Overview
 ********
-Fantom Pod Manager provides a targetted environment for running and compiling Fantom pods.
+Fantom Pod Manager (FPM) provides a targetted environment for compiling, testing, and running Fantom pods.
 
 It is one of those boring system libraries that you quickly find you can't do without.
 
-A typical Fantom installation only allows one version of any given pod. This is fine when you only have one application. But when developing multiple applications, each requiring different versions of the same pod, then you need multiple Fantom environments. A seperate environment for each application. That is... until now.
+A typical Fantom installation only allows one version of any given pod. This works fine if you're just developing and running the one application. But if you're developing multiple applications, each requiring different versions of the same pod; then you either need multiple Fantom environments, one for each application, ... or you need FPM.
 
-FPM maintains a [fanr file repository]`docFanr::FileRepos` (or several) of Fantom pods, where multiple versions of the same pod are kept. When a Fantom application, test, or build script is run via the [FPM Env]`afFpm::FpmEnv` it then cherry picks the pod versions required.
+FPM maintains a local [fanr file repository]`docFanr::FileRepos` of Fantom pods, where multiple versions of the same pod are kept. When a Fantom application is built, test, or run via FPM; then FPM cherry picks the pod versions required.
+
 
 
 Quick Start
 ***********
-Setup should create the fpm.props file.
-if exists, it should log the location and exit - telling the user to delete it.
-Run setup to move / publish non-sys pods from Fan Home to repo.
+Once you've installed FPM via 'fanr', run the setup command:
 
+pre>
+C:\> fan afFpm setup
+
+Fantom Pod Manager 0.0.2
+========================
+
+Setting up FPM...
+  Creating: C:\Apps\fantom-1.0.68\bin\fpm.bat
+
+  Creating: C:\Apps\fantom-1.0.68\etc\afFpm\fpm.props
+
+  Publishing pods from C:\Apps\fantom-1.0.68\lib\fan into repo 'default'...
+    Publishing afBedSheet 1.5.0 to default
+    Publishing afBeanUtils 1.0.8 to default
+    Publishing afIoc 3.0.0 to default
+    ...
+
+Current Configuration
+      Home Dir : C:\Apps\fantom-1.0.68
+     Work Dirs : C:\Apps\fantom-1.0.68
+      Pod Dirs : (none)
+      Temp Dir : C:\Apps\fantom-1.0.68\temp
+  Config Files : C:\Apps\fantom-1.0.68\etc\afFpm\fpm.props
+
+    File Repos :
+       default = C:\Apps\fantom-1.0.68\fpmRepo
+
+    Fanr Repos :
+ fantomFactory = http://pods.fantomfactory.org/fanr/
+     status302 = http://repo.status302.com/fanr/
+        fantom = http://fantom.org/fanr/
+<pre
+
+As you can see, setup creates an fpm.bat file and some default config and publishes non-core pods
+
+You can then use 'fpm' from teh command line to run Fantom.
+
+
+
+Behind the scenes:
 set 'FAN_ENV'
 
 
 set DEBUG to on
 
-Fpm Config should list the fpm config files
 
+FPM Commands
+************
+Following is a list of FPM commands:
+
+setup
+=====
+FANDOC: afFpm::SetupCmd
+
+install
+=======
+FANDOC: afFpm::InstallCmd
 
 FPM Config
 ****

@@ -31,7 +31,8 @@ const mixin PodManager {
 	
 }
 
-internal const class PodManagerImpl : PodManager {
+@NoDoc
+const class PodManagerImpl : PodManager {
 	const Log 			log 			:= PodManager#.pod.log
 
 	const FpmConfig		fpmConfig

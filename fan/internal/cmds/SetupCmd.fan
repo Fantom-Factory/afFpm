@@ -1,10 +1,21 @@
 using util
 
-** installs 'fpm.bat' overwrites 'fan.bat'
-** installs non-sys pods from %FAN_HOME% to local fanr repo
-** installs non-sys pods from %PATH_ENV% to local fanr repo
-** sets up etc/afFpm/config.props with repo loc and path env
-@NoDoc
+** Sets up FPM in the current Fantom environment.
+** 
+**   C:\> fan afFpm setup
+** 
+** 'setup' performs the following operations:
+** 
+**  - Creates 'fpm.bat' in the 'bin/' directory of the current Fantom 
+**    installation. Or creates an 'fpm' executable script on nix systems.
+** 
+**  - Creates a default 'fpm.props' config file in the 'etc/afFpm/' directory.
+** 
+**  - Publishes any non-core pod found in any Fantom work or home directories.
+**    Note, these pod files are left intact and are just *copied* to the local 
+**    default repository.
+** 
+@NoDoc	// Fandoc is only saved for public classes
 class SetupCmd : FpmCmd {
 
 	private const CorePods	corePods	:= CorePods()
@@ -15,48 +26,56 @@ class SetupCmd : FpmCmd {
 	override Int go() {
 		win := Env.cur.os.startsWith("win")
 
-//		log.indent("Running Setup...") |->| {
-
-			log.info("\nCurrent Configuration")
-			log.info("---------------------")
-			log.info(fpmConfig.dump)
-
-//			log.info("Setup will now copy pods into the repository named 'default'")
-//			Env.cur.prompt("Is this correct? ")
-
+		func := |->| {
 			ext 		:= win ? ".bat" : ""
 			fpmFile		:= fpmConfig.homeDir + `bin/fpm${ext}`
 			fanResFile	:= typeof.pod.file(`/res/fpm${ext}`)
 			if (fpmFile.exists.not) {
-				log.info("Creating `${fpmFile.osPath}`")
+				log.info("Creating: ${fpmFile.osPath}")
 				fanResFile.copyTo(fpmFile)
-				log.info("")
-			}
+			} else
+				log.info("Already exists: ${fpmFile.osPath}")
 			
 			if (!win) {
 				try		Process(["chmod", "+x"], fpmFile.parent).run.join
 				catch	log.warn("Could not set execute permissions on: ${fpmFile.osPath}")
 			}
-
-			configFile		:= fpmConfig.workDirs.first + `etc/afFpm/config.props`
-			configResFile	:= typeof.pod.file(`/res/config.props`)
+			log.info("")
+	
+		
+			configFile		:= fpmConfig.workDirs.first + `etc/afFpm/fpm.props`
+			configResFile	:= typeof.pod.file(`/res/fpm.props`)
 			if (configFile.exists.not) {
-				log.info("Creating `${configFile.osPath}`")
+				log.info("Creating: ${configFile.osPath}")
 				configResFile.copyTo(configFile)
-				log.info("")
-			}
-
+			} else
+				log.info("Already exists: ${configFile.osPath}")
+			log.info("")
+	
 			fpmConfig.workDirs.each {
 				installAllPodsFromDir(it.plus(`lib/fan/`), repo)
 				log.info("")
 			}
-
+	
 			fpmConfig.podDirs.each {
 				installAllPodsFromDir(it, repo)
 				log.info("")
-			}			
-//		}
-		log.info("\nDone.\n")
+			}
+		}
+
+		if (log.typeof.method("indent", false) != null)
+			log->indent("Setting up FPM...", func)
+		else {
+			log.info("Setting up FPM...")
+			func()
+		}
+
+		log.info("Current Configuration")
+		log.info(FpmConfig().dump)
+
+		log.info("FPM setup complete.")
+		log.info("")
+		log.info("Have fun! :)")
 		return 0
 	}
 	
@@ -80,5 +99,4 @@ class SetupCmd : FpmCmd {
 			podManager.publishPod(file, repo)
 		}
 	}
-
 }
