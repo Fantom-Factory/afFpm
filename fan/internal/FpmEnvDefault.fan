@@ -58,7 +58,6 @@ internal const class FpmEnvDefault : FpmEnv {
 			if (mainMethod != null) {
 	
 				// make a HUGE assumption here that the build script is the one in the current directory
-				// TODO ask Brian how to get the running script file location
 				if (mainMethod.qname == "build::BuildPod.main") {
 					buildPod := BuildPod("build.fan")		
 					if (buildPod != null) {

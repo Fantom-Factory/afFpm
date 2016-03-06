@@ -40,17 +40,8 @@ internal class Utils {
 		if (unresolvedPods.isEmpty) return ""
 
 		output	:= "Could not satisfy the following constraints:\n"
-		
-		// TODO move to UnresolvedPod.dump()
 		unresolvedPods.each |unresolvedPod| {
-			avail	:= unresolvedPod.available.isEmpty ? "Not found" : unresolvedPod.available.join(", ")
-			output	+= "  ${unresolvedPod.name} (${avail})\n"
-			max		:= unresolvedPod.committee.reduce(0) |Int size, con| {
-				size.max(con.pod.name.size + 1 + con.pod.version.toStr.size + 1)
-			} as Int
-			unresolvedPod.committee.each {
-				output	+= "    " + "${it.pod.name}@${it.pod.version} ".padr(max, '-') + "-> ${it.dependsOn}\n"
-			}
+			output	+= unresolvedPod.dump
 		}
 		return output
 	}

@@ -33,11 +33,17 @@ class InstallCmd : FpmCmd {
 	@Opt { aliases=["r"]; help="Name or location of the repository to install to." }
 	Str? repo
 
-	@Arg
-	Str[]? args
+	@Opt { aliases=["u"]; help="Username for authentication" }
+	Str? username
+	
+	@Opt { aliases=["p"]; help="Password for authentication" }
+	Str? password
+	
+	@Arg { help="location or query for pod" }
+	Str[]? pod
 
 	override Int go() {
-		pod 	:= args.join(" ")
+		pod 	:= this.pod.join(" ")
 		podFile := FileUtils.toFile(pod)
 		if (podFile.exists) {
 			podManager.publishPod(podFile, repo)
@@ -53,7 +59,7 @@ class InstallCmd : FpmCmd {
 				if (podFiles.isEmpty)
 					throw Err("Could not find pod '${pod}'")
 				podFile = podFiles.first.file
-				podManager.publishPod(podFile, repo)
+				podManager.publishPod(podFile, repo, username, password)
 			}
 		}
 
@@ -62,7 +68,7 @@ class InstallCmd : FpmCmd {
 		// ...query the remote repos, download, and publish to local
 		query := pod.replace("@", " ")
 		installed := fpmConfig.fanrRepos.any |url, name->Bool| {
-			repo  := fpmConfig.fanrRepo(name)
+			repo  := fpmConfig.fanrRepo(name, username, password)
 			log.info("  Querying ${name} for: ${query}")
 			specs := repo.query(query, 1)
 			if (specs.isEmpty) return false
@@ -88,6 +94,6 @@ class InstallCmd : FpmCmd {
 	}
 		
 	override Bool argsValid() {
-		args != null && args.size > 0
+		pod != null && pod.size > 0
 	}
 }

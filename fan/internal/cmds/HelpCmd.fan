@@ -20,6 +20,7 @@ class HelpCmd : FpmCmd {
 				log.info("".padl(title.size, '-'))
 				log.info(cmdType.doc)
 			}
+			((FpmCmd) cmdType.make).usage
 		} else {
 			log.info("FPM Environment")
 			log.info("---------------")
