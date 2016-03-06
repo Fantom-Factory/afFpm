@@ -14,6 +14,19 @@ const class UnresolvedPod {
 	@NoDoc
  	new make(|This| in) { in(this) }
 
+	** Dumps debug output to a string.
+	Str dump() {
+		avail	:= available.isEmpty ? "Not found" : available.join(", ")
+		output	:= "  ${name} (${avail})\n"
+		max		:= committee.reduce(0) |Int size, con| {
+			size.max(con.pod.name.size + 1 + con.pod.version.toStr.size + 1)
+		} as Int
+		committee.each {
+			output	+= "    " + "${it.pod.name}@${it.pod.version} ".padr(max, '-') + "-> ${it.dependsOn}\n"
+		}
+		return output
+	}
+	
 	@NoDoc
 	override Str toStr() {
 		availStr := available.isEmpty ? "Not found" : available.join(", ")

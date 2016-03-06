@@ -40,9 +40,11 @@ class BuildCmd : FpmCmd {
 			return 1
 		}
 		
-		// TODO should this only be done if no build task was specified?
-		log.info("")
-		podManager.publishPod(podFile, repo)
+		// if we're not compiling then we don't have a pod to publish!
+		if (cmds.last == "compile") {
+			log.info("")
+			podManager.publishPod(podFile, repo)
+		}
 		return 0
 	}
 	
