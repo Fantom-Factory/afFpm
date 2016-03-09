@@ -1,14 +1,22 @@
 using util
 
-**
-** Executes tests within the FPM environment.
+** Tests a Fantom application.
+** 
+** Executes tests via 'fant' within an FPM environment.
+** 
+** The targeted environment is derived from the containing pod of the first 
+** test.
+** 
+** Examples:
+**   C:\> fpm test myPod
+**   C:\> fpm test -js myPod::TestClass
 ** 
 @NoDoc	// Fandoc is only saved for public classes
 class TestCmd : FpmCmd {
 
 	@Opt { help="Run in Javascript environment" }
 	Bool	js
-	
+
 	@Arg
 	Str[]?	args
 	

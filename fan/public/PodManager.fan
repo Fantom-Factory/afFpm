@@ -96,12 +96,17 @@ const class PodManagerImpl : PodManager {
 	}
 
 	override Void unPublishPod(Str pod, Str repo) {
-		if (!fpmConfig.fileRepos.containsKey(repo))
-			throw ArgErr("Repo '$repo' does not exist")
+		repoDir := fpmConfig.fileRepos[repo]
+		if (repoDir == null)
+			repoDir = FileUtils.toFile(repo)
+		if (repoDir.exists.not) {
+			log.info("Repo does not exist: ${repoDir.osPath}")
+			return
+		}
 		podDep := Depend(pod.replace("@", " "), true)
-		podFile := fpmConfig.fileRepos[repo] + podDep.name.toUri.plusSlash + (podDep.toStr.replace(" ", "-") + ".pod").toUri
+		podFile := repoDir + podDep.name.toUri.plusSlash + (podDep.toStr.replace(" ", "-") + ".pod").toUri
 		if (podFile.exists.not) {
-			log.info("Pod does not exist - ${podFile.osPath}")
+			log.info("Pod does not exist: ${podFile.osPath}")
 			return
 		}
 		podFile.delete

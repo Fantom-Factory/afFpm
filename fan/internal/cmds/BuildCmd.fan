@@ -1,22 +1,34 @@
 using util
 
-** Runs a build task from 'build.fan'. Should a pod be built, it is installed to the named repository. 
+** Builds a Fantom application.
+** 
+** Runs build tasks from 'build.fan' within an FPM environment.   
+** 
+** The targeted environment is derived from the 'depends' pod list defined in 
+** 'build.fan'.
+** 
+** 'build.fan' should be in the current directory.
+** 
+** Should a pod be built, it is then installed to the named repository.
+** 
+** Examples:
+**   C:\> fpm build
+**   C:\> fpm build -repo default compile
+** 
 @NoDoc	// Fandoc is only saved for public classes
 class BuildCmd : FpmCmd {
 	
-	@Opt { aliases=["r"]; help="Name or location of the repository to install to." }
+	@Opt { aliases=["r"]; help="Name or location of the repository to install built pods to (defaults to 'default')" }
 	Str? repo
 
-	@Arg
-	Str[]?	args
-	
+	@Arg { help="The build tasks to execute (defaults to 'compile')" }
+	Str[]?	tasks	:= ["compile"]
+
 	override Int go() {
 		fanFile	:= Env.cur.os == "win32" ? `bin/fan.bat` : `bin/fan`
 		fanCmd	:= (Env.cur.homeDir + fanFile).normalize.osPath
-		cmds	:= args
+		cmds	:= tasks
 		target	:= "build.fan"
-		if (cmds == null)
-			cmds = Str["compile"]
 		cmds.insert(0, target)
 		cmds.insert(0, fanCmd)
 

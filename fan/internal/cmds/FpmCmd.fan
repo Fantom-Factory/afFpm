@@ -13,11 +13,8 @@ abstract class FpmCmd : AbstractMain {
 
 	new make() : super.make() { }
 	
-	final override Int run() {
-		title := "Fantom Pod Manager ${typeof.pod.version}"
-		log.info("\n${title}")
-		log.info("".padl(title.size, '=') + "\n")
-
+	override Int run() {
+		printTitle
 		argsOk := Env.cur.args.isEmpty ? true : super.parseArgs(Env.cur.args[1..-1])
 		if (!argsOk || !argsValid || helpOpt) {
 			usage
@@ -26,6 +23,12 @@ abstract class FpmCmd : AbstractMain {
 		}
 
 		return go
+	}
+	
+	Void printTitle() {
+		title := "Fantom Pod Manager ${typeof.pod.version}"
+		log.info("\n${title}")
+		log.info("".padl(title.size, '=') + "\n")		
 	}
 
 	virtual Int go() { return 0 }

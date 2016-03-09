@@ -65,9 +65,9 @@ Current Configuration
         fantom = http://fantom.org/fanr/
 ```
 
-As you can see, setup creates an fpm.bat file and some default config and publishes non-core pods
+As you can see, the `setup` command creates an `fpm.bat` file, an `fpm.config` file, and publishes any non-core pods to a local repository.
 
-You can then use `fpm` from teh command line to run Fantom.
+You can then use `fpm` from the command line to run Fantom.
 
 Behind the scenes: set `FAN_ENV`
 
@@ -81,13 +81,37 @@ Following is a list of FPM commands:
 
 FANDOC: afFpm::SetupCmd
 
+### build
+
+FANDOC: afFpm::BuildCmd
+
+### test
+
+FANDOC: afFpm::TestCmd
+
+### run
+
+FANDOC: afFpm::RunCmd
+
 ### install
 
 FANDOC: afFpm::InstallCmd
 
+### uninstall
+
+FANDOC: afFpm::UninstallCmd
+
+### update
+
+FANDOC: afFpm::UpdateCmd
+
+### help
+
+FANDOC: afFpm::HelpCmd
+
 ## FPM Config
 
-Config files are *not* addative. Config found in a higher priority file *replaces* the value of the lower.
+Config files are *not* addative. Config found in a higher priority files *replaces* the value of the lower.
 
 ## FPM Runtime Env
 

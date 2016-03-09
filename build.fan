@@ -32,7 +32,7 @@ class Build : BuildPod {
 	
 	@Target { help = "Compile to pod file and associated natives" }
 	override Void compile() {
-		BuildTask(this).run
+		BuildTask(this) { it.publishPod = false }.run
 	}
 
 	@Target { help = "Builds, publishes, and Hg tags a new pod release" }

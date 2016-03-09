@@ -2,24 +2,36 @@ using util
 using fanr::PodSpec
 
 // can this install from scratch AND update an existing?
-** Updates dependencies for a named pod / build file.
+// TODO: can the Update cmd be merged with Install?
+** Updates and installs dependencies for a named pod / build file.
+** 
+** Queries remote repositories looking for newer pod versions that match the 
+** targeted FPM environment.
+** 
+** Examples:
+** 
+**   C:\> fpm update
+**   C:\> fpm update -r default build.fan
+**   C:\> fpm update -r release myPod 2.0.10
+** 
 @NoDoc	// Fandoc is only saved for public classes
 class UpdateCmd : FpmCmd {
 
-	@Opt { aliases=["r"]; help="Name or location of the local repository to publish pods to" }
+	@Opt { aliases=["r"]; help="Name or location of the local repository to install pods to (defaults to 'default')" }
 	Str repo	:= "default"
-
-	@Opt { aliases=["p"]; help="The pod whose dependencies are to be updated. Examples, afIoc, afBedSheet@1.5, pods\\myPod.pod" }
-	Str? pod
 
 	// TODO update, resolving ALL pods
 //	@Opt { aliases=["a"]; help="By default FPM will only query for pods newer than the ones on your file system. This option will look for ALL pods, but at the expense of a much slower resolution." }
 //	Str all	:= "all"
 
+	@Arg { help="The pod whose dependencies are to be updated" }
+	Str[]? pod
+
 	override Int go() {
 		podDepends	:= PodDependencies(fpmConfig, File[,], log)
-
-		if (pod != null) {
+		pod 		:= this.pod?.join(" ")
+		
+		if (pod != null && !pod.endsWith(".fan")) {
 			podFile	:= null as PodFile
 			file	:= FileUtils.toFile(pod)
 			if (file.exists)
@@ -33,9 +45,9 @@ class UpdateCmd : FpmCmd {
 			podDepends.setRunTarget(podFile.asDepend)
 		}
 		
-		if (pod == null) {
+		if (pod == null || pod.endsWith(".fan")) {
 			// TODO download dependencies for a specific build file
-			buildPod	:= BuildPod("build.fan")		
+			buildPod	:= BuildPod(pod ?: "build.fan")
 			if (buildPod == null) {
 				log.err("Could not find / load 'build.fan'")
 				return 101
