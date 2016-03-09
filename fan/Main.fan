@@ -29,13 +29,13 @@ internal class Main {
 				return InstallCmd().run
 		
 			case "uninstall":
-				return UnInstallCmd().run
+				return UninstallCmd().run
 
 			case "help":
 				return HelpCmd().run
 
 		  default:
-		    throw ArgErr("Unknown cmd: ${cmd}")
+		    return HelpCmd() { it.cmd = cmd }.run
 		}
 	}
 }

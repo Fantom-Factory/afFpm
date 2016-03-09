@@ -4,10 +4,10 @@ using fanr
 ** Installs a pod to a repository.
 ** 
 ** The repository may be:
-**  - a named local repository. Example, 'default'
-**  - a named remote repository. Example, 'fantomFactory'
-**  - the directory of a local repository. Example, 'C:\repo-release\'
-**  - the URL of a remote repository. Example, 'http://pods.fantomfactory.org/fanr/'
+**  - a named local repository (e.g. 'default')
+**  - a named remote repository (e.g. 'fantomFactory')
+**  - the directory of a local repository (e.g. 'C:\repo-release\')
+**  - the URL of a remote repository (e.g. 'http://pods.fantomfactory.org/fanr/')
 ** 
 ** The pod may be:
 **  - a file location, absolute or relative. Example, 'lib/myAweseomeGame.pod'
@@ -15,22 +15,22 @@ using fanr
 ** 
 ** All the above makes the 'install' command very versatile. Some examples:
 ** 
-** To download the latest pod from a remote repository:
+** To download and install the latest pod from a remote repository:
 ** 
-**   > fpm install afIoc
+**   C:\> fpm install myPod
 ** 
-** To download a specific pod version to a local repository:
+** To download and install a specific pod version to a local repository:
 ** 
-**   > fpm install -r release afIoc@2.0.10
+**   C:\> fpm install -r release myPod 2.0.10
 ** 
-** To publish (upload) a pod to the Fantom-Factory repository:
+** To upload and publish a pod to the Fantom-Factory repository:
 ** 
-**   > fpm install -r fantomFactory lib/myGame.pod
+**   C:\> fpm install -r fantomFactory lib/myGame.pod
 ** 
 @NoDoc	// Fandoc is only saved for public classes
 class InstallCmd : FpmCmd {
 	
-	@Opt { aliases=["r"]; help="Name or location of the repository to install to." }
+	@Opt { aliases=["r"]; help="Name or location of the repository to install to (defaults to 'default')" }
 	Str? repo
 
 	@Opt { aliases=["u"]; help="Username for authentication" }
@@ -80,11 +80,11 @@ class InstallCmd : FpmCmd {
 			out  := temp.out
 			repo.read(specs.first).pipe(out)
 			out.close
-			
+
 			podManager.publishPod(temp, this.repo)
 			return true
 		}
-		
+
 		if (!installed) {
 			log.info("")
 			log.info("Could not find: ${query}")
@@ -92,7 +92,7 @@ class InstallCmd : FpmCmd {
 		
 		return 0		
 	}
-		
+
 	override Bool argsValid() {
 		pod != null && pod.size > 0
 	}

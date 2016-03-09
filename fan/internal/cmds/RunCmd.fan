@@ -1,7 +1,14 @@
 using util
 
-**
-** Executes a pod / method, within the FPM environment.
+** Runs a Fantom application.
+** 
+** Executes a pod / method, within an FPM environment.
+** 
+** The targeted environment is derived from the containing pod.
+** 
+** Examples:
+**   C:\> fpm run myPod
+**   C:\> fpm run -js myPod::MyClass
 ** 
 @NoDoc	// Fandoc is only saved for public classes
 class RunCmd : FpmCmd {

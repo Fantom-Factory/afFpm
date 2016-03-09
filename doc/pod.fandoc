@@ -47,9 +47,9 @@ Current Configuration
         fantom = http://fantom.org/fanr/
 <pre
 
-As you can see, setup creates an fpm.bat file and some default config and publishes non-core pods
+As you can see, the 'setup' command creates an 'fpm.bat' file, an 'fpm.config' file, and publishes any non-core pods to a local repository.
 
-You can then use 'fpm' from teh command line to run Fantom.
+You can then use 'fpm' from the command line to run Fantom apps.
 
 
 
@@ -60,30 +60,80 @@ set 'FAN_ENV'
 set DEBUG to on
 
 
+FPM Environment
+***************
+To run a fantom application, script, or build, FPM needs to know which pod it should resolve dependencies for. This is known as the *target pod*.
+
+In most common cases FPM is able to infer the target pod from what is being run. In other cases you should set the environment variable 'FPM_TARGET'.
+
+
 FPM Commands
 ************
-Following is a list of FPM commands:
+From the command line, type 'fpm' on it's own to see the current environment:
+
+pre>
+C:\> fpm
+
+Fantom Pod Manager
+==================
+
+FPM Environment:
+      Home Dir : C:\Apps\fantom-1.0.68
+     Work Dirs : C:\Repositories\Fantom
+                 C:\Apps\fantom-1.0.68
+      Pod Dirs : (none)
+              ...
+              ...
+              ...
+<pre
+
+Otherwise follow 'fpm' with one of the following commands:
 
 setup
 =====
 FANDOC: afFpm::SetupCmd
 
+build
+=====
+FANDOC: afFpm::BuildCmd
+
+test
+====
+FANDOC: afFpm::TestCmd
+
+run
+===
+FANDOC: afFpm::RunCmd
+
 install
 =======
 FANDOC: afFpm::InstallCmd
 
+uninstall
+=========
+FANDOC: afFpm::UninstallCmd
+
+update
+======
+FANDOC: afFpm::UpdateCmd
+
+help
+======
+FANDOC: afFpm::HelpCmd
+
+
 FPM Config
 ****
 
-Config files are *not* addative. Config found in a higher priority file *replaces* the value of the lower.
+Config files are *not* addative. Config found in a higher priority files *replaces* the value of the lower.
 
 
 
-FPM Runtime Env
-****
-To run a fantom application, script, or build, FPM needs to know which pod it should resolve dependencies for. This is known as the *target pod*.
+Behind the Scences
+******************
+To build, test, or run a Fantom application, FPM needs to know which pod it should resolve dependencies for. This is known as the *target pod*.
 
-In most common cases FPM is able to infer the target pod from what is being run. In other cases you should set the environment variable 'FPM_TARGET'.
+In most common cases FPM is able to infer the target pod from what is being run, usually from inspecting [Env.mainMethod()]`sys::Env.mainMethod`  In other cases you should set the environment variable 'FPM_TARGET'.
 
 In Windows:
 
@@ -159,32 +209,5 @@ Fantom 1.0.67
 FPM makes heavy use of the 'Env.mainMethod()' method which was only introduced in Fantom 1.0.68. If using a Fantom version prior to 1.0.68 then the 'FPM_TARGET' environement variable would need to be set in all cirsumstances.
 
 If 'FPM_TARGET' is not set then FPM falls back to its default of providing just the latest pod versions.
-
-
-
-FPM Cmds
-****
-
-  C:\> fan afFpm <cmd> -p <pod> -r <repo>
-
-  fan afFpm on its own should just dump fpm config
-
-
-
-Setup
-====
-
-Install
-====
-
-Uninstall
-====
-
-Publish
-====
-delete - use install instead
-
-Update
-====
 
 
