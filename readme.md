@@ -1,18 +1,18 @@
-#Fantom Pod Manager v0.0.0.3
+#Fantom Pod Manager v0.0.0.4
 ---
 [![Written in: Fantom](http://img.shields.io/badge/written%20in-Fantom-lightgray.svg)](http://fantom.org/)
-[![pod: v0.0.0.3](http://img.shields.io/badge/pod-v0.0.0.3-yellow.svg)](http://www.fantomfactory.org/pods/afFpm)
+[![pod: v0.0.0.4](http://img.shields.io/badge/pod-v0.0.0.4-yellow.svg)](http://www.fantomfactory.org/pods/afFpm)
 ![Licence: MIT](http://img.shields.io/badge/licence-MIT-blue.svg)
 
 ## Overview
 
-Fantom Pod Manager (FPM) provides a targetted environment for compiling, testing, and running Fantom pods.
+Fantom Pod Manager (FPM) provides a targeted environment for compiling, testing, and running Fantom applications.
 
-It is one of those boring system libraries that you quickly find you can't do without.
+It is one of those boring system libraries you quickly find you can't do without.
 
 A typical Fantom installation only allows one version of any given pod. This works fine if you're just developing and running the one application. But if you're developing multiple applications, each requiring different versions of the same pod; then you either need multiple Fantom environments, one for each application, ... or you need FPM.
 
-FPM maintains a local [fanr file repository](http://fantom.org/doc/docFanr/FileRepos.html) of Fantom pods, where multiple versions of the same pod are kept. When a Fantom application is built, test, or run via FPM; then FPM cherry picks the pod versions required.
+FPM maintains a local [fanr file repository](http://fantom.org/doc/docFanr/FileRepos.html) of Fantom pods, where multiple versions of the same pod are kept. When a Fantom application is built, test, or run via FPM; then FPM cherry picks the pod versions you need.
 
 ## Install
 
@@ -30,7 +30,7 @@ Full API & fandocs are available on the [Fantom Pod Repository](http://pods.fant
 
 ## Quick Start
 
-Once you've installed FPM via `fanr`, run the setup command:
+Install FPM via `fanr`, then run the setup command:
 
 ```
 C:\> fan afFpm setup
@@ -65,140 +65,246 @@ Current Configuration
         fantom = http://fantom.org/fanr/
 ```
 
-As you can see, the `setup` command creates an `fpm.bat` file, an `fpm.config` file, and publishes any non-core pods to a local repository.
+The `setup` command creates an `fpm.bat` file, an `fpm.props` file, and publishes any non-core pods to a local repository.
 
-You can then use `fpm` from the command line to run Fantom.
+You can now use `fpm` from the command line to download, install, and run Fantom apps:
 
-Behind the scenes: set `FAN_ENV`
+To install a library:
 
-set DEBUG to on
+    C:\> fpm install afIoc
+
+To run an app:
+
+    C:\> fpm run myApp
+
+To update dependencies for an app:
+
+    C:\> fpm update myApp
+
+## FPM Environment
+
+To build, test, or run a fantom application (or script), FPM needs to know which pod it should provide dependencies for. This is known as the *target pod*.
+
+It is possible to use environment variables to set this up, but it is far easier to just launch your application using `fpm` itself. See `build`, `test`, and `run` commands for details.
 
 ## FPM Commands
 
-Following is a list of FPM commands:
+From the command line, type `fpm` on it's own to see the current FPM environment:
+
+```
+C:\> fpm
+
+Fantom Pod Manager
+==================
+
+FPM Environment:
+      Home Dir : C:\Apps\fantom-1.0.68
+     Work Dirs : C:\Repositories\Fantom
+                 C:\Apps\fantom-1.0.68
+      Pod Dirs : (none)
+              ...
+              ...
+              ...
+```
+
+Otherwise follow `fpm` with one of the following commands:
 
 ### setup
 
-FANDOC: afFpm::SetupCmd
+Sets up FPM in the current Fantom environment.
+
+    C:\> fan afFpm setup
+
+`setup` performs the following operations:
+
+- Creates `fpm.bat` in the `bin/` directory of the current Fantom installation. Or creates an `fpm` executable script on nix systems.
+- Creates a default `fpm.props` config file in the `etc/afFpm/` directory.
+- Publishes any non-core pod found in any Fantom work or home directories. Note, these pod files are left intact and are just *copied* to the local default repository.
 
 ### build
 
-FANDOC: afFpm::BuildCmd
+Builds a Fantom application.
+
+Runs build tasks from `build.fan` within an FPM environment.
+
+The targeted environment is derived from the `depends` pod list defined in `build.fan`.
+
+`build.fan` should be in the current directory.
+
+Should a pod be built, it is then installed to the named repository.
+
+Examples:
+
+    C:\> fpm build
+    C:\> fpm build -repo default compile
 
 ### test
 
-FANDOC: afFpm::TestCmd
+Tests a Fantom application.
+
+Executes tests via `fant` within an FPM environment.
+
+The targeted environment is derived from the containing pod of the first test.
+
+Examples:
+
+    C:\> fpm test myPod
+    C:\> fpm test -js myPod::TestClass
 
 ### run
 
-FANDOC: afFpm::RunCmd
+Runs a Fantom application.
+
+Executes a pod / method, within an FPM environment.
+
+The targeted environment is derived from the containing pod.
+
+Examples:
+
+    C:\> fpm run myPod
+    C:\> fpm run -js myPod::MyClass
 
 ### install
 
-FANDOC: afFpm::InstallCmd
+Installs a pod to a repository.
+
+The repository may be:
+
+- a named local repository (e.g. `default`)
+- a named remote repository (e.g. `fantomFactory`)
+- the directory of a local repository (e.g. `C:\repo-release\`)
+- the URL of a remote repository (e.g. `http://pods.fantomfactory.org/fanr/`)
+
+The pod may be:
+
+- a file location, absolute or relative. Example, `lib/myAweseomeGame.pod`
+- a simple search query. Example, `"afIoc 3.0"` or `afIoc@3.0`
+
+All the above makes the `install` command very versatile. Some examples:
+
+To download and install the latest pod from a remote repository:
+
+    C:\> fpm install myPod
+
+To download and install a specific pod version to a local repository:
+
+    C:\> fpm install -r release myPod 2.0.10
+
+To upload and publish a pod to the Fantom-Factory repository:
+
+    C:\> fpm install -r fantomFactory lib/myGame.pod
 
 ### uninstall
 
-FANDOC: afFpm::UninstallCmd
+Un-installs a pod from a local repository.
+
+The repository may be:
+
+- a named local repository (e.g. `default`)
+- the directory of a local repository (e.g. `C:\repo-release\`)
+
+Examples:
+
+    C:\> fpm uninstall myPod
+    C:\> fpm uninstall -r default myPod 2.0.10
 
 ### update
 
-FANDOC: afFpm::UpdateCmd
+Updates and installs dependencies for a named pod / build file.
+
+Queries remote repositories looking for newer pod versions that match the targeted FPM environment.
+
+Examples:
+
+    C:\> fpm update
+    C:\> fpm update -r default build.fan
+    C:\> fpm update -r release myPod 2.0.10
 
 ### help
 
-FANDOC: afFpm::HelpCmd
+Prints help on a given command.
 
 ## FPM Config
 
-Config files are *not* addative. Config found in a higher priority files *replaces* the value of the lower.
+FPM gathers its config from a series of `fpm.props` files. These files are looked for in the following locations:
 
-## FPM Runtime Env
+- `./fpm.props`
+- `<WORK_DIR>/etc/afFpm/fpm.props`
+- `<FAN_HOME>/etc/afFpm/fpm.props`
 
-To run a fantom application, script, or build, FPM needs to know which pod it should resolve dependencies for. This is known as the *target pod*.
+Note that the config files are additive but the values are not. If all 3 files exist, then all 3 files are merged together, with config values from a more specific file *replacing* (or overriding) values found in less specific one.
 
-In most common cases FPM is able to infer the target pod from what is being run. In other cases you should set the environment variable `FPM_TARGET`.
+`<WORK_DIR>` may be specified with the `FPM_ENV_PATH` environment variable.
 
-In Windows:
+## Behind the Scenes
 
-    C:\> set FPM_TARGET=myApp
+To build, test, or run a Fantom application, FPM needs to know which pod it should resolve dependencies for. This is known as the *target pod*.
 
-In Linux:
+In most common cases FPM is able to infer the target pod from what is being run, usually from inspecting [Env.mainMethod()](http://fantom.org/doc/sys/Env.html#mainMethod). In other cases you can set the `FPM_TARGET` environment variable, along with `FAN_ENV`:
 
-    $ export FPM_TARGET=myApp
+    C:\> set FAN_ENV=afFpm::FpmEnv
+    
+    C:\> set FPM_TARGET=myPod
+    
+    C:\> fan myPod
 
 FPM will always use the `FPM_TARGET` environment variable if it is set.
 
 If FPM fails to resolve a target pod then it falls back to providing the latest versions of all pods.
 
-### Run a Fantom Application
+## Debugging
 
-Where it can FPM uses [Env.mainMethod()](http://fantom.org/doc/sys/Env.html#mainMethod) to determine the target pod. For example, all the following commands would all resolve `myApp` as the target pod.
+Providing a targeted environment is a tricky business and sometimes doesn't herald the results you expect - especially if you have a couple of `fpm.props` files and / or multiple local repositories. To combat this, you can turn FPM debugging on by adding this line to `%FAN_HOME%/etc/sys/log.props`:
 
-    C:\> fan myApp
-    
-    C:\> fan myApp::Example
-    
-    C:\> fan myApp::Example.main
+    afFpm=debug
 
-If using a library to kick start an app, such as BedSheet, like below:
+Then whenever FPM is invoked, it dumps a full trace of the resolved environment:
 
-    C:\> fan afBedSheet myApp
+```
+C:\Projects>fpm run flux
 
-Then FPM would resolve `afBedSheet` as the target pod, not `myApp`, so you would need to use the `FPM_TARGET` environement variable.
+Fantom Pod Manager 0.0.2
+========================
 
-### Run a Fantom Script
+Running flux
+[debug] [afFpm] Fantom Pod Manager 0.0.2
+[debug] [afFpm] ========================
+[debug] [afFpm] Resolving pods for flux 0+
+[debug] [afFpm] Found 16 versions of 6 different pods
+[debug] [afFpm] Calculated  10 dependency pod permutation
+[debug] [afFpm] Collapsed to 1 dependency group permutation
+[debug] [afFpm] Stated problem space in 126ms
+[debug] [afFpm] Solving...
+[debug] [afFpm]           ...Done
+[debug] [afFpm] Cached 0 bad dependency groups
+[debug] [afFpm] Found 1 solution in 9ms
+[debug] [afFpm]
 
-When running a file as Fantom script, such as:
+FPM Environment:
 
-    C:\> fan myScript.fan
+   Target Pod : flux 0+
+      Home Dir : C:\Apps\fantom-1.0.68
+     Work Dirs : C:\Repositories\Fantom
+                 C:\Apps\fantom-1.0.68
+      Pod Dirs : (none)
+      Temp Dir : C:\Repositories\Fantom\temp
+  Config Files : C:\Repositories\Fantom\etc\afFpm\fpm.props
 
-Then FPM has no knowledge of the script's dependencies, so it defaults to providing the latest pod versions, or using `FPM_TARGET` if defined.
+    File Repos :
+       default = C:\Repositories\Fantom\repo-default
+       release = C:\Repositories\Fantom\repo-release
 
-### Build a Fantom Pod
+    Fanr Repos :
+ fantomFactory = http://pods.fantomfactory.org/fanr/
+     status302 = http://repo.status302.com/fanr/
+        fantom = http://fantom.org/fanr/
 
-FPM can detect when a `build.fan` script is being run, but it doesn't know which one! So it assumes it is the `build.fan` file in the *current* directory. It then loads the build script and parses the dependencies from it.
-
-In general, running a standard build script, as shown below, will work as expected:
-
-    C:\> fan build.fan
-
-But running a build script in a different directory or with a different name will yield unexpected results:
-
-    Will not work:
-    
-    C:\> fan some\other\dir\build.fan
-    
-    C:\> fan customBuild.fan
-
-### Run Fantom Tests
-
-When running Fantom tests using the `fant` runner, there is no `main` method per-se, so FPM can't infer the target pod. When running tests the `FPM_TARGET` environment variable should be used instead.
-
-    C:\> set FPM_TARGET=myApp
-    C:\> fant myApp
-
-### Fantom 1.0.67
-
-FPM makes heavy use of the `Env.mainMethod()` method which was only introduced in Fantom 1.0.68. If using a Fantom version prior to 1.0.68 then the `FPM_TARGET` environement variable would need to be set in all cirsumstances.
-
-If `FPM_TARGET` is not set then FPM falls back to its default of providing just the latest pod versions.
-
-## FPM Cmds
-
-    C:\> fan afFpm <cmd> -p <pod> -r <repo>
-    
-    fan afFpm on its own should just dump fpm config
-
-### Setup
-
-### Install
-
-### Uninstall
-
-### Publish
-
-delete - use install instead
-
-### Update
+Resolved 6 pods:
+    compiler 1.0.67 - C:\Apps\fantom-1.0.68\lib\fan\compiler.pod
+  concurrent 1.0.68 - C:\Apps\fantom-1.0.68\lib\fan\concurrent.pod
+        flux 1.0.67 - C:\Apps\fantom-1.0.68\lib\fan\flux.pod
+         fwt 1.0.68 - C:\Apps\fantom-1.0.68\lib\fan\fwt.pod
+         gfx 1.0.68 - C:\Apps\fantom-1.0.68\lib\fan\gfx.pod
+         sys 1.0.68 - C:\Apps\fantom-1.0.68\lib\fan\sys.pod
+```
 
