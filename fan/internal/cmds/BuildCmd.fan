@@ -36,7 +36,9 @@ class BuildCmd : FpmCmd {
 
 		process := Process(cmds)
 		process.mergeErr = false
-		process.env["FPM_TARGET"] = target
+		process.env["FAN_ENV"]		= FpmEnv#.qname
+		process.env["FPM_DEBUG"]	= debug.toStr
+		process.env["FPM_TARGET"]	= target
 		retVal := process.run.join
 		if (retVal != 0)
 			return retVal

@@ -4,6 +4,10 @@ using concurrent
 ** Needs to be public to retain the type doc
 @NoDoc
 abstract class FpmCmd : AbstractMain {
+
+	@Opt { aliases=["d"]; help="Prints debug information" }
+	Bool debug
+
 	override Log	log 	:= StdLogger()
 		FpmConfig	fpmConfig	:= (Env.cur as FpmEnv)?.fpmConfig ?: FpmEnv().fpmConfig
 		PodManager	podManager	:= PodManagerImpl {
@@ -22,6 +26,8 @@ abstract class FpmCmd : AbstractMain {
 			return 1
 		}
 
+		if (debug)
+			Log.get("afFpm").level = LogLevel.debug
 		return go
 	}
 	
