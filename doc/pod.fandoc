@@ -163,11 +163,11 @@ If FPM fails to resolve a target pod then it falls back to providing the latest 
 
 Debugging
 *********
-Providing a targeted environment is a tricky business and sometimes doesn't herald the results you expect - especially if you have a couple of 'fpm.props' files and / or multiple local repositories. To combat this, you can turn FPM debugging on by adding this line to '%FAN_HOME%/etc/sys/log.props':
+Providing a targeted environment is a tricky business and sometimes doesn't herald the results you expect - especially if you have a couple of 'fpm.props' files and / or multiple local repositories. To combat this, you can turn FPM debugging for any command by using the 'debug' or '-d' option:
 
-  afFpm=debug
+  C:\> fpm build -debug
 
-Then whenever FPM is invoked, it dumps a full trace of the resolved environment:
+Then when invoked, FPM dumps a full trace of the resolved environment. The resolved pods section is great for seeing where pod versions are loaded from.
 
 pre>
 C:\Projects>fpm run flux
@@ -216,3 +216,8 @@ Resolved 6 pods:
          gfx 1.0.68 - C:\Apps\fantom-1.0.68\lib\fan\gfx.pod
          sys 1.0.68 - C:\Apps\fantom-1.0.68\lib\fan\sys.pod
 <pre
+
+Debug may also be turned on all the time by adding this line to '%FAN_HOME%/etc/sys/log.props':
+
+  afFpm=debug
+
