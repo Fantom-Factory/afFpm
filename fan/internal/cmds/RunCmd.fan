@@ -43,7 +43,9 @@ class RunCmd : FpmCmd {
 
 		process := Process(cmds)
 		process.mergeErr = false
-		process.env["FPM_TARGET"] = target
+		process.env["FAN_ENV"]		= FpmEnv#.qname
+		process.env["FPM_DEBUG"]	= debug.toStr
+		process.env["FPM_TARGET"]	= target
 		return process.run.join
 	}
 	
