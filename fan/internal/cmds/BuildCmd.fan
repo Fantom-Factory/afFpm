@@ -9,7 +9,7 @@ using util
 ** 
 ** 'build.fan' should be in the current directory.
 ** 
-** Should a pod be built, it is then installed to the named repository.
+** If (and only if) a repository is specified, then any pod built is installed into it.
 ** 
 ** Examples:
 **   C:\> fpm build
@@ -42,23 +42,23 @@ class BuildCmd : FpmCmd {
 		retVal := process.run.join
 		if (retVal != 0)
 			return retVal
-		
+
 		buildPod := BuildPod(target)
 		if (buildPod == null) {
 			log.warn("Could not compile script: ${target}")
 			return 1
 		}
-		podFile	 := buildPod.outPodDir.plusSlash.plusName(buildPod.podName  + ".pod").toFile.normalize
-		if (podFile.exists.not) {
-			log.warn("Pod file does not exist: ${podFile.osPath}")
-			return 1
-		}
-		
-		// if we're not compiling then we don't have a pod to publish!
-		if (cmds.last == "compile") {
-			log.info("")
+
+		if (repo != null) {
+			podFile	 := buildPod.outPodDir.plusSlash.plusName(buildPod.podName  + ".pod").toFile.normalize
+			if (podFile.exists.not) {
+				log.warn("Pod file does not exist: ${podFile.osPath}")
+				return 1
+			}
+			
 			podManager.publishPod(podFile, repo)
 		}
+
 		return 0
 	}
 	
