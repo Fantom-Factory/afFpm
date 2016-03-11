@@ -37,6 +37,11 @@ const class PodManagerImpl : PodManager {
 
 	const FpmConfig		fpmConfig
 	
+	@NoDoc	// used by afBuild::PublishPodTask
+	static new makeWithLog(Log log) {
+		PodManagerImpl { it.log = log }
+	}
+
 	@NoDoc
 	new make(|This|? in := null) {
 		in?.call(this)

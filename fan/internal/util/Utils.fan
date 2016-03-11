@@ -5,22 +5,54 @@ internal class Utils {
 		if (dep1.name != dep2.name)
 			return false
 		
-		// TODO match multi version dependencies, e.g. "afBedSheet 1.0.2, 1.1-1.4, 1.8+"
-		if (dep1.size > 1 || dep2.size > 1)
-			return false
+		ran1 := versionTtoRangeList(dep1)
+		ran2 := versionTtoRangeList(dep2)
 
-		// fixme wot not VersionConstraint?
-		
-		// FIXME wot no Depend.isSimple(idx)? 
-		// There is no simple, stoopid!
-		// TODO afBedSheed 1.5 needs be expanded to afBedSheet 1.5.0.0-1.5
-//		if (dep1.isPlus(0).not && dep1.isRange(0))
-//			return (0..<dep2.size).toList.any { dep2.match(dep1.version(0)) } 
-
-//		if (dep1.isPlus(0))
-//			return (0..<dep2.size).toList.any { dep2.isPlus(it) && dep1.version(0) > dep2.version(it) }
+		return ran1.all |ver1| {
+			ran2.any |ver2, y| {
+				(0..3).toList.eachWhile |Int i->Bool?| {
+					contained := ver1[i].start >= ver2[i].start && ver1[i].end <= ver2[i].end
+					if (!contained)
+						return false
+					return (ver1[i].end == ver2[i].end) || dep2.isPlus(y) ? null : true
+				} ?: true
+			}
+		}
+	}
+	
+	private static Range[][] versionTtoRangeList(Depend dep) {
+		(0..<dep.size).toList.map |i->Range[]| {
+			if (!dep.isPlus(i) && !dep.isRange(i)) {
+				ver := dep.version(i)
+				min := Int?[ver.major, ver.minor, ver.build, ver.patch].map { it ?: 0 }
+				max := Int?[ver.major, ver.minor, ver.build, ver.patch].map { it ?: Int.maxVal }
+				return (0..<4).toList.map |j->Range| { min[j]..max[j] }				
+			}
 			
-		return false
+			if (dep.isPlus(i)) {
+				ver := dep.version(i)
+				min := Int?[ver.major, ver.minor, ver.build, ver.patch].map { it ?: 0 }
+				return (0..<4).toList.map |j->Range| { min[j]..Int.maxVal }				
+			}
+			
+			if (dep.isRange(i)) {
+				ver := dep.version(i)
+				end := dep.endVersion(i)
+				min := Int?[ver.major, ver.minor, ver.build, ver.patch].map { it ?: 0 }
+				max := Int?[end.major, end.minor, end.build, end.patch].map { it ?: Int.maxVal }
+				return (0..<4).toList.map |j->Range| { min[j]..max[j] }				
+			}
+			
+			throw Err("WTF is: ${dep.version(i)}")
+		}
+	}
+	
+	static Void main() {
+		d:= Depend("dude 1.2")
+		l:=versionTtoRangeList(d)
+
+//		l:= Int?[v.major, v.minor, v.build, v.patch].map { it ?: 0 }
+		echo(l)
 	}
 
 	** Dumps the output similar to the following:
