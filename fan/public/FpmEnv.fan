@@ -153,7 +153,7 @@ abstract const class FpmEnv : Env {
 		str	:= "\n\n"
 		str += "FPM Environment:\n"
 		str += "\n"
-		str += "   Target Pod : ${targetPod}\n"
+		str += "    Target Pod : ${targetPod}\n"
 		str += fpmConfig.dump
 		str += "\n"
 		str += "Resolved ${resolvedPodFiles.size} pod" + (resolvedPodFiles.size == 1 ? "" : "s") + (resolvedPodFiles.size == 0 ? "" : ":") + "\n"
