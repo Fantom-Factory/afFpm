@@ -56,9 +56,17 @@ class BuildCmd : FpmCmd {
 				return 1
 			}
 			
+			log.info("")
+			log.info("Publishing Pod:")
 			podManager.publishPod(podFile, repo)
+
+			log.info("  Deleting ${podFile.normalize.osPath}")
+			podFile.delete
+
 		}
 
+		log.info("")
+		log.info("Done.")
 		return 0
 	}
 	

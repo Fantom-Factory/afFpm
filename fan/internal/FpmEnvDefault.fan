@@ -75,7 +75,7 @@ internal const class FpmEnvDefault : FpmEnv {
 			}
 		}
 
-		log.warn("Could not parse pod from: mainMethod: ${mainMethod?.qname ?: Str.defVal} or args: ${cmdArgs.first ?: Str.defVal} - ${Env.cur.args}")
+		log.debug("Could not parse pod from: mainMethod: ${mainMethod?.qname ?: Str.defVal} or args: ${cmdArgs.first ?: Str.defVal} - ${Env.cur.args}")
 	}
 
 	static Depend? findPodDepend(Str? arg) {
