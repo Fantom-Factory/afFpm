@@ -9,8 +9,8 @@ class Build : BuildPod {
 		version = Version("0.0.1.004")
 
 		meta = [
-			"proj.name"		: "Fantom Pod Manager",	
-			"testPods"		: "afBounce afSizzle",
+			"proj.name"		: "Fantom Pod Manager",
+			"repo.internal"	: "true",
 			"repo.tags"		: "sys",
 			"repo.public"	: "false"
 		]
@@ -28,6 +28,8 @@ class Build : BuildPod {
 		
 		docApi	= true
 		docSrc	= true
+
+		meta["afBuild.testPods"]	= "afBounce afSizzle"
 	}
 	
 	@Target { help = "Compile to pod file and associated natives" }

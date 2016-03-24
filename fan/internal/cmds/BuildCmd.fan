@@ -21,6 +21,7 @@ class BuildCmd : FpmCmd {
 	@Opt { aliases=["r"]; help="Name or location of the repository to install built pods to (defaults to 'default')" }
 	Str? repo
 
+	** @mopUp
 	@Arg { help="The build tasks to execute (defaults to 'compile')" }
 	Str[]?	tasks	:= ["compile"]
 
@@ -51,9 +52,15 @@ class BuildCmd : FpmCmd {
 
 		if (repo != null) {
 			podFile	 := buildPod.outPodDir.plusSlash.plusName(buildPod.podName  + ".pod").toFile.normalize
+			
 			if (podFile.exists.not) {
-				log.warn("Pod file does not exist: ${podFile.osPath}")
-				return 1
+				// there could be an env mis-match, so try again
+				podFile	 = (fpmConfig.workDirs.first + `lib/fan/` + `${buildPod.podName}.pod`).normalize
+
+				if (podFile.exists.not) {				
+					log.warn("Pod file does not exist: ${podFile.osPath}")
+					return 1
+				}
 			}
 			
 			log.info("")
