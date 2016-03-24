@@ -62,7 +62,7 @@ abstract const class FpmEnv : Env {
 			this.allPodFiles = podFiles
 
 		} catch (UnknownPodErr err) {
-			// TODO: auto-download / install the pod dependency!
+			// TODO auto-download / install the pod dependency!??
 			// beware, also thrown by BuildPod on malformed dependency str
 			error = err
 
@@ -97,7 +97,6 @@ abstract const class FpmEnv : Env {
 
 		if (unresolvedPods.size > 0) {
 			log.warn(Utils.dumpUnresolved(unresolvedPods))
-			// FIXME we should use the semi-resolved pods
 			if (targetPod == "???")
 				this.allPodFiles = podDepends.podResolvers.resolveAll(allPodFiles.rw) { remove(targetPod.split.first) }
 			else

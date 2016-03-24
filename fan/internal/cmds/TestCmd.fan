@@ -20,6 +20,7 @@ class TestCmd : FpmCmd {
 	@Opt { help="Run in Javascript environment" }
 	Bool	js
 
+	** @mopUp
 	@Arg
 	Str[]?	args
 	

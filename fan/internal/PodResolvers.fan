@@ -44,7 +44,7 @@ internal class PodResolvers {
 			}
 			
 			// naa, lets do the full resolve hog
-			// TODO when 'unique-ing' ensure local podVersions trump remote ones 
+			// FIXME when 'unique-ing' ensure local podVersions trump remote ones 
 			return resolvers.map { it.resolve(dependency) }.flatten.unique
 		}
 	}
