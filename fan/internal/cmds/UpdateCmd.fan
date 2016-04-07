@@ -28,6 +28,7 @@ class UpdateCmd : FpmCmd {
 	Str[]? pod
 
 	override Int go() {
+		printTitle
 		podDepends	:= PodDependencies(fpmConfig, File[,], log)
 		pod 		:= this.pod?.join(" ")
 		

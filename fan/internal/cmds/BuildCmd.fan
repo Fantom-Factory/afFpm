@@ -26,6 +26,7 @@ class BuildCmd : FpmCmd {
 	Str[]?	tasks	:= ["compile"]
 
 	override Int go() {
+		printTitle
 		fanFile	:= Env.cur.os == "win32" ? `bin/fan.bat` : `bin/fan`
 		fanCmd	:= (Env.cur.homeDir + fanFile).normalize.osPath
 		cmds	:= tasks

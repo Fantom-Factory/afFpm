@@ -43,6 +43,7 @@ class InstallCmd : FpmCmd {
 	Str[]? pod
 
 	override Int go() {
+		printTitle
 		pod 	:= this.pod.join(" ")
 		podFile := FileUtils.toFile(pod)
 		if (podFile.exists) {

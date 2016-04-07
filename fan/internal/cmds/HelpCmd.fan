@@ -17,6 +17,7 @@ class HelpCmd : FpmCmd {
 	}
 
 	override Int go() {
+		printTitle
 		if (cmd == null) {
 			log.info("FPM Environment:")
 			log.info(fpmConfig.dump)

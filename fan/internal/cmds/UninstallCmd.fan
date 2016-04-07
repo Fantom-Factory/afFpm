@@ -20,6 +20,7 @@ class UninstallCmd : FpmCmd {
 	Str[]? pod
 	
 	override Int go() {
+		printTitle
 		pod := this.pod.join(" ")
 		podManager.unPublishPod(pod, repo)
 		return 0
