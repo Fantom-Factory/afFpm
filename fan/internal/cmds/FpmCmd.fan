@@ -21,6 +21,7 @@ abstract class FpmCmd : AbstractMain {
 		printTitle
 		argsOk := Env.cur.args.isEmpty ? true : parseArgs(Env.cur.args[1..-1])
 		if (!argsOk || !argsValid || helpOpt) {
+			printTitle
 			usage
 			if (!helpOpt) log.err("Missing arguments")
 			return 1
