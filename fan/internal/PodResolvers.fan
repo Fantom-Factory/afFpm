@@ -24,10 +24,10 @@ internal class PodResolvers {
 		this.fileCache	= fileCache
 	}
 	
-	Void addRemoteRepos() {
+	Void addRemoteRepos(Int numVersions, Bool queryCore, Log log) {
 		localResolvers := PodResolvers(fpmConfig, podFiles, fileCache)
 		resolvers.addAll(
-			fpmConfig.fanrRepos.keys.map { PodResolverFanrRemote(fpmConfig, it, 5, localResolvers) }
+			fpmConfig.fanrRepos.keys.map { PodResolverFanrRemote(fpmConfig, it, numVersions, localResolvers, queryCore, log) }
 		)
 	}
 	
@@ -187,21 +187,28 @@ internal class PodResolverPod : PodResolver {
 }
 
 internal class PodResolverFanrRemote : PodResolver {
-	Repo	repo
-	Str		repoName
-	Int		numVersions
+	Log			 log
+	Repo		 repo
+	Str			 repoName
+	Int			 numVersions
 	PodResolvers localResolvers
+	Bool		 queryCore
+	CorePods	 corePods		:= CorePods()
 
-	new make(FpmConfig fpmConfig, Str repoName, Int numVersions, PodResolvers localResolvers) {
+	new make(FpmConfig fpmConfig, Str repoName, Int numVersions, PodResolvers localResolvers, Bool queryCore, Log log) {
 		this.repo 		 	= fpmConfig.fanrRepo(repoName)
 		this.repoName	 	= repoName
 		this.numVersions 	= numVersions
 		this.localResolvers	= localResolvers
+		this.log			= log
 	}
 
 	override PodVersion[] resolve(Depend dependency) {
+		if (!queryCore && corePods.isCorePod(dependency.name))
+			return PodVersion#.emptyList
+
 		latest := localResolvers.resolve(dependency).sort.last
-		echo("Querying ${repoName} for ${dependency}" + ((latest == null) ? "" : " ( > $latest.version)"))
+		log.info("Querying ${repoName} for ${dependency}" + ((latest == null) ? "" : " ( > $latest.version)"))
 		specs := repo.query(dependency.toStr, numVersions)
 		vers  := specs
 			.findAll |PodSpec spec->Bool| {
@@ -211,7 +218,7 @@ internal class PodResolverFanrRemote : PodResolver {
 				PodVersion(`fanr://${repoName}/${dependency}`, spec)
 			}.sort as PodVersion[]
 		if (vers.size > 0)
-			echo("  Found ${dependency.name} " + vers.join(", ") { it.version.toStr })
+			echo("Found ${dependency.name} " + vers.join(", ") { it.version.toStr })
 		return vers
 	}
 

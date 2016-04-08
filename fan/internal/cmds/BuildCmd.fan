@@ -26,6 +26,8 @@ class BuildCmd : FpmCmd {
 	@Arg { help="The build tasks to execute (defaults to 'compile')" }
 	Str[]?	tasks	:= ["compile"]
 
+	new make() : super.make() { }
+
 	override Int go() {
 		printTitle
 		fanFile	:= Env.cur.os == "win32" ? `bin/fan.bat` : `bin/fan`

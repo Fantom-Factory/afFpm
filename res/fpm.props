@@ -70,9 +70,9 @@ podDirs					= lib;lib\\fan
 #
 #  fanrRepo.<name> = <url> 
 #
-fanrRepo.fantomFactory	= http://username:password@pods.fantomfactory.org/fanr/
-fanrRepo.status302		= http://repo.status302.com/fanr/
-fanrRepo.fantom			= http://fantom.org/fanr/
+fanrRepo.fantomFactory	= http://pods.fantomfactory.org/fanr/
+#fanrRepo.status302		= http://repo.status302.com/fanr/
+#fanrRepo.fantom			= http://fantom.org/fanr/
 
 
 

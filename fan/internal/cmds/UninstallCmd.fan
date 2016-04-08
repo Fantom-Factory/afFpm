@@ -19,6 +19,8 @@ class UninstallCmd : FpmCmd {
 	@Arg { help="The pod to uninstall" }
 	Str[]? pod
 	
+	new make() : super.make() { }
+
 	override Int go() {
 		printTitle
 		pod := this.pod.join(" ")
