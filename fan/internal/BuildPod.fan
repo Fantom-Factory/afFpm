@@ -2,8 +2,13 @@
 ** Impersonates a build::BuildPod - can't be arsed with a dependency on build
 internal class BuildPod {
 
-	private Obj buildPod
+			Str?	errMsg
+	private Obj?	buildPod
 	
+	private new err(Str errMsg) {
+		this.errMsg = errMsg
+	}
+
 	private new wrap(Obj buildPod) {
 		this.buildPod = buildPod
 	}
@@ -27,8 +32,8 @@ internal class BuildPod {
 
 			// if it's not a BuildPod instance, return null - e.g. it may just be a BuildScript instance!
 			return BuildPod.wrap(obj)
-		} catch
-			return null
+		} catch (Err err)
+			return BuildPod.err(err.msg)
 	}
 
 }

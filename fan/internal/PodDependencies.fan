@@ -83,9 +83,6 @@ internal class PodDependencies {
 		if (targetPod != null && targetPod.startsWith("afFpm"))
 			log.level = LogLevel.info
 		
-		title := "Fantom Pod Manager ${typeof.pod.version}"
-		log.debug(title)
-		log.debug("".padl(title.size, '='))
 		log.debug("Resolving pods for $targetPod")
 
 		allNodes.vals.each { expandNode(it, Depend[,]) }

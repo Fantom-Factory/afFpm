@@ -21,7 +21,7 @@ class RunCmd : FpmCmd {
 	Bool	js
 
 	** @mopUp
-	@Arg
+	@Arg { help="Arguments to pass to fan"}
 	Str[]?	args
 	
 	override Int go() {

@@ -9,7 +9,8 @@ using util
 ** 
 ** 'build.fan' should be in the current directory.
 ** 
-** If (and only if) a repository is specified, then any pod built is installed into it.
+** If (and only if) a repository is specified, then any pod built is installed 
+** into it.
 ** 
 ** Examples:
 **   C:\> fpm build

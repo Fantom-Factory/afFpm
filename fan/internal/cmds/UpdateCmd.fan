@@ -47,7 +47,7 @@ class UpdateCmd : FpmCmd {
 		}
 		
 		if (pod == null || pod.endsWith(".fan")) {
-			// TODO download dependencies for a specific build file
+			// TODO parse script for "using" statements and update those
 			buildPod	:= BuildPod(pod ?: "build.fan")
 			if (buildPod == null) {
 				log.err("Could not find / load 'build.fan'")
@@ -57,7 +57,7 @@ class UpdateCmd : FpmCmd {
 		}		
 
 		
-		
+		log.debug("")
 		podDepends.podResolvers.addRemoteRepos
 		podDepends.satisfyDependencies
 

@@ -18,7 +18,6 @@ abstract class FpmCmd : AbstractMain {
 	new make() : super.make() { }
 	
 	override Int run() {
-		printTitle
 		argsOk := Env.cur.args.isEmpty ? true : parseArgs(Env.cur.args[1..-1])
 		if (!argsOk || !argsValid || helpOpt) {
 			printTitle

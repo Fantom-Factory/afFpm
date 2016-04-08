@@ -56,25 +56,24 @@ internal const class FpmEnvDefault : FpmEnv {
 		// this is only good for basic 'C:\>fan afEggbox' type cmds
 		// any fant or script / build cmds still need to use alternative means
 		mainMethod := null as Method
-		// FIXME KILLME
-//		if (Pod.find("sys").version >= Version("1.0.68")) {
-//			mainMethod = Env.cur.mainMethod 
-//			if (mainMethod != null) {
-//	
-//				// make a HUGE assumption here that the build script is the one in the current directory
-//				if (mainMethod.qname == "build::BuildPod.main") {
-//					buildPod := BuildPod("build.fan")		
-//					if (buildPod != null) {
-//						podDepends.setBuildTargetFromBuildPod(buildPod, true)
-//						return
-//					}
-//				}
-//				
-//				podDepend := Depend("${mainMethod.parent.pod.name} 0+")
-//				podDepends.setRunTarget(podDepend)
-//				return
-//			}
-//		}
+		if (Pod.find("sys").version >= Version("1.0.68")) {
+			mainMethod = Env.cur.mainMethod 
+			if (mainMethod != null) {
+	
+				// make a HUGE assumption here that the build script is the one in the current directory
+				if (mainMethod.qname == "build::BuildPod.main") {
+					buildPod := BuildPod("build.fan")		
+					if (buildPod != null) {
+						podDepends.setBuildTargetFromBuildPod(buildPod, true)
+						return
+					}
+				}
+				
+				podDepend := Depend("${mainMethod.parent.pod.name} 0+")
+				podDepends.setRunTarget(podDepend)
+				return
+			}
+		}
 
 		log.debug("Could not parse pod from: mainMethod: ${mainMethod?.qname ?: Str.defVal} or args: ${cmdArgs.first ?: Str.defVal} - ${Env.cur.args}")
 	}

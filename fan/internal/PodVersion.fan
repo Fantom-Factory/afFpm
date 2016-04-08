@@ -58,6 +58,11 @@ internal const class PodVersion {
 		}
 	}
 
+	internal Bool? isLocal() {
+		if (url == null) return null
+		return url.scheme == "file"
+	}
+	
 	@NoDoc
 	override Int compare(Obj that) {
 		version <=> (that as PodVersion).version
