@@ -21,7 +21,7 @@ class TestCmd : FpmCmd {
 	Bool	js
 
 	** @mopUp
-	@Arg
+	@Arg { help="Arguments to pass to fant"} 
 	Str[]?	args
 	
 	override Int go() {

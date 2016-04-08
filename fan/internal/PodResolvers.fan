@@ -44,8 +44,15 @@ internal class PodResolvers {
 			}
 			
 			// naa, lets do the full resolve hog
-			// FIXME when 'unique-ing' ensure local podVersions trump remote ones 
-			return resolvers.map { it.resolve(dependency) }.flatten.unique
+			allVersions := (PodVersion[]) resolvers.map { it.resolve(dependency) }.flatten
+			
+			// we could just do 'allVersions.unique()' but we want to make sure local podVersions trump remote ones 
+			versions := allVersions.findAll { it.isLocal == true }.unique
+			allVersions.each {
+				if (it.isLocal == false && !versions.contains(it)) 
+					versions.add(it)
+			}
+			return versions
 		}
 	}
 	

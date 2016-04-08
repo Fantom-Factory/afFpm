@@ -8,7 +8,7 @@ internal class Main {
 		
 		if (cmd == null)
 			return HelpCmd().run
-		
+
 		switch (cmd) {
 			case "build":
 				return BuildCmd().run
@@ -32,7 +32,7 @@ internal class Main {
 				return UninstallCmd().run
 
 			case "help":
-				return HelpCmd().run
+				return HelpCmd() { it.cmd = cmd }.run
 
 		  default:
 		    return HelpCmd() { it.cmd = cmd }.run

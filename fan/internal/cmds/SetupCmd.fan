@@ -6,14 +6,14 @@ using util
 ** 
 ** 'setup' performs the following operations:
 ** 
-**  - Creates 'fpm.bat' in the 'bin/' directory of the current Fantom 
-**    installation. Or creates an 'fpm' executable script on nix systems.
+**  1. Creates 'fpm.bat' in the 'bin/' directory of the current Fantom 
+**     installation. Or creates an 'fpm' executable script on nix systems.
 ** 
-**  - Creates a default 'fpm.props' config file in the 'etc/afFpm/' directory.
+**  2. Creates a default 'fpm.props' config file in the 'etc/afFpm/' directory.
 ** 
-**  - Publishes any non-core pod found in any Fantom work or home directories.
-**    Note, these pod files are left intact and are just *copied* to the local 
-**    default repository.
+**  3. Publishes all non-core pods found in any Fantom work or home directory.
+**     Note, this oprertation is non-destructive; pod files are left intact 
+**     and are just *copied* to the local default repository.
 ** 
 @NoDoc	// Fandoc is only saved for public classes
 class SetupCmd : FpmCmd {
@@ -24,6 +24,7 @@ class SetupCmd : FpmCmd {
 	Str repo	:= "default"
 
 	override Int go() {
+		printTitle
 		win := Env.cur.os.startsWith("win")
 
 		func := |->| {
@@ -88,7 +89,7 @@ class SetupCmd : FpmCmd {
 	**  
 	** 'repo' defaults to 'default' if not specified.
 	private Void installAllPodsFromDir(File dir, Str? repo := null) {
-		log.info("Publishing pods from ${dir.osPath} into repo '" +  (repo ?: "default") + "'...")
+		log.info("Publishing pods from ${dir.osPath} to repo '" +  (repo ?: "default") + "'...")
 		podFiles := dir.listFiles(".+\\.pod".toRegex).exclude {
 			corePods.isCorePod(it.basename) || it.basename == "afFpm"
 		}

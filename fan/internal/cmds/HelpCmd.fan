@@ -11,21 +11,33 @@ class HelpCmd : FpmCmd {
 
 	override Int run() {
 		super.printTitle
-		if (Env.cur.args.size > 1)
-			super.parseArgs(Env.cur.args[1..-1])
 		return go
 	}
 
 	override Int go() {
-		printTitle
 		if (cmd == null) {
 			log.info("FPM Environment:")
 			log.info(fpmConfig.dump)
 
 			logUsage
+			
+			log.info("")
+			log.info("Example:")
+			log.info("  fpm help")
 			return 64
 		}
 
+		if (cmd == "help" && Env.cur.args.size == 0) {
+			logAvailableCmds
+
+			log.info("")
+			logUsage
+			return 0
+		}
+		
+		if (Env.cur.args.size > 1)
+			super.parseArgs(Env.cur.args[1..-1])
+		
 		cmdType := Type.find("afFpm::${cmd.capitalize}Cmd", false)
 		if (cmdType == null) {
 			log.info("Unknown command: ${cmd}")
@@ -35,7 +47,8 @@ class HelpCmd : FpmCmd {
 
 			log.info("")
 			logUsage
-			return 64
+						// http://stackoverflow.com/a/24121322/1532548
+			return 64	/* command line usage error */
 		}
 		
 		title := "Help: ${cmd.toDisplayName}"
@@ -43,10 +56,11 @@ class HelpCmd : FpmCmd {
 		log.info("".padl(title.size, '-'))
 		log.info(cmdType.doc?.trimEnd ?: "")
 		
-		((FpmCmd) cmdType.make).usage
-
-					// http://stackoverflow.com/a/24121322/1532548
-		return 64	/* command line usage error */
+		buf := StrBuf()
+		((FpmCmd) cmdType.make).usage(buf.out)
+		use := buf.toStr.splitLines.exclude { it.contains("-help, -?") }.join("\n").trimEnd
+		log.info(use)
+		return 0
 	}
 
 	private Void logUsage() {
@@ -71,7 +85,7 @@ class HelpCmd : FpmCmd {
 	private Void logCmdSynopsis(Type cmdType) {
 		doc := cmdType.doc?.trimEnd ?: ""
 		idx := doc.index(".")
-		nom := cmdType.name[0..<-3]
+		nom := cmdType.name[0..<-3].decapitalize
 		doc = doc[0..<idx]
 		log.info(nom.justr(9) + " - " + doc)
 	}

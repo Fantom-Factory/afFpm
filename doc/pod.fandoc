@@ -6,7 +6,7 @@ It is one of those boring system libraries you quickly find you can't do without
 
 A typical Fantom installation only allows one version of any given pod. This works fine if you're just developing and running the one application. But if you're developing multiple applications, each requiring different versions of the same pod; then you either need multiple Fantom environments, one for each application, ... or you need FPM.
 
-FPM maintains a local [fanr file repository]`docFanr::FileRepos` of Fantom pods, where multiple versions of the same pod are kept. When a Fantom application is built, test, or run via FPM; then FPM cherry picks the pod versions you need.
+FPM maintains a local [fanr file repository]`docFanr::FileRepos` of Fantom pods, where it keeps multiple versions of the same pod. When a Fantom application is built, test, or run via FPM; then from that repository, FPM cherry picks the pod versions you need.
 
 
 
@@ -140,6 +140,16 @@ FPM gathers its config from a series of 'fpm.props' files. These files are looke
 Note that the config files are additive but the values are not. If all 3 files exist, then all 3 files are merged together, with config values from a more specific file *replacing* (or overriding) values found in less specific one.
 
 '<WORK_DIR>' may be specified with the 'FPM_ENV_PATH' environment variable.
+
+
+
+Javascipt Environments
+**********************
+FPM lets you easily run Fantom applications and tests in a Javascript environment; which for quick tests, may be easier that sparking up a web server and browser. Use the '-js' option available in the 'run' and 'test' commands:
+
+  C:\> fpm run -js myPod
+
+  C:\> fpm test -js myPod
 
 
 
