@@ -24,6 +24,8 @@ class TestCmd : FpmCmd {
 	@Arg { help="Arguments to pass to fant"} 
 	Str[]?	args
 	
+	new make() : super.make() { }
+	
 	override Int go() {
 		fanFile	:= Env.cur.os == "win32" ? `bin/fant.bat` : `bin/fant`		
 		fanCmd	:= (Env.cur.homeDir + fanFile).normalize.osPath

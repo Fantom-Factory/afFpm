@@ -23,6 +23,8 @@ class SetupCmd : FpmCmd {
 	@Opt { aliases=["r"]; help="Name of the repository to publish to" }
 	Str repo	:= "default"
 
+	new make() : super.make() { }
+
 	override Int go() {
 		printTitle
 		win := Env.cur.os.startsWith("win")
@@ -77,6 +79,7 @@ class SetupCmd : FpmCmd {
 		log.info("FPM setup complete.")
 		log.info("")
 		log.info("Have fun! :)")
+		log.info("")
 		return 0
 	}
 	
@@ -94,7 +97,7 @@ class SetupCmd : FpmCmd {
 			corePods.isCorePod(it.basename) || it.basename == "afFpm"
 		}
 		if (podFiles.isEmpty)
-			log.info("  No pods found")
+			log.info("  No non-core pods found")
 		
 		podFiles.each |file| {
 			podManager.publishPod(file, repo)

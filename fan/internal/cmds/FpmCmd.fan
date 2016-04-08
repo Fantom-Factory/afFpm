@@ -8,14 +8,20 @@ abstract class FpmCmd : AbstractMain {
 	@Opt { aliases=["d"]; help="Prints debug information" }
 	Bool debug
 
-	override Log	log 	:= StdLogger()
-		FpmConfig	fpmConfig	:= (Env.cur as FpmEnv)?.fpmConfig ?: FpmEnv().fpmConfig
-		PodManager	podManager	:= PodManagerImpl {
-			it.fpmConfig	= this.fpmConfig
-			it.log			= this.log
-		}
+	override Log	log 		:= StdLogger()
+		FpmConfig	fpmConfig
+		PodManager	podManager
 
-	new make() : super.make() { }
+	new make(|This|? in := null) : super.make() {
+		in?.call(this)
+		if (fpmConfig == null)
+			fpmConfig = (Env.cur as FpmEnv)?.fpmConfig ?: FpmEnv().fpmConfig
+		if (podManager == null)
+			podManager = PodManagerImpl {
+				it.fpmConfig	= this.fpmConfig
+				it.log			= this.log
+			}
+	}
 	
 	override Int run() {
 		argsOk := Env.cur.args.isEmpty ? true : parseArgs(Env.cur.args[1..-1])
@@ -178,13 +184,22 @@ internal const class StdLogger : Log {
 		}
 	}
 
-	Void indent(Str msg, |->| f) {
-		info(msg)
+	Void indent() {
 		lead.val = lead.val.toStr + "  "
-		try f()
-		finally
-			lead.val = lead.val.toStr[0..<-2]
 	}
+
+	Void unindent() {
+		tab := (Str) lead.val 
+		lead.val = tab[0..tab.size-2]
+	}
+	
+//	Void indent(Str msg, |->| f) {
+//		info(msg)
+//		lead.val = lead.val.toStr + "  "
+//		try f()
+//		finally
+//			lead.val = lead.val.toStr[0..<-2]
+//	}
 }
 
 internal const class CmdErr : Err {

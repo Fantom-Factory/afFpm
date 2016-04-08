@@ -33,6 +33,9 @@ class InstallCmd : FpmCmd {
 	@Opt { aliases=["r"]; help="Name or location of the repository to install to (defaults to 'default')" }
 	Str? repo
 
+	@NoDoc @Opt { aliases=["c"]; help="Query for Fantom core pods" } 
+	Bool core
+	
 	@Opt { aliases=["u"]; help="Username for authentication" }
 	Str? username
 	
@@ -41,6 +44,8 @@ class InstallCmd : FpmCmd {
 	
 	@Arg { help="location or query for pod" }
 	Str[]? pod
+
+	new make() : super.make() { }
 
 	override Int go() {
 		printTitle
@@ -70,19 +75,34 @@ class InstallCmd : FpmCmd {
 		query := pod.replace("@", " ")
 		installed := fpmConfig.fanrRepos.any |url, name->Bool| {
 			repo  := fpmConfig.fanrRepo(name, username, password)
-			log.info("  Querying ${name} for: ${query}")
+			log.info("Querying ${name} for: ${query}")
 			specs := repo.query(query, 1)
 			if (specs.isEmpty) return false
 			
-			// FIXME need to download dependencies too!
-			
-			log.info("  Downloading ${specs.first} from ${name}")
+			log.info("Downloading ${specs.first} from ${name}")
 			temp := File.createTemp("afFpm-", ".pod").deleteOnExit
 			out  := temp.out
 			repo.read(specs.first).pipe(out)
 			out.close
 
-			podManager.publishPod(temp, this.repo)
+			publishedPod := podManager.publishPod(temp, this.repo)
+			
+			
+			log.info("")
+			log.info("Checking if dependencies need updating...")
+			log.info("")
+			(log as StdLogger)?.indent
+			podDepends := PodDependencies(fpmConfig, File[,], log)
+			podDepends.setRunTarget(publishedPod.asDepend)
+			UpdateCmd {
+				// don't bother re-calculating the fpmConfig - reuse what we have
+				it.fpmConfig  = this.fpmConfig
+				it.podManager = this.podManager
+				it.log		  = this.log
+			}.doUpdate(podDepends, this.repo, core)
+			(log as StdLogger)?.unindent
+			
+			
 			return true
 		}
 

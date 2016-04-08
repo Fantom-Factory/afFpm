@@ -17,6 +17,12 @@ using fanr::PodSpec
 @NoDoc	// Fandoc is only saved for public classes
 class UpdateCmd : FpmCmd {
 
+	@NoDoc @Opt { aliases=["n"]; help="Number of pod versions to query" } 
+	Int numVersions	:= 5
+	
+	@NoDoc @Opt { aliases=["c"]; help="Query for Fantom core pods" } 
+	Bool core
+	
 	@Opt { aliases=["r"]; help="Name or location of the local repository to install pods to (defaults to 'default')" }
 	Str repo	:= "default"
 
@@ -26,6 +32,8 @@ class UpdateCmd : FpmCmd {
 
 	@Arg { help="The pod whose dependencies are to be updated" }
 	Str[]? pod
+
+	new make() : super.make() { }
 
 	override Int go() {
 		printTitle
@@ -57,8 +65,14 @@ class UpdateCmd : FpmCmd {
 		}		
 
 		
-		log.debug("")
-		podDepends.podResolvers.addRemoteRepos
+		doUpdate(podDepends, repo, core)
+		log.info("")
+		log.info("Done.")
+		return 0
+	}
+	
+	internal Void doUpdate(PodDependencies podDepends, Str? repo, Bool queryCore) {
+		podDepends.podResolvers.addRemoteRepos(numVersions, queryCore, log)
 		podDepends.satisfyDependencies
 
 		if (podDepends.unresolvedPods.size > 0) {
@@ -67,9 +81,14 @@ class UpdateCmd : FpmCmd {
 		}
 
 		toUpdate := podDepends.podFiles.vals.findAll { it.url.scheme == "fanr" }
+		log.info("")
 
+		if (toUpdate.size == 0) {
+			log.info("Nothing to update.")
+		}
+		
 		toUpdate.each |podFile| {
-			log.info("  Downloading ${podFile} from ${podFile.url.host}")
+			log.info("Downloading ${podFile} from ${podFile.url.host}")
 
 			in := fpmConfig.fanrRepo(podFile.url.host).read(PodSpec([
 				"pod.name"		: podFile.name,
@@ -83,11 +102,7 @@ class UpdateCmd : FpmCmd {
 			finally out.close
 			
 			podManager.publishPod(file, repo)
-		}
-		log.info("\n")
-		log.info("All pods are up to date!")
-		log.info("Done.")
-		return 0
+		}		
 	}
 	
 	override Bool argsValid() { true }

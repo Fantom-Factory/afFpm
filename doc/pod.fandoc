@@ -45,6 +45,10 @@ Current Configuration
  fantomFactory = http://pods.fantomfactory.org/fanr/
      status302 = http://repo.status302.com/fanr/
         fantom = http://fantom.org/fanr/
+
+FPM setup complete.
+
+Have fun! :)
 <pre
 
 The 'setup' command creates an 'fpm.bat' file, an 'fpm.props' file, and publishes any non-core pods to a local repository.

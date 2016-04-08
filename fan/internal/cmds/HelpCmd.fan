@@ -9,6 +9,8 @@ class HelpCmd : FpmCmd {
 	
 	override Bool argsValid	:= true
 
+	new make() : super.make() { }
+
 	override Int run() {
 		super.printTitle
 		return go

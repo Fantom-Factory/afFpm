@@ -27,7 +27,7 @@ const mixin PodManager {
 	abstract PodFile publishPod(File pod, Str? repo := null, Str? username := null, Str? password := null)
 	
 	** Deletes the named pod from the local repository.
-	abstract Void unPublishPod(Str pod, Str repo)
+	abstract Void unPublishPod(Str pod, Str? repo)
 	
 }
 
@@ -65,7 +65,7 @@ const class PodManagerImpl : PodManager {
 		
 		// note the manual indent!
 		repoName := repo ?: "default"
-		log.info("  Publishing ${podFile} to ${repoName}")
+		log.info("Publishing ${podFile} to ${repoName}")
 
 		// publish to a file repo
 		if (fpmConfig.fileRepos.containsKey(repoName)) {
@@ -100,10 +100,11 @@ const class PodManagerImpl : PodManager {
 		}
 	}
 
-	override Void unPublishPod(Str pod, Str repo) {
-		repoDir := fpmConfig.fileRepos[repo]
+	override Void unPublishPod(Str pod, Str? repo) {
+		repoName := repo ?: "default"
+		repoDir := fpmConfig.fileRepos[repoName]
 		if (repoDir == null)
-			repoDir = FileUtils.toFile(repo)
+			repoDir = FileUtils.toFile(repoName)
 		if (repoDir.exists.not) {
 			log.info("Repo does not exist: ${repoDir.osPath}")
 			return

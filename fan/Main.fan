@@ -31,7 +31,12 @@ internal class Main {
 			case "uninstall":
 				return UninstallCmd().run
 
+			case "-h":
+			case "-?":
+			case "\\?":
 			case "help":
+			case "-help":
+			case "--help":
 				return HelpCmd() { it.cmd = cmd }.run
 
 		  default:
