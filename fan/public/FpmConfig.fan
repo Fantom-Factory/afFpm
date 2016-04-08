@@ -88,7 +88,7 @@ const class FpmConfig {
 			return repos
 		}
 		if (repoDirs.containsKey("default").not)
-			repoDirs["default"] = this.workDirs.first.plus(`fpmRepo/`, false)
+			repoDirs["default"] = this.workDirs.first.plus(`fpmRepo-default/`, false)
 		this.fileRepos = repoDirs
 		
 		tempDir := fpmProps["tempDir"]

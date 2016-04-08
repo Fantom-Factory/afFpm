@@ -218,7 +218,7 @@ internal class PodResolverFanrRemote : PodResolver {
 				PodVersion(`fanr://${repoName}/${dependency}`, spec)
 			}.sort as PodVersion[]
 		if (vers.size > 0)
-			echo("Found ${dependency.name} " + vers.join(", ") { it.version.toStr })
+			log.info("Found ${dependency.name} " + vers.join(", ") { it.version.toStr })
 		return vers
 	}
 

@@ -58,9 +58,9 @@ podDirs					= lib;lib\\fan
 #  fileRepo.<name> = <location> 
 #
 # Note there should always be a local repository named 'default'. If not 
-# defined it defaults to: ${workDir}/fpmRepo
+# defined it defaults to: ${workDir}/fpmRepo-default
 #
-# fileRepo.default		= C:\\Repositories\\Fantom\\repo-default
+# fileRepo.default		= C:\\Repositories\\Fantom\\fpmRepo-default
 
 
 

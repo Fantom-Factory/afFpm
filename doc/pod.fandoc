@@ -39,7 +39,7 @@ Current Configuration
   Config Files : C:\Apps\fantom-1.0.68\etc\afFpm\fpm.props
 
     File Repos :
-       default = C:\Apps\fantom-1.0.68\fpmRepo
+       default = C:\Apps\fantom-1.0.68\fpmRepo-default
 
     Fanr Repos :
  fantomFactory = http://pods.fantomfactory.org/fanr/
