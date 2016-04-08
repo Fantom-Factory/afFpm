@@ -36,6 +36,12 @@ abstract const class FpmEnv : Env {
 	new makeManual(FpmConfig fpmConfig, File[] f4PodFiles, |This|? in := null) : super.make() {
 		in?.call(this)	// can't do field null comparison without an it-block ctor
 
+		title := "Fantom Pod Manager ${typeof.pod.version}"
+		log.debug("")
+		log.debug("${title}")
+		log.debug("".padl(title.size, '='))		
+		log.debug("")
+
 		this.fpmConfig	= fpmConfig
 		this.fileDirs	= fpmConfig.podDirs.dup.addAll(fpmConfig.workDirs).add(fpmConfig.homeDir)
 		podDepends		:= PodDependencies(fpmConfig, f4PodFiles, log)
