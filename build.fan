@@ -1,4 +1,3 @@
-using afBuild
 using build
 
 class Build : BuildPod {
@@ -6,13 +5,13 @@ class Build : BuildPod {
 	new make() {
 		podName = "afFpm"
 		summary = "Provides a targeted environment for compiling, testing, and running Fantom applications"
-		version = Version("0.0.1.004")
+		version = Version("0.0.2")
 
 		meta = [
 			"proj.name"		: "Fantom Pod Manager",
 			"repo.internal"	: "true",
-			"repo.tags"		: "sys",
-			"repo.public"	: "false"
+			"repo.tags"		: "sys, app",
+			"repo.public"	: "true"
 		]
 
 		depends = [
@@ -28,18 +27,6 @@ class Build : BuildPod {
 		
 		docApi	= true
 		docSrc	= true
-
-		meta["afBuild.testPods"]	= "afBounce afSizzle"
-	}
-	
-	@Target { help = "Compile to pod file and associated natives" }
-	override Void compile() {
-		BuildTask(this) { it.publishPod = false }.run
-	}
-
-	@Target { help = "Builds, publishes, and Hg tags a new pod release" }
-	Void release() {
-		ReleaseTask(this).run
 	}
 }
 
