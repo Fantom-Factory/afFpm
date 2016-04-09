@@ -5,13 +5,13 @@ class Build : BuildPod {
 	new make() {
 		podName = "afFpm"
 		summary = "Provides a targeted environment for compiling, testing, and running Fantom applications"
-		version = Version("0.0.2")
+		version = Version("0.0.3")
 
 		meta = [
 			"proj.name"		: "Fantom Pod Manager",
 			"repo.internal"	: "true",
 			"repo.tags"		: "sys, app",
-			"repo.public"	: "true"
+			"repo.public"	: "false"
 		]
 
 		depends = [
