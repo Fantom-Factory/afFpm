@@ -65,30 +65,39 @@ const class PodManagerImpl : PodManager {
 		
 		// note the manual indent!
 		repoName := repo ?: "default"
-		log.info("Publishing ${podFile} to ${repoName}")
 
 		// publish to a file repo
 		if (fpmConfig.fileRepos.containsKey(repoName)) {
 			repoFile := fpmConfig.fileRepos[repoName] + `${podFile.name}/${podFile.name}-${podFile.version}.pod`
+			log.info("Publishing ${podFile} to ${repoName} (${repoFile.osPath})")
+
 			podFile.file.copyTo(repoFile, ["overwrite" : true])
 			dstPodUrl = repoFile.normalize.uri
 		} else
 		
 		// publish to a named fanr repo
 		if (fpmConfig.fanrRepos.containsKey(repoName)) {
-			fpmConfig.fanrRepo(repoName, username, password).publish(podFile.file)
+			fanrRepo := fpmConfig.fanrRepo(repoName, username, password)
+			log.info("Publishing ${podFile} to ${repoName} (${fanrRepo.uri})")
+
+			fanrRepo.publish(podFile.file)
 			dstPodUrl = fpmConfig.fanrRepos[repoName].plusSlash + `pod/${podFile.name}/${podFile.version}`
 		} else
 
 		// publish to an explicit fanr repo
 		if (repoName.startsWith("http:") || repoName.startsWith("https:")) {
-			FpmConfig.toFanrRepo(repoName.toUri).publish(podFile.file)
+			fanrRepo := FpmConfig.toFanrRepo(repoName.toUri)
+			log.info("Publishing ${podFile} to ${repoName} (${fanrRepo.uri})")
+			
+			fanrRepo.publish(podFile.file)
 			dstPodUrl = repoName.toUri.plusSlash + `pod/${podFile.name}/${podFile.version}`
 		}
 
 		// allow repo to be a dir path, but then remove the version suffix
 		else {
 			repoFile := FileUtils.toRelDir(File(``), repo) + `${podFile.name}.pod`
+			log.info("Publishing ${podFile} to ${repoName} (${repoFile.osPath})")
+
 			podFile.file.copyTo(repoFile, ["overwrite" : true])
 			dstPodUrl = repoFile.normalize.uri
 		}
