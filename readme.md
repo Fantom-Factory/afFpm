@@ -1,7 +1,7 @@
-#Fantom Pod Manager v0.0.2
+#Fantom Pod Manager v0.0.4
 ---
 [![Written in: Fantom](http://img.shields.io/badge/written%20in-Fantom-lightgray.svg)](http://fantom.org/)
-[![pod: v0.0.2](http://img.shields.io/badge/pod-v0.0.2-yellow.svg)](http://www.fantomfactory.org/pods/afFpm)
+[![pod: v0.0.4](http://img.shields.io/badge/pod-v0.0.4-yellow.svg)](http://www.fantomfactory.org/pods/afFpm)
 ![Licence: MIT](http://img.shields.io/badge/licence-MIT-blue.svg)
 
 ## Overview
@@ -10,11 +10,11 @@
 
 Fantom Pod Manager (FPM) provides a targeted environment for compiling, testing, and running Fantom applications.
 
-It is one of those boring system libraries you quickly find you can't do without.
+It is one of those boring system libraries you quickly find you can't do without!
 
 A typical Fantom installation only allows one version of any given pod. This works fine if you're just developing and running the one application. But if you're developing multiple applications, each requiring different versions of the same pod; then you either need multiple Fantom environments, one for each application, ... or you need FPM.
 
-FPM maintains a local [fanr file repository](http://fantom.org/doc/docFanr/FileRepos.html) of Fantom pods, where it keeps multiple versions of the same pod. When a Fantom application is built, test, or run via FPM; then from that repository, FPM cherry picks the pod versions you need.
+FPM maintains a local [fanr file repository](http://fantom.org/doc/docFanr/FileRepos.html) of Fantom pods, where it keeps multiple versions of the same pod. When a Fantom application is built, test, or run via FPM; then from that repository, FPM cherry picks just the pod versions you need.
 
 ## Install
 
