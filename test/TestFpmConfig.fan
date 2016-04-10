@@ -52,7 +52,7 @@ internal class TestFpmConfig : Test {
 		// test default
 		config := makeFpmConfig(null, [:])
 		verifyEq(config.fileRepos.size, 1)
-		verifyEq(config.fileRepos["default"], homeDir + `repo/`)
+		verifyEq(config.fileRepos["default"], homeDir + `fpmRepo-default/`)
 
 		// test props add to repoDirs
 		config = makeFpmConfig(null, ["repoDir.release":"C:\\Projects"])
