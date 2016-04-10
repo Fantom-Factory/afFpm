@@ -27,6 +27,15 @@ const class UnresolvedPod {
 		return output
 	}
 	
+	** Returns true if, actually, all the constraints are satisfied!
+	internal Bool isDodgy() {
+		committee.all |mem| {
+			available.any {
+				mem.dependsOn.match(it) 
+			}
+		}
+	}
+	
 	@NoDoc
 	override Str toStr() {
 		availStr := available.isEmpty ? "Not found" : available.join(", ")

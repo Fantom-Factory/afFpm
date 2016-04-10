@@ -82,13 +82,16 @@ abstract const class FpmEnv : Env {
 			this.targetPod			= this.targetPod		!= null ? this.targetPod		: "???"
 		}
 		
+		loggedLatest := false
 		if (targetPod == "???") {
-			log.warn("Could not target pod - defaulting to latest pod versions")
+			echo("FPM: Could not target pod - defaulting to latest pod versions")
+			loggedLatest = true
 			this.allPodFiles = podDepends.podResolvers.resolveAll(allPodFiles.rw) { remove(targetPod.split.first) }
 		}
 
 		if (Env.cur.vars["FPM_ALL_PODS"]?.toBool(false) ?: false) {
-			log.warn("FPM_ALL_PODS = true; defaulting to latest pod versions")
+			echo("FPM: Found env var: FPM_ALL_PODS = true; defaulting to latest pod versions")
+			loggedLatest = true
 			this.allPodFiles = podDepends.podResolvers.resolveAll(allPodFiles.rw)
 		}
 		
@@ -103,6 +106,8 @@ abstract const class FpmEnv : Env {
 
 		if (unresolvedPods.size > 0) {
 			log.warn(Utils.dumpUnresolved(unresolvedPods))
+			if (!loggedLatest)
+				log.warn("Defaulting to latest pod versions")
 			if (targetPod == "???")
 				this.allPodFiles = podDepends.podResolvers.resolveAll(allPodFiles.rw) { remove(targetPod.split.first) }
 			else

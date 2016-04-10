@@ -118,7 +118,7 @@ internal class PodDependencies {
 		podMap  := Str:PodGroup[:] 
 		
 		
-		unsatisfied	:= PodConstraint[,]
+		unsatisfied	:= UnresolvedPod[,]
 		badGroups	:= Int?[][,]
 
 		// brute force - try every permutation of pod versions and see which ones work
@@ -142,11 +142,14 @@ internal class PodDependencies {
 						}
 						badGroups.add(badGrp)
 					}
+					
 					// keep the error with the least amount of unsatisfied constraints
+					// ... actually, that isn't always the best error to report
 //					if (unsatisfied.isEmpty || res.size < unsatisfied.size)
-//					logErr(res)
-					if (unsatisfied.isEmpty)
-						unsatisfied = res
+					
+					badPods := logErr(res)
+					if (unsatisfied.isEmpty && badPods != null)
+						unsatisfied = badPods
 
 				} else {
 					// found a working combination!
@@ -209,32 +212,39 @@ internal class PodDependencies {
 		
 		// convert errors to UnresolvedPods
 		if (solutions.isEmpty) {
-			conGrps := groupBy(unsatisfied) |PodConstraint con->Str| { con.dependsOn.name }
-			unresolvedPods = conGrps.map |PodConstraint[] cons, Str name->UnresolvedPod| {
-				UnresolvedPod {
-					it.name			= name
-					it.available	= availablePodVersions(name).map { it.version }
-					it.committee	= cons.sort
-				}
-			}.vals
+			// now done in logErr()
+//			conGrps := groupBy(unsatisfied) |PodConstraint con->Str| { con.dependsOn.name }
+//			unresolvedPods = conGrps.map |PodConstraint[] cons, Str name->UnresolvedPod| {
+//				UnresolvedPod {
+//					it.name			= name
+//					it.available	= availablePodVersions(name).map { it.version }
+//					it.committee	= cons.sort
+//				}
+//			}.vals
+			unresolvedPods = unsatisfied
 		}
 		
 		log.level = oldLogLevel
 		return this
 	}
 	
-	private Void logErr(PodConstraint[] unsat) {
+	private UnresolvedPod[]? logErr(PodConstraint[] unsat) {
 		conGrps := groupBy(unsat) |PodConstraint con->Str| { con.dependsOn.name }
-		unresolvedPods := conGrps.map |PodConstraint[] cons, Str name->UnresolvedPod| {
+		unresolvedPods := (UnresolvedPod[]) conGrps.map |PodConstraint[] cons, Str name->UnresolvedPod| {
 			UnresolvedPod {
 				it.name			= name
 				it.available	= availablePodVersions(name).map { it.version }
 				it.committee	= cons.sort
 			}
 		}.vals
+
+		// FIXME: dodgy pod constraints!
+		dodgy := unresolvedPods.any { it.isDodgy }
+
+		if (log.isDebug && !dodgy)
+			log.debug("\n-----\n" + Utils.dumpUnresolved(unresolvedPods))
 		
-		echo("-----")
-		echo(Utils.dumpUnresolved(unresolvedPods))
+		return dodgy ? null : unresolvedPods
 	}
 	
 	// see https://en.wikipedia.org/wiki/AC-3_algorithm
