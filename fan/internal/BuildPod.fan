@@ -21,10 +21,10 @@ internal class BuildPod {
 	static new make(Str? filePath) {
 		try {
 			if (filePath == null)
-				return null
+				return BuildPod.err("File null")
 			file := filePath.startsWith("file:") ? File(filePath.toUri, false) : File.os(filePath)
 			if (file.isDir || file.exists.not || file.ext != "fan")
-				return null
+				return BuildPod.err("File not found: ${file.osPath}")
 			
 			// use Plastic because the default pod name when running a script (e.g. 'build_0') is already taken == Err
 			buildPodType := Type.find("build::BuildPod")

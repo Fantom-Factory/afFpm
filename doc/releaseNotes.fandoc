@@ -1,6 +1,10 @@
 Versions
 ********
 
+v0.0.4
+=======
+ - Bug: Fixed NPE when referencing scripts.
+
 v0.0.2
 =======
  - New: Preview release.
