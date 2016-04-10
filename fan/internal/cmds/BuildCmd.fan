@@ -49,8 +49,9 @@ class BuildCmd : FpmCmd {
 			return retVal
 
 		buildPod := BuildPod(target)
-		if (buildPod == null) {
+		if (buildPod.errMsg != null) {
 			log.warn("Could not compile script: ${target}")
+			log.warn("                        : ${buildPod.errMsg}")
 			return 1
 		}
 

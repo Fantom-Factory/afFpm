@@ -56,8 +56,8 @@ class UpdateCmd : FpmCmd {
 		
 		if (pod == null || pod.endsWith(".fan")) {
 			// TODO parse script for "using" statements and update those
-			buildPod	:= BuildPod(pod ?: "build.fan")
-			if (buildPod == null) {
+			buildPod := BuildPod(pod ?: "build.fan")
+			if (buildPod.errMsg != null) {
 				log.err("Could not find / load 'build.fan'")
 				return 101
 			}
