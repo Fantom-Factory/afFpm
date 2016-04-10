@@ -42,7 +42,7 @@ class TestCmd : FpmCmd {
 			cmds.insert(0, "-js")
 		cmds.insert(0, fanCmd)
 
-		log.info("Testing " + cmds[1..-1].join(" "))
+		log.info("FPM: Testing " + cmds[1..-1].join(" "))
 		
 		process := Process(cmds)
 		process.mergeErr = false
