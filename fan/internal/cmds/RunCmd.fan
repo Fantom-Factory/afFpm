@@ -27,8 +27,6 @@ class RunCmd : FpmCmd {
 	new make() : super.make() { }
 
 	override Int go() {
-		fanFile	:= Env.cur.os == "win32" ? `bin/fan.bat` : `bin/fan`
-		fanCmd	:= (Env.cur.homeDir + fanFile).normalize.osPath
 		cmds	:= args
 		target	:= target
 		
@@ -47,15 +45,15 @@ class RunCmd : FpmCmd {
 		
 		if (js)
 			cmds.insert(0, "compilerJs::Runner")
-		cmds.insert(0, fanCmd)
 
-		log.info("FPM: Running " + cmds[1..-1].join(" "))
+		log.info("FPM: Running " + cmds.join(" "))
 
-		process := Process(cmds)
+		process := ProcessFactory.fanProcess(cmds)
 		process.mergeErr = false
 		process.env["FAN_ENV"]		= FpmEnv#.qname
 		process.env["FPM_DEBUG"]	= debug.toStr
 		process.env["FPM_TARGET"]	= target
+
 		return process.run.join
 	}
 	
