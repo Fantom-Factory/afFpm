@@ -29,7 +29,7 @@ class HelpCmd : FpmCmd {
 			return 64
 		}
 
-		if (cmd == "help" && Env.cur.args.size == 0) {
+		if (cmd == "help" && Env.cur.args.size <= 1) {
 			logAvailableCmds
 
 			log.info("")
