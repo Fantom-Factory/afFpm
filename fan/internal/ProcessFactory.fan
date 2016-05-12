@@ -1,6 +1,8 @@
 
 internal class ProcessFactory {
 
+	static const Log log 	:= FpmEnv#.pod.log
+	
 	static Process fanProcess(Str[] cmd) {
 		makeJavaProcess("fanx.tools.Fan", "fan", cmd)
 	}
@@ -21,7 +23,7 @@ internal class ProcessFactory {
 		Env.cur.addShutdownHook |->| {
 			try  {
 				pro := (Process) processRef.val
-				Env.cur.err.printLine("Killing Process: ${processCmd.val} " + pro.command[6..-1].join(" "))
+				log.debug("Killing Process: ${processCmd.val} " + pro.command[6..-1].join(" "))
 				pro.kill
 			} catch (Err err) {
 				Env.cur.err.printLine("Kill failed: ${err.msg}")
