@@ -4,6 +4,9 @@ using fanr
 const class FpmConfig {
 	private static const Log 	log := FpmConfig#.pod.log
 
+	** The directory used to resolve relative files.
+	const File 		baseDir
+
 	** The Fantom installation.
 	const File 		homeDir
 
@@ -45,6 +48,9 @@ const class FpmConfig {
 
 	@NoDoc
 	static new makeFromDirs(File baseDir, File homeDir, Str? envPaths) {
+		baseDir = baseDir.normalize
+		baseDir = homeDir.normalize
+		
 		fpmFile := (File?) baseDir.plus(`fpm.props`).normalize
 		while (fpmFile != null && !fpmFile.exists)
 			fpmFile = fpmFile.parent.parent?.plus(`fpm.props`)
@@ -52,7 +58,7 @@ const class FpmConfig {
 		// this is a little bit chicken and egg - we use the workDir to find config.props to find the workDir! 
 		workDirs := "" as Str
 		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + (envPaths ?: "")
-		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + homeDir.uri.toStr
+		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + homeDir.osPath
 		workFile := workDirs.split(File.pathSep.chars.first).map { toAbsDir(it) + `etc/afFpm/fpm.props` }.unique as File[]
 		if (fpmFile != null)
 			workFile.insert(0, fpmFile)
@@ -66,7 +72,7 @@ const class FpmConfig {
 
 	@NoDoc
 	internal new makeInternal(File baseDir, File homeDir, Str? envPaths, Str:Str fpmProps, File[]? configFiles) {
-		baseDir = baseDir.normalize
+		this.baseDir = baseDir = baseDir.normalize
 		if (baseDir.isDir.not || baseDir.exists.not)
 			throw ArgErr("Base directory is not valid: ${baseDir.osPath}")
 
@@ -78,7 +84,7 @@ const class FpmConfig {
 		
 		workDirs := fpmProps["workDirs"]
 		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + (envPaths ?: "")
-		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + homeDir.uri.toStr
+		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + homeDir.osPath.toStr
 		this.workDirs = workDirs.split(File.pathSep.chars.first).map { toAbsDir(it) }.unique
 
 		repoDirs := (Str:File) fpmProps.findAll |path, name| {
@@ -93,7 +99,7 @@ const class FpmConfig {
 		
 		tempDir := fpmProps["tempDir"]
 		if (tempDir == null)
-			tempDir = this.workDirs.first.plus(`temp/`, false).uri.toStr
+			tempDir = this.workDirs.first.plus(`temp/`, false).osPath.toStr
 		this.tempDir = toAbsDir(tempDir)
 
 		podDirs := fpmProps["podDirs"]
@@ -163,7 +169,8 @@ const class FpmConfig {
 	** <pre
 	Str dump() {
 		str := ""
-		str += "      Home Dir : ${homeDir.osPath}\n"
+		str += "      Base Dir : ${baseDir.osPath}\n"
+		str += "  Fan Home Dir : ${homeDir.osPath}\n"
 		str += "     Work Dirs : " + dumpList(workDirs)
 		str += "      Pod Dirs : " + dumpList(podDirs)
 		str += "      Temp Dir : ${tempDir.osPath}\n"

@@ -50,7 +50,8 @@ class SetupCmd : FpmCmd {
 			configResFile	:= typeof.pod.file(`/res/fpm.props`)
 			if (configFile.exists.not) {
 				log.info("Creating: ${configFile.osPath}")
-				configResFile.copyTo(configFile)
+				contents := configResFile.readAllStr.replace("#{File.pathSep}", File.pathSep)
+				configFile.out.writeChars(contents).close
 			} else
 				log.info("Already exists: ${configFile.osPath}")
 			log.info("")
