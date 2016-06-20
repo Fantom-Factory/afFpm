@@ -4,6 +4,7 @@ Versions
 v0.0.6
 ======
  - Bug: Help cmd wasn't printing out cmd list.
+ - Bug: Setup cmd wouldn't always execute.
 
 v0.0.4
 ======

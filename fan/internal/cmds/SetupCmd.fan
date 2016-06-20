@@ -66,12 +66,10 @@ class SetupCmd : FpmCmd {
 			}
 		}
 
-		if (log.typeof.method("indent", false) != null)
-			log->indent("Setting up FPM...", func)
-		else {
-			log.info("Setting up FPM...")
-			func()
-		}
+		(log as StdLogger)?.indent
+		log.info("Setting up FPM...")
+		func()
+		(log as StdLogger)?.unindent
 
 		log.info("Current Configuration")
 		log.info(FpmConfig().dump)
