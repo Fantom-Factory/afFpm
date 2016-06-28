@@ -27,11 +27,11 @@ const class UnresolvedPod {
 		return output
 	}
 	
-	** Returns true if, actually, all the constraints are satisfied!
+	** Returns true if, actually, all the constraints can be satisfied by a single pod version!
 	internal Bool isDodgy() {
-		committee.all |mem| {
-			available.any {
-				mem.dependsOn.match(it) 
+		available.any |ver| {
+			committee.all |mem| {
+				mem.dependsOn.match(ver) 				
 			}
 		}
 	}
