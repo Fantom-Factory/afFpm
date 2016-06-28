@@ -178,6 +178,7 @@ internal const class StdLogger : Log {
 	private const AtomicRef lead := AtomicRef("")
 
 	// Loggers named "afFpm" logs don't seem to pickup log levels from log.props
+	// see http://fantom.org/forum/topic/2546
 	new make() : super.make("StdLogger", false) { }
 	override Void log(LogRec rec) {
 		rec.msg.split('\n', false).each {

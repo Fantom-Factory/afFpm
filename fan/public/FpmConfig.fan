@@ -87,15 +87,15 @@ const class FpmConfig {
 		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + homeDir.osPath.toStr
 		this.workDirs = workDirs.split(File.pathSep.chars.first).map { toAbsDir(it) }.unique
 
-		repoDirs := (Str:File) fpmProps.findAll |path, name| {
+		fileRepos := (Str:File) fpmProps.findAll |path, name| {
 			name.startsWith("fileRepo.")
 		}.reduce(Str:File[:] { ordered=true }) |Str:File repos, Str path, name| {
 			repos[name["fileRepo.".size..-1]] = toAbsDir(path.trim)
 			return repos
 		}
-		if (repoDirs.containsKey("default").not)
-			repoDirs["default"] = this.workDirs.first.plus(`fpmRepo-default/`, false)
-		this.fileRepos = repoDirs
+		if (fileRepos.containsKey("default").not)
+			fileRepos["default"] = this.workDirs.first.plus(`fpmRepo-default/`, false)
+		this.fileRepos = fileRepos
 		
 		tempDir := fpmProps["tempDir"]
 		if (tempDir == null)

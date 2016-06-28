@@ -40,10 +40,14 @@ internal class TestFpmConfig : Test {
 		verifyEq(config.workDirs[0], `file:/C:/Projects/`.toFile)
 		verifyEq(config.workDirs[1], homeDir)
 
+		// FIXME should we Err if a work dir doesn't exist? Or let it slide?
+		// iF we err, we need to be able to print out all other config to resolve the problem
+		// probably have a field: Str[] configErrs
+		
 		// test workDir not exist
-		verifyErr(ArgErr#) {
-			config = makeFpmConfig("wotever/", [:])
-		}
+//		verifyErr(ArgErr#) {
+//			config = makeFpmConfig("wotever/", [:])
+//		}
 	}
 	
 	Void testRepoDirs() {
@@ -54,27 +58,29 @@ internal class TestFpmConfig : Test {
 		verifyEq(config.fileRepos.size, 1)
 		verifyEq(config.fileRepos["default"], homeDir + `fpmRepo-default/`)
 
-		// test props add to repoDirs
-		config = makeFpmConfig(null, ["repoDir.release":"C:\\Projects"])
+		// test props add to fileRepos
+		config = makeFpmConfig(null, ["fileRepo.release":"C:\\Projects"])
 		verifyEq(config.fileRepos.size, 2)
-		verifyEq(config.fileRepos["default"], homeDir + `repo/`)		
+		verifyEq(config.fileRepos["default"], homeDir + `fpmRepo-default/`)		
 		verifyEq(config.fileRepos["release"], `file:/C:/Projects/`.toFile)
 
-		// test props trump repoDirs
-		config = makeFpmConfig(null, ["repoDir.release":"C:\\Projects", "repoDir.default":"C:\\Temp"])
+		// test props trump fileRepos
+		config = makeFpmConfig(null, ["fileRepo.release":"C:\\Projects", "fileRepo.default":"C:\\Temp"])
 		verifyEq(config.fileRepos.size, 2)
 		verifyEq(config.fileRepos["default"], `file:/C:/Temp/`.toFile)
 		verifyEq(config.fileRepos["release"], `file:/C:/Projects/`.toFile)
 
 		// test uri path
-		config = makeFpmConfig(null, ["repoDir.default":"file:/C:/Projects/"])
+		config = makeFpmConfig(null, ["fileRepo.default":"file:/C:/Projects/"])
 		verifyEq(config.fileRepos.size, 1)
 		verifyEq(config.fileRepos["default"], `file:/C:/Projects/`.toFile)
 
-		// test repoDir not exist
-		verifyErr(ArgErr#) {
-			config = makeFpmConfig(null, ["repoDir.wot":"ever/"])
-		}
+		// FIXME log non-existant dirs - see above
+		
+		// test fileRepo not exist
+//		verifyErr(ArgErr#) {
+//			config = makeFpmConfig(null, ["fileRepo.wot":"ever/"])
+//		}
 	}
 
 	Void testPodDirs() {
@@ -105,10 +111,12 @@ internal class TestFpmConfig : Test {
 		verifyEq(config.podDirs.size, 1)
 		verifyEq(config.podDirs[0], `file:/C:/Projects/Fantom-Factory/FantomPodManager/fan/`.toFile)
 
+		// FIXME log non-existant dirs - see above
+
 		// test podDir not exist
-		verifyErr(ArgErr#) {
-			config = makeFpmConfig(null, ["podDirs":"wotever/"])
-		}
+//		verifyErr(ArgErr#) {
+//			config = makeFpmConfig(null, ["podDirs":"wotever/"])
+//		}
 	}
 	
 	private FpmConfig makeFpmConfig(Str? envPaths, Str:Str fpmProps) {
