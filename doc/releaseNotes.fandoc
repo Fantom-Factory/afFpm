@@ -4,6 +4,8 @@ Versions
 v0.0.6
 ======
  - Bug: Help cmd wasn't printing out cmd list.
+ - Bug: Setup cmd wouldn't always execute.
+ - Bug: Resolved multiple issues with the 'fpm' .nix file.
 
 v0.0.4
 ======

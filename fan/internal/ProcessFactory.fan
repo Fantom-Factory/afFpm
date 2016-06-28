@@ -16,7 +16,7 @@ internal class ProcessFactory {
 		classpath	:= [homeDir + `lib/java/sys.jar`, homeDir + `lib/java/jline.jar`].join(File.pathSep) { it.osPath } 
 		javaOpts	:= Env.cur.config(Pod.find("sys"), "java.options", "")
 		args 		:= ["java", javaOpts, "-cp", classpath, "-Dfan.home=${homeDir.osPath}", javaCmd].addAll(cmd)
-		process		:= Process(args)
+		process		:= Process(args, `./`.toFile)
 		processRef	:= Unsafe(process)
 		processCmd	:= Unsafe(fanCmd)
 

@@ -40,7 +40,7 @@ class SetupCmd : FpmCmd {
 				log.info("Already exists: ${fpmFile.osPath}")
 			
 			if (!win) {
-				try		Process(["chmod", "+x"], fpmFile.parent).run.join
+				try		Process(["chmod", "+x", fpmFile.osPath], fpmFile.parent).run.join
 				catch	log.warn("Could not set execute permissions on: ${fpmFile.osPath}")
 			}
 			log.info("")
@@ -50,7 +50,8 @@ class SetupCmd : FpmCmd {
 			configResFile	:= typeof.pod.file(`/res/fpm.props`)
 			if (configFile.exists.not) {
 				log.info("Creating: ${configFile.osPath}")
-				configResFile.copyTo(configFile)
+				contents := configResFile.readAllStr.replace("#{File.pathSep}", File.pathSep)
+				configFile.out.writeChars(contents).close
 			} else
 				log.info("Already exists: ${configFile.osPath}")
 			log.info("")
@@ -66,12 +67,10 @@ class SetupCmd : FpmCmd {
 			}
 		}
 
-		if (log.typeof.method("indent", false) != null)
-			log->indent("Setting up FPM...", func)
-		else {
-			log.info("Setting up FPM...")
-			func()
-		}
+		(log as StdLogger)?.indent
+		log.info("Setting up FPM...")
+		func()
+		(log as StdLogger)?.unindent
 
 		log.info("Current Configuration")
 		log.info(FpmConfig().dump)
