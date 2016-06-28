@@ -1,0 +1,93 @@
+
+# Fantom Pod Manager :: Config File
+# =================================
+#
+# Config files are looked for in the following locations:
+#
+#  - <currentDir>  /fpm.props
+#  - %FAN_PATH_ENV%/etc/afFpm/fpm.props
+#  - %FAN_HOME%    /etc/afFpm/fpm.props
+#
+# Note that config files are *additive* allowing project based files to give
+# more specific config. 
+
+
+
+# ---- Working Directory ------------------------------------------------------
+#
+# The 'workDir' is an alternative directory to 'FAN_HOME' that is used to store 
+# pod libraries and etc files. It provides a dumping ground for your own custom
+# files and keeps the Fantom installation clean.
+#
+# If not specified then it defaults to the 'FAN_PATH_ENV' environment variable.
+# If that doesn't exist then the Fantom installation dir is used.
+#
+# Paths should be absolute and defined in your local OS format. Note that 
+# multiple directories may be specified, separated by 'sys::File.pathSep'.
+#
+# See 'util::PathEnv' for more details.
+#
+# workDirs				= C:\\Repositories\\Fantom
+
+
+
+# ---- Temp Directory ---------------------------------------------------------
+#
+# Fantom's temporary directory. The path must be absolute. 
+# If not specified, defaults to: ${workDir}/temp
+#
+# tempDir				= C:\\Repositories\\Fantom\\temp
+
+
+
+# ---- Pod Directories --------------------------------------------------------
+#
+# Pods found in pod directories take precedence over local repositories. Pod
+# file names must have the format: <pod name>.pod
+#  
+# Paths may be absolute or relative to the current directory.
+
+podDirs					= lib;lib\\fan
+
+
+
+# ---- Local Repositories -----------------------------------------------------
+#
+# Repositories are named with the syntax:
+#
+#  fileRepo.<name> = <location> 
+#
+# Note there should always be a local repository named 'default'. If not 
+# defined it defaults to: ${workDir}/fpmRepo-default
+#
+# fileRepo.default		= C:\\Repositories\\Fantom\\fpmRepo-default
+
+
+
+# ---- Remote Repositories ----------------------------------------------------
+#
+# Repositories are named with the syntax:
+#
+#  fanrRepo.<name> = <url> 
+#
+fanrRepo.fantomFactory	= http://pods.fantomfactory.org/fanr/
+#fanrRepo.status302		= http://repo.status302.com/fanr/
+#fanrRepo.fantom			= http://fantom.org/fanr/
+
+
+
+# ---- Remote Repository Credentials ------------------------------------------
+#
+# fanrRepo.fantomFactory.username	= username
+# fanrRepo.fantomFactory.password	= password
+
+
+
+# ---- Launch Pods ------------------------------------------------------------
+#
+# Launch pods are libraries that should be ignored when determining the target 
+# pod. Example:
+# 
+#   C:\> fpm run afBedSheet myWebApp@1.2
+
+launchPods				= afBedSheet, afReflux

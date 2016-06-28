@@ -1,0 +1,17 @@
+Versions
+********
+
+v0.0.6
+======
+ - Bug: Help cmd wasn't printing out cmd list.
+
+v0.0.4
+======
+ - Chg: Slightly better unsatisfied pod error reporting.
+ - Chg: Killing an FPM 'run' or 'test' cmd didn't kill the running Java process.
+ - Bug: Fixed NPE when referencing scripts.
+
+v0.0.2
+======
+ - New: Preview release.
+
