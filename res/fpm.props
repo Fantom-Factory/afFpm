@@ -47,7 +47,7 @@
 #  
 # Paths may be absolute or relative to the current directory.
 
-podDirs					= lib;lib\\fan
+podDirs					= lib#{File.pathSep}lib\\fan
 
 
 
