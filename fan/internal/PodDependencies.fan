@@ -212,15 +212,6 @@ internal class PodDependencies {
 		
 		// convert errors to UnresolvedPods
 		if (solutions.isEmpty) {
-			// now done in logErr()
-//			conGrps := groupBy(unsatisfied) |PodConstraint con->Str| { con.dependsOn.name }
-//			unresolvedPods = conGrps.map |PodConstraint[] cons, Str name->UnresolvedPod| {
-//				UnresolvedPod {
-//					it.name			= name
-//					it.available	= availablePodVersions(name).map { it.version }
-//					it.committee	= cons.sort
-//				}
-//			}.vals
 			unresolvedPods = unsatisfied
 		}
 		
@@ -243,6 +234,12 @@ internal class PodDependencies {
 
 		if (log.isDebug && !dodgy)
 			log.debug("\n-----\n" + Utils.dumpUnresolved(unresolvedPods))
+		
+		// print dodgy constraints in an attempt to fix
+//		unresolvedPods.each { 
+//			if (it.isDodgy)
+//				echo("\n-----> Dodgy Constraints!\n" + Utils.dumpUnresolved(unresolvedPods))			
+//		}
 		
 		return dodgy ? null : unresolvedPods
 	}

@@ -177,6 +177,7 @@ abstract class FpmCmd : AbstractMain {
 internal const class StdLogger : Log {
 	private const AtomicRef lead := AtomicRef("")
 
+	// Loggers named "afFpm" logs don't seem to pickup log levels from log.props
 	new make() : super.make("StdLogger", false) { }
 	override Void log(LogRec rec) {
 		rec.msg.split('\n', false).each {
