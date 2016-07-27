@@ -10,7 +10,7 @@ class Build : BuildPod {
 		meta = [
 			"proj.name"		: "Fantom Pod Manager",
 			"repo.internal"	: "true",
-			"repo.tags"		: "sys, app",
+			"repo.tags"		: "system, app",
 			"repo.public"	: "false"
 		]
 
