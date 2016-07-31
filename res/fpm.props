@@ -70,7 +70,7 @@ podDirs					= lib#{File.pathSep}lib\\fan
 #
 #  fanrRepo.<name> = <url> 
 #
-fanrRepo.fantomFactory	= http://pods.fantomfactory.org/fanr/
+fanrRepo.fantomFactory	= http://eggbox.fantomfactory.org/fanr/
 #fanrRepo.status302		= http://repo.status302.com/fanr/
 #fanrRepo.fantom			= http://fantom.org/fanr/
 
