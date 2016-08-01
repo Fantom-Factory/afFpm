@@ -58,8 +58,11 @@ internal class PodResolvers {
 	
 	Str:PodFile resolveAll(Str:PodFile podFiles) {
 		resolvers.map { it.resolveAll }.flatten.each |PodVersion podVer| {
-			if (podFiles.containsKey(podVer.name).not)
+			if (!podFiles.containsKey(podVer.name))
 				podFiles[podVer.name] = podVer.toPodFile
+			else
+				if (podVer.version >= podFiles[podVer.name].version)
+					podFiles[podVer.name] = podVer.toPodFile
 		}
 		return podFiles
 	}
