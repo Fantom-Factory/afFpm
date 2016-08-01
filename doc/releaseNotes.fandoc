@@ -1,6 +1,10 @@
 Versions
 ********
 
+v0.0.8
+======
+ - Bug: Resolving all latest pods didn't always pick the latest between multiple repositories.
+
 v0.0.6
 ======
  - Bug: Help cmd wasn't printing out cmd list.
