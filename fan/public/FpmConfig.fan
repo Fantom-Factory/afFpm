@@ -49,7 +49,6 @@ const class FpmConfig {
 	@NoDoc
 	static new makeFromDirs(File baseDir, File homeDir, Str? envPaths) {
 		baseDir = baseDir.normalize
-		baseDir = homeDir.normalize
 		
 		fpmFile := (File?) baseDir.plus(`fpm.props`).normalize
 		while (fpmFile != null && !fpmFile.exists)
