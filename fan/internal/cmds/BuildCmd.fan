@@ -29,7 +29,6 @@ class BuildCmd : FpmCmd {
 	new make() : super.make() { }
 
 	override Int go() {
-		printTitle
 		fanFile	:= Env.cur.os == "win32" ? `bin/fan.bat` : `bin/fan`
 		fanCmd	:= (Env.cur.homeDir + fanFile).normalize.osPath
 		cmds	:= tasks
@@ -37,7 +36,13 @@ class BuildCmd : FpmCmd {
 		cmds.insert(0, target)
 		cmds.insert(0, fanCmd)
 
-		log.info("FPM: Running build task: " + cmds[2..-1].join(" "))
+		buildPod := BuildPod(target)
+		if (buildPod.errMsg != null) {
+			log.warn("Could not compile script - ${buildPod.errMsg}")
+			return 1
+		}
+
+		printTitle("FPM: Building ${buildPod}")
 
 		process := Process(cmds)
 		process.mergeErr = false
@@ -47,13 +52,6 @@ class BuildCmd : FpmCmd {
 		retVal := process.run.join
 		if (retVal != 0)
 			return retVal
-
-		buildPod := BuildPod(target)
-		if (buildPod.errMsg != null) {
-			log.warn("Could not compile script: ${target}")
-			log.warn("                        : ${buildPod.errMsg}")
-			return 1
-		}
 
 		if (repo != null) {
 			podFile	 := buildPod.outPodDir.plusSlash.plusName(buildPod.podName  + ".pod").toFile.normalize
@@ -82,5 +80,4 @@ class BuildCmd : FpmCmd {
 	}
 	
 	override Bool argsValid() { true }
-
 }

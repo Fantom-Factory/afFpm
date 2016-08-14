@@ -7,7 +7,7 @@ using util
 **  - the directory of a local repository (e.g. 'C:\repo-release\')
 **
 ** Examples: 
-**   C:\> fpm uninstall myPod
+**   C:\> fpm uninstall myPod 2.0.10
 **   C:\> fpm uninstall -r default myPod 2.0.10
 ** 
 @NoDoc	// Fandoc is only saved for public classes
@@ -22,8 +22,8 @@ class UninstallCmd : FpmCmd {
 	new make() : super.make() { }
 
 	override Int go() {
-		printTitle
 		pod := this.pod.join(" ")
+		printTitle("FPM: Uninstalling ${pod}")
 		podManager.unPublishPod(pod, repo)
 		return 0
 	}

@@ -18,6 +18,8 @@ internal class BuildPod {
 	Str[]	depends()	{ buildPod->depends		}
 	Uri		outPodDir()	{ buildPod->outPodDir	}
 	
+	override Str toStr() { "${podName} ${version}" }		
+	
 	static new make(Str? filePath) {
 		try {
 			if (filePath == null)

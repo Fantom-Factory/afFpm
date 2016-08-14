@@ -48,8 +48,9 @@ class InstallCmd : FpmCmd {
 	new make() : super.make() { }
 
 	override Int go() {
-		printTitle
-		pod 	:= this.pod.join(" ")
+		pod := this.pod.join(" ")
+		printTitle("FPM: Installing ${pod}")
+
 		podFile := FileUtils.toFile(pod)
 		if (podFile.exists) {
 			podManager.publishPod(podFile, repo)
