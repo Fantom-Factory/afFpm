@@ -64,14 +64,15 @@ class UpdateCmd : FpmCmd {
 			podDepends.setBuildTargetFromBuildPod(buildPod, false)
 		}		
 
-		
-		doUpdate(podDepends, repo, core)
-		log.info("")
-		log.info("Done.")
-		return 0
+		ret := doUpdate(podDepends, repo, core)
+		if (ret == 0) {
+			log.info("")
+			log.info("Done.")
+		}
+		return ret
 	}
 	
-	internal Void doUpdate(PodDependencies podDepends, Str? repo, Bool queryCore) {
+	internal Int doUpdate(PodDependencies podDepends, Str? repo, Bool queryCore) {
 		podDepends.podResolvers.addRemoteRepos(numVersions, queryCore, log)
 		podDepends.satisfyDependencies
 
@@ -85,6 +86,7 @@ class UpdateCmd : FpmCmd {
 
 		if (toUpdate.size == 0) {
 			log.info("Nothing to update.")
+			return 103
 		}
 		
 		toUpdate.each |podFile| {
@@ -102,7 +104,9 @@ class UpdateCmd : FpmCmd {
 			finally out.close
 			
 			podManager.publishPod(file, repo)
-		}		
+		}
+		
+		return 0
 	}
 	
 	override Bool argsValid() { true }
