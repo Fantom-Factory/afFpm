@@ -74,7 +74,6 @@ class BuildCmd : FpmCmd {
 
 			log.info("  Deleting ${podFile.normalize.osPath}")
 			podFile.delete
-
 		}
 
 		log.info("")

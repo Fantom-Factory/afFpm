@@ -5,6 +5,7 @@ v0.0.8
 ======
  - Chg: Added 'domkit' to list of core pods.
  - Bug: Resolving all latest pods didn't always pick the latest between multiple repositories.
+ - Bug: Update command no longer reports 'Done' if errors are encountered.
 
 v0.0.6
 ======
