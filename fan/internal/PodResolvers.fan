@@ -190,15 +190,15 @@ internal class PodResolverPod : PodResolver {
 }
 
 internal class PodResolverFanrRemote : PodResolver {
-	Log			 log
+	Log?		 log
 	Repo		 repo
 	Str			 repoName
 	Int			 numVersions
-	PodResolvers localResolvers
+	PodResolvers? localResolvers
 	Bool		 queryCore
 	CorePods	 corePods		:= CorePods()
 
-	new make(FpmConfig fpmConfig, Str repoName, Int numVersions, PodResolvers localResolvers, Bool queryCore, Log log) {
+	new make(FpmConfig fpmConfig, Str repoName, Int numVersions, PodResolvers? localResolvers, Bool queryCore, Log? log) {
 		this.repo 		 	= fpmConfig.fanrRepo(repoName)
 		this.repoName	 	= repoName
 		this.numVersions 	= numVersions
@@ -210,8 +210,8 @@ internal class PodResolverFanrRemote : PodResolver {
 		if (!queryCore && corePods.isCorePod(dependency.name))
 			return PodVersion#.emptyList
 
-		latest := localResolvers.resolve(dependency).sort.last
-		log.info("Querying ${repoName} for ${dependency}" + ((latest == null) ? "" : " ( > $latest.version)"))
+		latest := localResolvers?.resolve(dependency)?.sort?.last
+		log?.info("Querying ${repoName} for ${dependency}" + ((latest == null) ? "" : " ( > $latest.version)"))
 		specs := repo.query(dependency.toStr, numVersions)
 		vers  := specs
 			.findAll |PodSpec spec->Bool| {
@@ -221,7 +221,7 @@ internal class PodResolverFanrRemote : PodResolver {
 				PodVersion(`fanr://${repoName}/${dependency}`, spec)
 			}.sort as PodVersion[]
 		if (vers.size > 0)
-			log.info("Found ${dependency.name} " + vers.join(", ") { it.version.toStr })
+			log?.info("Found ${dependency.name} " + vers.join(", ") { it.version.toStr })
 		return vers
 	}
 

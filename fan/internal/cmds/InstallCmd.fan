@@ -36,10 +36,10 @@ class InstallCmd : FpmCmd {
 	@NoDoc @Opt { aliases=["c"]; help="Query for Fantom core pods" } 
 	Bool core
 	
-	@Opt { aliases=["u"]; help="Username for authentication" }
+	@Opt { aliases=["u"]; help="Username for fanr authentication" }
 	Str? username
 	
-	@Opt { aliases=["p"]; help="Password for authentication" }
+	@Opt { aliases=["p"]; help="Password for fanr authentication" }
 	Str? password
 	
 	@Arg { help="location or query for pod" }
