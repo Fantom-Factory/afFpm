@@ -22,6 +22,9 @@ internal class Main {
 			case "setup":
 				return SetupCmd().run
 		
+			case "query":
+				return QueryCmd().run
+		
 			case "update":
 				return UpdateCmd().run
 		
