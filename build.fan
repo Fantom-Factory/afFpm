@@ -8,7 +8,7 @@ class Build : BuildPod {
 		version = Version("0.0.7")
 
 		meta = [
-			"proj.name"		: "Fantom Pod Manager",
+			"proj.name"		: "FPM (Fantom Pod Manager)",
 			"repo.internal"	: "true",
 			"repo.tags"		: "system, app",
 			"repo.public"	: "false"
