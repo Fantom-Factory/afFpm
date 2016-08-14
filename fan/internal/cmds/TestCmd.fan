@@ -27,11 +27,20 @@ class TestCmd : FpmCmd {
 	new make() : super.make() { }
 	
 	override Int go() {
-		cmds	:= args
+		cmds	:= args ?: Str[,]
 		target	:= target
 		
+		if (cmds.isEmpty) {
+			buildPod := BuildPod("build.fan")
+			if (buildPod.errMsg != null) {
+				log.warn("Could not compile script - ${buildPod.errMsg}")
+				return 1
+			}
+			cmds.add(buildPod.podName)
+		}
+
 		if (target == null) {
-			target = args.first ?: ""
+			target = cmds.first ?: ""
 			if (target.contains("@"))
 				cmds[0] = target[0..<target.index("@")]
 		}
@@ -39,7 +48,7 @@ class TestCmd : FpmCmd {
 		if (js)
 			cmds.insert(0, "-js")
 
-		log.info("FPM: Testing " + cmds.join(" "))
+		printTitle("FPM: Testing " + cmds.join(" "))
 		
 		process := ProcessFactory.fantProcess(cmds)
 		process.mergeErr = false
@@ -51,6 +60,8 @@ class TestCmd : FpmCmd {
 	}
 	
 	override Bool argsValid() {
-		args.size > 0
+		if (args != null && args.size > 1)
+			return true
+		return `build.fan`.toFile.exists
 	}
 }

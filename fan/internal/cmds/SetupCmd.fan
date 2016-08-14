@@ -26,7 +26,7 @@ class SetupCmd : FpmCmd {
 	new make() : super.make() { }
 
 	override Int go() {
-		printTitle
+		printFpmTitle
 		win := Env.cur.os.startsWith("win")
 
 		func := |->| {
@@ -69,6 +69,7 @@ class SetupCmd : FpmCmd {
 
 		(log as StdLogger)?.indent
 		log.info("Setting up FPM...")
+		log.info("")
 		func()
 		(log as StdLogger)?.unindent
 

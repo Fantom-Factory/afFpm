@@ -36,7 +36,6 @@ class UpdateCmd : FpmCmd {
 	new make() : super.make() { }
 
 	override Int go() {
-		printTitle
 		podDepends	:= PodDependencies(fpmConfig, File[,], log)
 		pod 		:= this.pod?.join(" ")
 		
@@ -50,7 +49,7 @@ class UpdateCmd : FpmCmd {
 				if (podFiles.isEmpty)
 					throw Err("Could not find pod '${pod}'")
 				podFile = podFiles.first
-			}			
+			}
 			podDepends.setRunTarget(podFile.asDepend)
 		}
 		
@@ -63,6 +62,8 @@ class UpdateCmd : FpmCmd {
 			}
 			podDepends.setBuildTargetFromBuildPod(buildPod, false)
 		}		
+
+		printTitle("FPM: Updating dependencies of ${podDepends.targetPod}")
 
 		ret := doUpdate(podDepends, repo, core)
 		if (ret == 0) {

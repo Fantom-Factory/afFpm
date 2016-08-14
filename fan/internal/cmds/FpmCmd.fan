@@ -15,7 +15,8 @@ abstract class FpmCmd : AbstractMain {
 	new make(|This|? in := null) : super.make() {
 		in?.call(this)
 		if (fpmConfig == null)
-			fpmConfig = (Env.cur as FpmEnv)?.fpmConfig ?: FpmEnv().fpmConfig
+			fpmConfig = (Env.cur as FpmEnv)?.fpmConfig ?: FpmConfig()
+
 		if (podManager == null)
 			podManager = PodManagerImpl {
 				it.fpmConfig	= this.fpmConfig
@@ -26,7 +27,8 @@ abstract class FpmCmd : AbstractMain {
 	override Int run() {
 		argsOk := Env.cur.args.isEmpty ? true : parseArgs(Env.cur.args[1..-1])
 		if (!argsOk || !argsValid || helpOpt) {
-			printTitle
+			log.info("")
+			HelpCmd().logHelp(this.typeof)
 			usage
 			if (!helpOpt) log.err("Missing arguments")
 			return 1
@@ -37,7 +39,12 @@ abstract class FpmCmd : AbstractMain {
 		return go
 	}
 	
-	Void printTitle() {
+	Void printTitle(Str title) {
+		log.info("\n${title}")
+		log.info("".padl(title.size, '=') + "\n")		
+	}
+	
+	Void printFpmTitle() {
 		title := "Fantom Pod Manager ${typeof.pod.version}"
 		log.info("\n${title}")
 		log.info("".padl(title.size, '=') + "\n")		

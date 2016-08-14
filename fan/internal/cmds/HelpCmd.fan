@@ -12,7 +12,7 @@ class HelpCmd : FpmCmd {
 	new make() : super.make() { }
 
 	override Int run() {
-		super.printTitle
+		super.printFpmTitle
 		return go
 	}
 
@@ -52,11 +52,8 @@ class HelpCmd : FpmCmd {
 						// http://stackoverflow.com/a/24121322/1532548
 			return 64	/* command line usage error */
 		}
-		
-		title := "Help: ${cmd.toDisplayName}"
-		log.info(title)
-		log.info("".padl(title.size, '-'))
-		log.info(cmdType.doc?.trimEnd ?: "")
+
+		logHelp(cmdType)
 		
 		buf := StrBuf()
 		((FpmCmd) cmdType.make).usage(buf.out)
@@ -65,6 +62,14 @@ class HelpCmd : FpmCmd {
 		return 0
 	}
 
+	Void logHelp(Type cmdType) {
+		cmd := cmdType.name[0..<-3]
+		title := "Help: ${cmd.toDisplayName}"
+		log.info(title)
+		log.info("".padl(title.size, '-'))
+		log.info(cmdType.doc?.trimEnd ?: "")		
+	}
+	
 	private Void logUsage() {
 		log.info("Usage:")
 		log.info("  fpm <command> [options]")

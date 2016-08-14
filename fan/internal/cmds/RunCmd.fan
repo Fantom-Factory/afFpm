@@ -27,17 +27,26 @@ class RunCmd : FpmCmd {
 	new make() : super.make() { }
 
 	override Int go() {
-		cmds	:= args
+		cmds	:= args ?: Str[,]
 		target	:= target
 		
+		if (cmds.isEmpty) {
+			buildPod := BuildPod("build.fan")
+			if (buildPod.errMsg != null) {
+				log.warn("Could not compile script - ${buildPod.errMsg}")
+				return 1
+			}
+			cmds.add(buildPod.podName)
+		}
+		
 		if (target == null) {
-			target = args.getSafe(0) ?: ""
+			target = cmds.getSafe(0) ?: ""
 			if (target.contains("@"))
 				cmds[0] = target[0..<target.index("@")]
 	
 			// cater for launch pods such as afBedSheet and afReflux
 			if (fpmConfig.launchPods.contains(target)) {
-				target = args.getSafe(1) ?: ""
+				target = cmds.getSafe(1) ?: ""
 				if (target.contains("@"))
 					cmds[1] = target[0..<target.index("@")]			
 			}
@@ -46,7 +55,7 @@ class RunCmd : FpmCmd {
 		if (js)
 			cmds.insert(0, "compilerJs::Runner")
 
-		log.info("FPM: Running " + cmds.join(" "))
+		printTitle("FPM: Running " + cmds.join(" "))
 
 		process := ProcessFactory.fanProcess(cmds)
 		process.mergeErr = false
@@ -57,5 +66,9 @@ class RunCmd : FpmCmd {
 		return process.run.join
 	}
 	
-	override Bool argsValid() { true }
+	override Bool argsValid() {
+		if (args != null && args.size > 1)
+			return true
+		return `build.fan`.toFile.exists
+	}
 }
