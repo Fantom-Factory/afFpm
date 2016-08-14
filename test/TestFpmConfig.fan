@@ -109,7 +109,7 @@ internal class TestFpmConfig : Test {
 		// test relative path
 		config = makeFpmConfig(null, ["podDirs":"fan/"])
 		verifyEq(config.podDirs.size, 1)
-		verifyEq(config.podDirs[0], `file:/C:/Projects/Fantom-Factory/FantomPodManager/fan/`.toFile)
+		verifyEq(config.podDirs[0], `file:/C:/Projects/Fantom-Factory/Fpm/fan/`.toFile)
 
 		// FIXME log non-existant dirs - see above
 
