@@ -8,10 +8,11 @@ class Build : BuildPod {
 		version = Version("0.0.10")
 
 		meta = [
-			"proj.name"		: "FPM (Fantom Pod Manager)",
-			"repo.internal"	: "true",
-			"repo.tags"		: "system, app",
-			"repo.public"	: "true"
+			"pod.dis"			: "FPM (Fantom Pod Manager)",
+			"pod.displayName"	: "FPM (Fantom Pod Manager)",
+			"repo.internal"		: "true",
+			"repo.tags"			: "system, app",
+			"repo.public"		: "true"
 		]
 
 		depends = [
