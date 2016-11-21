@@ -67,7 +67,7 @@ class RunCmd : FpmCmd {
 	}
 	
 	override Bool argsValid() {
-		if (args != null && args.size > 1)
+		if (args != null && args.size >= 1)
 			return true
 		return `build.fan`.toFile.exists
 	}

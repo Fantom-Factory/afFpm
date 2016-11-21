@@ -1,6 +1,6 @@
 Overview
 ********
-Fantom Pod Manager (FPM) provides a targeted environment for compiling, testing, and running Fantom applications.
+Fantom Pod Manager (FPM) provides a targeted environment for building, testing, and running Fantom applications.
 
 It provides tools to:
  - query repositories for pod versions
