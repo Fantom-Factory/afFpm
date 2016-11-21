@@ -1,14 +1,14 @@
-#FPM (Fantom Pod Manager) v0.0.8
+#FPM (Fantom Pod Manager) v0.0.10
 ---
-[![Written in: Fantom](http://img.shields.io/badge/written%20in-Fantom-lightgray.svg)](http://fantom.org/)
-[![pod: v0.0.8](http://img.shields.io/badge/pod-v0.0.8-yellow.svg)](http://www.fantomfactory.org/pods/afFpm)
+[![Written in: Fantom](http://img.shields.io/badge/written%20in-Fantom-lightgray.svg)](http://fantom-lang.org/)
+[![pod: v0.0.10](http://img.shields.io/badge/pod-v0.0.10-yellow.svg)](http://www.fantomfactory.org/pods/afFpm)
 ![Licence: MIT](http://img.shields.io/badge/licence-MIT-blue.svg)
 
 ## Overview
 
 *FPM (Fantom Pod Manager) is a support library that aids Alien-Factory in the development of other libraries, frameworks and applications. Though you are welcome to use it, you may find features are missing and the documentation incomplete.*
 
-Fantom Pod Manager (FPM) provides a targeted environment for compiling, testing, and running Fantom applications.
+Fantom Pod Manager (FPM) provides a targeted environment for building, testing, and running Fantom applications.
 
 It provides tools to:
 
@@ -24,17 +24,21 @@ FPM maintains a local [fanr file repository](http://fantom.org/doc/docFanr/FileR
 
 ## Install
 
-Install `FPM (Fantom Pod Manager)` with the Fantom Repository Manager ( [fanr](http://fantom.org/doc/docFanr/Tool.html#install) ):
+Install `FPM (Fantom Pod Manager)` with the Fantom Pod Manager ( [FPM](http://pods.fantomfactory.org/pods/afFpm) ):
+
+    C:\> fpm install afFpm
+
+Or install `FPM (Fantom Pod Manager)` with [fanr](http://fantom.org/doc/docFanr/Tool.html#install):
 
     C:\> fanr install -r http://pods.fantomfactory.org/fanr/ afFpm
 
-To use in a [Fantom](http://fantom.org/) project, add a dependency to `build.fan`:
+To use in a [Fantom](http://fantom-lang.org/) project, add a dependency to `build.fan`:
 
     depends = ["sys 1.0", ..., "afFpm 0.0"]
 
 ## Documentation
 
-Full API & fandocs are available on the [Fantom Pod Repository](http://pods.fantomfactory.org/pods/afFpm/).
+Full API & fandocs are available on the [Eggbox](http://eggbox.fantomfactory.org/pods/afFpm/) - the Fantom Pod Repository.
 
 ## Quick Start
 
