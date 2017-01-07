@@ -48,7 +48,7 @@ Current Configuration
        default = C:\Apps\fantom-1.0.68\fpmRepo-default
 
     Fanr Repos :
- fantomFactory = http://pods.fantomfactory.org/fanr/
+ fantomFactory = http://eggbox.fantomfactory.org/fanr/
      status302 = http://repo.status302.com/fanr/
         fantom = http://fantom.org/fanr/
 
@@ -245,7 +245,7 @@ FPM Environment:
        release = C:\Repositories\Fantom\repo-release
 
     Fanr Repos :
- fantomFactory = http://pods.fantomfactory.org/fanr/
+ fantomFactory = http://eggbox.fantomfactory.org/fanr/
      status302 = http://repo.status302.com/fanr/
         fantom = http://fantom.org/fanr/
 
