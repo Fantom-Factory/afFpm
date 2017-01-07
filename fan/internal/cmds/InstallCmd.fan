@@ -7,7 +7,7 @@ using fanr
 **  - a named local repository (e.g. 'default')
 **  - a named remote repository (e.g. 'fantomFactory')
 **  - the directory of a local repository (e.g. 'C:\repo-release\')
-**  - the URL of a remote repository (e.g. 'http://pods.fantomfactory.org/fanr/')
+**  - the URL of a remote repository (e.g. 'http://eggbox.fantomfactory.org/fanr/')
 ** 
 ** The pod may be:
 **  - a file location, absolute or relative. Example, 'lib/myAweseomeGame.pod'

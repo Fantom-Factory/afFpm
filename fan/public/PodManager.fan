@@ -19,7 +19,7 @@ const mixin PodManager {
 	**  - a named local repository. Example, 'default'
 	**  - a named remote repository. Example, 'fantomFactory'
 	**  - the directory of a local repository. Example, 'C:\repo-release\'
-	**  - the URL of a remote repositry. Example, 'http://pods.fantomfactory.org/fanr/'
+	**  - the URL of a remote repositry. Example, 'http://eggbox.fantomfactory.org/fanr/'
 	**  
 	** Returns a 'PodFile' representing the newly published pod.
 	** 

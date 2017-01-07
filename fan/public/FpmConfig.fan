@@ -163,7 +163,7 @@ const class FpmConfig {
 	**       default = C:\Repositories\Fantom\repo-default
 	**       release = C:\Repositories\Fantom\repo-release
 	**    Fanr Repos :
-	** fantomFactory = http://pods.fantomfactory.org/fanr/
+	** fantomFactory = http://eggbox.fantomfactory.org/fanr/
 	**       repo302 = http://repo.status302.com/fanr/
 	** <pre
 	Str dump() {
