@@ -108,6 +108,19 @@ class InstallCmd : FpmCmd {
 		}
 
 		if (!installed) {
+			installed = fpmConfig.fileRepos.any |repoDir, name->Bool| {
+				if (!query.contains(" "))
+					query += " 0+"
+				vers := PodResolverFanrLocal(repoDir, FileCache()).resolve(Depend(query))
+				if (vers.size > 0) {
+					publishedPod := podManager.publishPod(vers.first.toPodFile.file, this.repo)
+					return true
+				}
+				return false
+			}
+		}
+
+		if (!installed) {
 			log.info("")
 			log.info("Could not find: ${query}")
 		}
