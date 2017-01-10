@@ -94,6 +94,10 @@ const class FpmConfig {
 		}
 		if (fileRepos.containsKey("default").not)
 			fileRepos["default"] = this.workDirs.first.plus(`fpmRepo-default/`, false)
+//		Darn It!  fanHome is a podDir, not a 
+//		if (fileRepos.containsKey("fanHome").not)
+//			if (fileRepos["default"] != homeDir)
+//				fileRepos["fanHome"] = homeDir
 		this.fileRepos = fileRepos
 		
 		tempDir := fpmProps["tempDir"]

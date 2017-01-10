@@ -33,7 +33,7 @@ abstract const class FpmEnv : Env {
 	}
 
 	@NoDoc
-	new makeManual(FpmConfig fpmConfig, File[] f4PodFiles, |This|? in := null) : super.make() {
+	new makeManual(FpmConfig fpmConfig, File[] f4PodFiles, |This|? in := null) : super.make(Env.cur) {
 		in?.call(this)	// can't do field null comparison without an it-block ctor
 
 		title := "Fantom Pod Manager ${typeof.pod.version}"

@@ -1,6 +1,11 @@
 Versions
 ********
 
+v0.0.12
+=======
+ - Chg: 'FpmEnv' now extend 'Env.cur' for a 'prompt()' and 'password()' implementation.
+ - Chg: 'Install' cmd now installs to local repos.
+
 v0.0.10
 =======
  - Bug: 'Run' and 'Test' commands needed 2 arguments to be valid, should have just been 1; the name of the pod / class.
