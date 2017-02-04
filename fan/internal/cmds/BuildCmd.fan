@@ -44,7 +44,7 @@ class BuildCmd : FpmCmd {
 
 		printTitle("FPM: Building ${buildPod}")
 
-		process := Process(cmds)
+		process := Process2(cmds)
 		process.mergeErr = false
 		process.env["FAN_ENV"]		= FpmEnv#.qname
 		process.env["FPM_DEBUG"]	= debug.toStr

@@ -40,7 +40,7 @@ class SetupCmd : FpmCmd {
 				log.info("Already exists: ${fpmFile.osPath}")
 			
 			if (!win) {
-				try		Process(["chmod", "+x", fpmFile.osPath], fpmFile.parent).run.join
+				try		Process2(["chmod", "+x", fpmFile.osPath], fpmFile.parent).run.join
 				catch	log.warn("Could not set execute permissions on: ${fpmFile.osPath}")
 			}
 			log.info("")

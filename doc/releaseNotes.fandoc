@@ -3,7 +3,8 @@ Versions
 
 v0.0.12
 =======
- - Chg: 'FpmEnv' now extend 'Env.cur' for a 'prompt()' and 'password()' implementation.
+ - Chg: Bespoke 'Process' implementation for launching fan cmds allows for keyboard input.
+ - Chg: 'FpmEnv' now extends 'Env.cur' for a 'prompt()' and 'password()' implementation.
  - Chg: 'Install' cmd now installs to local repos.
 
 v0.0.10
