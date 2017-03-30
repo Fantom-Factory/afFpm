@@ -6,6 +6,7 @@ v0.0.12
  - Chg: Bespoke 'Process' implementation for launching fan cmds allows for keyboard input.
  - Chg: 'FpmEnv' now extends 'Env.cur' for a 'prompt()' and 'password()' implementation.
  - Chg: 'Install' cmd now installs to local repos.
+ - Chg: Env var 'FPM_ALL_PODS' doesn't overwrite resolved pods.
 
 v0.0.10
 =======

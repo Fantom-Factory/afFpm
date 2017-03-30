@@ -90,9 +90,17 @@ abstract const class FpmEnv : Env {
 		}
 
 		if (Env.cur.vars["FPM_ALL_PODS"]?.toBool(false) ?: false) {
-			echo("FPM: Found env var: FPM_ALL_PODS = true; defaulting to latest pod versions")
+			echo("FPM: Found env var: FPM_ALL_PODS = true; making all pods available")
 			loggedLatest = true
-			this.allPodFiles = podDepends.podResolvers.resolveAll(allPodFiles.rw)
+			
+			// don't overwrite the pod versions we've already resolved - just make other pods available
+			morePodFiles := podDepends.podResolvers.resolveAll(allPodFiles.rw)
+			allPodFiles  := this.resolvedPodFiles.rw
+			morePodFiles.each |val, key| {
+				if (!allPodFiles.containsKey(key))
+					allPodFiles[key] = val
+			}
+			this.allPodFiles = allPodFiles
 		}
 		
 		// ---- dump info to logs ----
