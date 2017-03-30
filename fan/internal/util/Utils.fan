@@ -79,7 +79,7 @@ internal class Utils {
 	}
 	
 	static Str[]? splitQuotedStr(Str? str) {
-		if (str?.trimToNull == null)	return null
+		if (trimToNull(str) == null)	return null
 		strings	 := Str[,]
 		chars	 := Int[,]
 		prev	 := (Int?) null
@@ -112,5 +112,10 @@ internal class Utils {
 			strings.add(Str.fromChars(chars))
 
 		return strings
+	}
+	
+	private static Str? trimToNull(Str? str) {
+		str = str?.trim
+		return str == null || str.isEmpty ? null : str 
 	}
 }

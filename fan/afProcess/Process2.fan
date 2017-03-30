@@ -102,7 +102,7 @@ class Process2 {
 		stdInStream		:= Interop.toFan(jProc.getOutputStream, 0)
 		stdOutStream	:= Interop.toFan(jProc.getInputStream,  0)
 		stdErrStream	:= Interop.toFan(jProc.getErrorStream,  0)
-		&actorPool	 	= actorPool ?: ActorPool() { it.name = "Process: ${command.first}" }
+		&actorPool	 	= actorPool ?: ActorPool() // { it.name = "Process: ${command.first}" }
 		
 		// now launch threads to pipe std in, out, and err
 		PipeInToOut(actorPool, this, this.in,   stdInStream, throttle).pipe
@@ -189,7 +189,7 @@ const class PipeInToOut {
 				while (process.isAlive) {
 					
 					// read whole characters
-					while (inStream.avail > 0) {
+					while (inStream.peek != null) {
 						ch := inStream.readChar
 						if (ch != null)
 							outStream?.writeChar(ch)

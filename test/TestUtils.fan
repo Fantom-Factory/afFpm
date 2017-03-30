@@ -45,7 +45,7 @@ internal class TestUtils :Test {
 	}
 	
 	Void verifyDepends(Str d1, Str d2) {
-		verifyTrue(Utils.dependFits(Depend(d1), Depend(d2)))
+		verify(Utils.dependFits(Depend(d1), Depend(d2)))
 	}
 	
 	Void verifyDependsNot(Str d1, Str d2) {

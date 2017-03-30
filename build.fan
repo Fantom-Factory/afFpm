@@ -16,11 +16,11 @@ class Build : BuildPod {
 		]
 
 		depends = [
-			"sys        1.0.67 - 1.0",
-			"fanr       1.0.67 - 1.0",
-			"util       1.0.67 - 1.0",
-			"concurrent 1.0.67 - 1.0",			
-			"compiler   1.0.67 - 1.0",		// for afPlastic
+			"sys        1.0.65 - 1.0",
+			"fanr       1.0.65 - 1.0",
+			"util       1.0.65 - 1.0",
+			"concurrent 1.0.65 - 1.0",			
+			"compiler   1.0.65 - 1.0",		// for afPlastic
 
 //			"afConcurrent 1.0.16 - 1.0",	// for afProcess
 		]

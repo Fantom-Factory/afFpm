@@ -86,7 +86,7 @@ internal class PodResolverFanrLocal : PodResolver {
 
 	override PodVersion[] resolve(Depend dependency) {
 		podDir := repoDir.plus(dependency.name.toUri.plusSlash, true)
-		return podDir.listFiles(podRegex).map |file->PodVersion?| {
+		return podDir.listFiles.findAll { podRegex.matches(it.name) }.map |file->PodVersion?| {
 			podName := PodName(file)
 			if (podName == null)
 				return null
@@ -104,7 +104,7 @@ internal class PodResolverFanrLocal : PodResolver {
 	
 	override PodVersion[] resolveAll() {
 		repoDir.listDirs.map |repoDir->PodName?| {
-			repoDir.listFiles(podRegex).map { PodName(it) }.exclude { it == null }.sort.last
+			repoDir.listFiles.findAll { podRegex.matches(it.name) }.map { PodName(it) }.exclude { it == null }.sort.last
 		}.exclude { it == null }.map |PodName pod->PodVersion| { fileCache.getOrMake(pod.file) }
 	}
 }
@@ -161,7 +161,8 @@ internal class PodResolverPath : PodResolver {
 	}
 
 	override PodVersion[] resolveAll() {
-		pathDir.listFiles(Regex.glob("*.pod")).map { fileCache.getOrMake(it) }.exclude { it == null }
+		podRegex := Regex.glob("*.pod")
+		return pathDir.listFiles.findAll { podRegex.matches(it.name) }.map { fileCache.getOrMake(it) }.exclude { it == null }
 	}
 }
 

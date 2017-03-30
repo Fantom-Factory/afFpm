@@ -93,7 +93,8 @@ class SetupCmd : FpmCmd {
 	** 'repo' defaults to 'default' if not specified.
 	private Void installAllPodsFromDir(File dir, Str? repo := null) {
 		log.info("Publishing pods from ${dir.osPath} to repo '" +  (repo ?: "default") + "'...")
-		podFiles := dir.listFiles(".+\\.pod".toRegex).exclude {
+		podRegex := ".+\\.pod".toRegex
+		podFiles := dir.listFiles.findAll { podRegex.matches(it.name) }.exclude {
 			corePods.isCorePod(it.basename) || it.basename == "afFpm"
 		}
 		if (podFiles.isEmpty)

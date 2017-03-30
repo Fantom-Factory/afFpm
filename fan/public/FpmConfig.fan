@@ -56,8 +56,8 @@ const class FpmConfig {
 
 		// this is a little bit chicken and egg - we use the workDir to find config.props to find the workDir! 
 		workDirs := "" as Str
-		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + (envPaths ?: "")
-		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + homeDir.osPath
+		workDirs = (trimToNull(workDirs) == null ? "" : workDirs + File.pathSep) + (envPaths ?: "")
+		workDirs = (trimToNull(workDirs) == null ? "" : workDirs + File.pathSep) + homeDir.osPath
 		workFile := workDirs.split(File.pathSep.chars.first).map { toAbsDir(it) + `etc/afFpm/fpm.props` }.unique as File[]
 		if (fpmFile != null)
 			workFile.insert(0, fpmFile)
@@ -82,8 +82,8 @@ const class FpmConfig {
 		this.homeDir = homeDir
 		
 		workDirs := fpmProps["workDirs"]
-		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + (envPaths ?: "")
-		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + homeDir.osPath.toStr
+		workDirs = (trimToNull(workDirs) == null ? "" : workDirs + File.pathSep) + (envPaths ?: "")
+		workDirs = (trimToNull(workDirs) == null ? "" : workDirs + File.pathSep) + homeDir.osPath.toStr
 		this.workDirs = workDirs.split(File.pathSep.chars.first).map { toAbsDir(it) }.unique
 
 		fileRepos := (Str:File) fpmProps.findAll |path, name| {
@@ -217,8 +217,8 @@ const class FpmConfig {
 		userStr	 := url.userInfo == null ? "" : url.userInfo + "@"
 		repoUrl	 := url.toStr.replace(userStr, "").toUri
 		// TODO do proper percent decoding
-		username := Uri.decode(url.userInfo?.split(':')?.getSafe(0)?.replace("%40", "@") ?: "").toStr.trimToNull	// decode percent encoding
-		password := Uri.decode(url.userInfo?.split(':')?.getSafe(1)?.replace("%40", "@") ?: "").toStr.trimToNull
+		username := trimToNull(Uri.decode(url.userInfo?.split(':')?.getSafe(0)?.replace("%40", "@") ?: "").toStr)	// decode percent encoding
+		password := trimToNull(Uri.decode(url.userInfo?.split(':')?.getSafe(1)?.replace("%40", "@") ?: "").toStr)
 		if (usr != null)	username = usr
 		if (pwd != null)	password = pwd
 		return Repo.makeForUri(repoUrl, username, password)
@@ -230,5 +230,10 @@ const class FpmConfig {
 	
 	private static File toRelDir(File baseDir, Str dirPath) {
 		FileUtils.toRelDir(baseDir, dirPath)
+	}
+	
+	private static Str? trimToNull(Str? str) {
+		str = str?.trim
+		return str == null || str.isEmpty ? null : str 
 	}
 }

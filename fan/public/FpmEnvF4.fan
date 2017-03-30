@@ -8,7 +8,7 @@ const class FpmEnvF4 : FpmEnv {
 
 	static new make(FpmConfig fpmConfig, |This| in) {
 		try {
-			if (Env.cur.vars["FPM_DEBUG"]?.trimToNull == "true")
+			if (trimToNull(Env.cur.vars["FPM_DEBUG"]) == "true")
 				Log.get("afFpm").level = LogLevel.debug
 
 			return FpmEnvF4.makeInternal(fpmConfig, in)
@@ -25,5 +25,10 @@ const class FpmEnvF4 : FpmEnv {
 
 	override internal Void findTarget(PodDependencies podDepends) {
 		podDepends.setBuildTarget(name, version, depends, true)
+	}
+	
+	private static Str? trimToNull(Str? str) {
+		str = str?.trim
+		return str == null || str.isEmpty ? null : str 
 	}
 }

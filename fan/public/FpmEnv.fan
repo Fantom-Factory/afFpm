@@ -62,8 +62,8 @@ abstract const class FpmEnv : Env {
 				podFiles.remove(podDepends.building)
 			podRegex	:= ".+\\.pod".toRegex
 			// note that workDirs includes homeDir
-			fpmConfig.podDirs .each {              (it).listFiles(podRegex).each { if (it.isDir.not && podFiles.containsKey(it.basename).not) podFiles[it.basename] = PodFile(it) } }
-			fpmConfig.workDirs.each { (it + `lib/fan/`).listFiles(podRegex).each { if (it.isDir.not && podFiles.containsKey(it.basename).not) podFiles[it.basename] = PodFile(it) } }
+			fpmConfig.podDirs .each {              (it).listFiles.findAll { podRegex.matches(it.name) }.each { if (it.isDir.not && podFiles.containsKey(it.basename).not) podFiles[it.basename] = PodFile(it) } }
+			fpmConfig.workDirs.each { (it + `lib/fan/`).listFiles.findAll { podRegex.matches(it.name) }.each { if (it.isDir.not && podFiles.containsKey(it.basename).not) podFiles[it.basename] = PodFile(it) } }
 
 			this.allPodFiles = podFiles
 

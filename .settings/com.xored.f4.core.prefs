@@ -1,3 +1,5 @@
 compileEnv=f4core\:\:DefaultCompileEnv
 eclipse.preferences.version=1
+podOutputDir=build/
 publishPod=true
+useExternalBuilder=true

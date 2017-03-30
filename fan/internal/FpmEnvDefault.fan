@@ -3,13 +3,13 @@ internal const class FpmEnvDefault : FpmEnv {
 
 	static new make() {
 		try {
-			if (Env.cur.vars["FPM_DEBUG"]?.trimToNull == "true")
+			if (trimToNull(Env.cur.vars["FPM_DEBUG"]) == "true")
 				Log.get("afFpm").level = LogLevel.debug
 
 			fpmConfig	:= FpmConfig()
 	
 			// add F4 pod locations
-			f4PodPaths	:= Env.cur.vars["FAN_ENV_PODS"]?.trimToNull?.split(File.pathSep.chars.first, true) ?: Str#.emptyList
+			f4PodPaths	:= trimToNull(Env.cur.vars["FAN_ENV_PODS"])?.split(File.pathSep.chars.first, true) ?: Str#.emptyList
 			f4PodFiles	:= f4PodPaths.map { toFile(it) }
 			fpmEnv 		:= makeManual(fpmConfig, f4PodFiles)
 	
@@ -57,7 +57,7 @@ internal const class FpmEnvDefault : FpmEnv {
 		// any fant or script / build cmds still need to use alternative means
 		mainMethod := null as Method
 		if (Pod.find("sys").version >= Version("1.0.68")) {
-			mainMethod = Env.cur.mainMethod 
+			mainMethod = Env#.method("mainMethod").callOn(Env.cur, null) 
 			if (mainMethod != null) {
 	
 				// make a HUGE assumption here that the build script is the one in the current directory
@@ -102,5 +102,10 @@ internal const class FpmEnvDefault : FpmEnv {
 	static File toFile(Str filePath) {
 		file := filePath.startsWith("file:") ? File(filePath.toUri, false) : File.os(filePath)
 		return file.normalize
+	}
+	
+	private static Str? trimToNull(Str? str) {
+		str = str?.trim
+		return str == null || str.isEmpty ? null : str 
 	}
 }
