@@ -11,6 +11,7 @@ using fanr
 ** 
 ** The pod may be:
 **  - a file location, absolute or relative. Example, 'lib/myAweseomeGame.pod'
+**  - a directory of pods, absolute or relative. Example, 'lib/'
 **  - a simple search query. Example, '"afIoc 3.0"' or 'afIoc@3.0'
 ** 
 ** All the above makes the 'install' command very versatile. Some examples:
@@ -53,7 +54,10 @@ class InstallCmd : FpmCmd {
 
 		podFile := FileUtils.toFile(pod)
 		if (podFile.exists) {
-			podManager.publishPod(podFile, repo)
+			if (podFile.isDir)
+				podManager.publishPods(podFile, repo, username, password)
+			else
+				podManager.publishPod(podFile, repo, username, password)
 			return 0
 		}
 

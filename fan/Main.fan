@@ -5,7 +5,7 @@ internal class Main {
 	Int main(Str[] args) {
 		
 		cmd := args.first
-		
+
 		if (cmd == null)
 			return HelpCmd().run
 

@@ -26,6 +26,20 @@ const mixin PodManager {
 	** 'repo' defaults to 'default' if not specified.
 	abstract PodFile publishPod(File pod, Str? repo := null, Str? username := null, Str? password := null)
 	
+	** Publishes a directory of pod files to the given repository.
+	** Note that Fantom core pods are ignored and not installed.
+	** 
+	** Pod files may have any name but must have a '.pod' extension. 
+	** 
+	** 'repo' may be:
+	**  - a named local repository. Example, 'default'
+	**  - a named remote repository. Example, 'fantomFactory'
+	**  - the directory of a local repository. Example, 'C:\repo-release\'
+	**  - the URL of a remote repositry. Example, 'http://eggbox.fantomfactory.org/fanr/'
+	**  
+	** 'repo' defaults to 'default' if not specified.
+	abstract Void publishPods(File pod, Str? repo := null, Str? username := null, Str? password := null)
+
 	** Deletes the named pod from the local repository.
 	abstract Void unPublishPod(Str pod, Str? repo)
 	
@@ -59,6 +73,8 @@ const class PodManagerImpl : PodManager {
 	override PodFile publishPod(File file, Str? repo := null, Str? username := null, Str? password := null) {
 		if (file.exists.not)
 			throw IOErr(ErrMsgs.mgr_podFileNotFound(file))
+		if (file.isDir)
+			throw IOErr(ErrMsgs.mgr_podFileIsDir(file))
 
 		podFile		:= PodFile(file)
 		dstPodUrl	:= null as Uri
@@ -109,6 +125,25 @@ const class PodManagerImpl : PodManager {
 		}
 	}
 
+	override Void publishPods(File podDir, Str? repo := null, Str? username := null, Str? password := null) {
+		if (podDir.exists.not)
+			throw IOErr(ErrMsgs.mgr_podFileNotFound(podDir))
+		if (!podDir.isDir)
+			throw IOErr(ErrMsgs.mgr_podDirIsFile(podDir))
+
+		allPodFiles := podDir.listFiles(Regex.glob("*.pod"))
+		corePods	:= CorePods()
+		podFiles	:= allPodFiles.exclude { corePods.isCorePod(PodFile(it).name) }
+		
+		log.info("Found ${podFiles.size} pod files (excluding ${allPodFiles.size - podFiles.size} core pods)")
+
+		podFiles.each {
+			podFile := PodFile(it)
+			if (!CorePods().isCorePod(podFile.name))
+				publishPod(it, repo, username, password)
+		}
+	}
+	
 	override Void unPublishPod(Str pod, Str? repo) {
 		repoName := repo ?: "default"
 		fileRepo := fpmConfig.fileRepos[repoName]
