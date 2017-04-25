@@ -1,8 +1,9 @@
-#FPM (Fantom Pod Manager) v0.0.10
+#FPM (Fantom Pod Manager) v0.0.12
 ---
+
 [![Written in: Fantom](http://img.shields.io/badge/written%20in-Fantom-lightgray.svg)](http://fantom-lang.org/)
-[![pod: v0.0.10](http://img.shields.io/badge/pod-v0.0.10-yellow.svg)](http://www.fantomfactory.org/pods/afFpm)
-![Licence: MIT](http://img.shields.io/badge/licence-MIT-blue.svg)
+[![pod: v0.0.12](http://img.shields.io/badge/pod-v0.0.12-yellow.svg)](http://www.fantomfactory.org/pods/afFpm)
+![Licence: ISC](http://img.shields.io/badge/licence-ISC-blue.svg)
 
 ## Overview
 
@@ -24,13 +25,13 @@ FPM maintains a local [fanr file repository](http://fantom.org/doc/docFanr/FileR
 
 ## Install
 
-Install `FPM (Fantom Pod Manager)` with the Fantom Pod Manager ( [FPM](http://pods.fantomfactory.org/pods/afFpm) ):
+Install `FPM (Fantom Pod Manager)` with the Fantom Pod Manager ( [FPM](http://eggbox.fantomfactory.org/pods/afFpm) ):
 
     C:\> fpm install afFpm
 
 Or install `FPM (Fantom Pod Manager)` with [fanr](http://fantom.org/doc/docFanr/Tool.html#install):
 
-    C:\> fanr install -r http://pods.fantomfactory.org/fanr/ afFpm
+    C:\> fanr install -r http://eggbox.fantomfactory.org/fanr/ afFpm
 
 To use in a [Fantom](http://fantom-lang.org/) project, add a dependency to `build.fan`:
 
@@ -73,7 +74,7 @@ Current Configuration
        default = C:\Apps\fantom-1.0.68\fpmRepo-default
 
     Fanr Repos :
- fantomFactory = http://pods.fantomfactory.org/fanr/
+ fantomFactory = http://eggbox.fantomfactory.org/fanr/
      status302 = http://repo.status302.com/fanr/
         fantom = http://fantom.org/fanr/
 
@@ -224,11 +225,12 @@ The repository may be:
 - a named local repository (e.g. `default`)
 - a named remote repository (e.g. `fantomFactory`)
 - the directory of a local repository (e.g. `C:\repo-release\`)
-- the URL of a remote repository (e.g. `http://pods.fantomfactory.org/fanr/`)
+- the URL of a remote repository (e.g. `http://eggbox.fantomfactory.org/fanr/`)
 
 The pod may be:
 
 - a file location, absolute or relative. Example, `lib/myAweseomeGame.pod`
+- a directory of pods, absolute or relative. Example, `lib/`
 - a simple search query. Example, `"afIoc 3.0"` or `afIoc@3.0`
 
 All the above makes the `install` command very versatile. Some examples:
@@ -348,7 +350,7 @@ FPM Environment:
        release = C:\Repositories\Fantom\repo-release
 
     Fanr Repos :
- fantomFactory = http://pods.fantomfactory.org/fanr/
+ fantomFactory = http://eggbox.fantomfactory.org/fanr/
      status302 = http://repo.status302.com/fanr/
         fantom = http://fantom.org/fanr/
 
