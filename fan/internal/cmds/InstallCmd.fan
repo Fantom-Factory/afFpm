@@ -5,8 +5,8 @@ using fanr
 ** 
 ** The pod may be:
 **  - a file location, absolute or relative. Example, 'lib/myAweseomeGame.pod'
-**  - a directory of pods, absolute or relative. Example, 'lib/'
 **  - a simple search query. Example, '"afIoc 3.0"' or 'afIoc@3.0'
+**  - a directory of pods, absolute or relative. Example, 'lib/'
 ** 
 ** The repository may be:
 **  - a named local repository (e.g. 'default')
@@ -52,6 +52,8 @@ class InstallCmd : FpmCmd {
 		pod := this.pod.join(" ")
 		printTitle("FPM: Installing ${pod}")
 
+		// FIXME don't allow local repo dirs or remote repo URLs, only allow "named" repos - then a local dir can be used to collate pods into the one place
+		
 		podFile := FileUtils.toFile(pod)
 		if (podFile.exists) {
 			if (podFile.isDir)
