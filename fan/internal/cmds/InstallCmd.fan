@@ -3,16 +3,16 @@ using fanr
 
 ** Installs a pod to a repository.
 ** 
+** The pod may be:
+**  - a file location, absolute or relative. Example, 'lib/myAweseomeGame.pod'
+**  - a directory of pods, absolute or relative. Example, 'lib/'
+**  - a simple search query. Example, '"afIoc 3.0"' or 'afIoc@3.0'
+** 
 ** The repository may be:
 **  - a named local repository (e.g. 'default')
 **  - a named remote repository (e.g. 'fantomFactory')
 **  - the directory of a local repository (e.g. 'C:\repo-release\')
 **  - the URL of a remote repository (e.g. 'http://eggbox.fantomfactory.org/fanr/')
-** 
-** The pod may be:
-**  - a file location, absolute or relative. Example, 'lib/myAweseomeGame.pod'
-**  - a directory of pods, absolute or relative. Example, 'lib/'
-**  - a simple search query. Example, '"afIoc 3.0"' or 'afIoc@3.0'
 ** 
 ** All the above makes the 'install' command very versatile. Some examples:
 ** 
