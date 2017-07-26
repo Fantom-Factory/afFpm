@@ -2,10 +2,8 @@
 internal const class FileUtils {
 
 	static File toAbsDir(Str dirPath) {
-		dir := toDir(dirPath).normalize
-		if (dir.uri.isPathAbs.not)
-			throw ArgErr("Directory path must be absolute: ${dirPath}")
-		return dir
+		// because this is used for tempDir, workDir, and file repos - if dirPath happens to be rel, make it rel to FAN_HOME
+		toRelDir(Env.cur.homeDir, dirPath)
 	}
 	
 	** Warning! Dir may not exist!

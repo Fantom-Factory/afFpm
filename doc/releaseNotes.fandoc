@@ -1,6 +1,11 @@
 Versions
 ********
 
+v0.0.14
+=======
+ - Chg: Better 'Process' handling for keyboard input (works for more cases).
+ - Chg: Relative URLs in config (for repos, workDirs, etc...) are now relative to FAN_HOME, not the current dir.
+
 v0.0.12
 =======
  - New: 'Install' cmd installs directories of pods.
