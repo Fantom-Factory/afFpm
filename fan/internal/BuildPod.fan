@@ -3,10 +3,12 @@
 internal class BuildPod {
 
 			Str?	errMsg
+			Str?	errCode
 	private Obj?	buildPod
 	
-	private new err(Str errMsg) {
-		this.errMsg = errMsg
+	private new err(Str errMsg, Str? errCode := null) {
+		this.errMsg  = errMsg
+		this.errCode = errCode
 	}
 
 	private new wrap(Obj buildPod) {
@@ -30,8 +32,12 @@ internal class BuildPod {
 			
 			// use Plastic because the default pod name when running a script (e.g. 'build_0') is already taken == Err
 			buildPodType := Type.find("build::BuildPod")
-			obj := PlasticCompiler().compileCode(file.readAllStr).types.find { it.fits(buildPodType) }?.make
+			pod := PlasticCompiler().compileCode(file.readAllStr)
+			obj := pod.types.find { it.fits(buildPodType) }?.make
 
+			if (obj == null)
+				return BuildPod.err(pod.types.join(",") { it.base.qname } + " does not extend build::BuildPod", "notBuildPod")
+			
 			// if it's not a BuildPod instance, return null - e.g. it may just be a BuildScript instance!
 			return BuildPod.wrap(obj)
 		} catch (Err err)
