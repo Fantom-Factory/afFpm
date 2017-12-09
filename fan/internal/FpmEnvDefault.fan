@@ -41,7 +41,7 @@ internal const class FpmEnvDefault : FpmEnv {
 		// FPM_TARGET - use it if we got it
 		if (fpmArgs != null) {
 			buildPod := BuildPod(cmdArgs.first)		
-			if (buildPod.errMsg == null) {
+			if (buildPod != null && buildPod.errMsg == null) {
 				podDepends.setBuildTargetFromBuildPod(buildPod, true)
 				return
 			}

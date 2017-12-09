@@ -21,8 +21,6 @@ class Build : BuildPod {
 			"util       1.0.67 - 1.0",
 			"concurrent 1.0.67 - 1.0",			
 			"compiler   1.0.67 - 1.0",		// for afPlastic
-
-//			"afConcurrent 1.0.16 - 1.0",	// for afProcess
 		]
 
 		srcDirs = [`fan/`, `fan/afConcurrent/`, `fan/afPlastic/`, `fan/afProcess/`, `fan/internal/`, `fan/internal/cmds/`, `fan/internal/util/`, `fan/public/`, `test/`]

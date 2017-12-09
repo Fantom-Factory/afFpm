@@ -37,6 +37,15 @@ class BuildCmd : FpmCmd {
 		cmds.insert(0, fanCmd)
 
 		buildPod := BuildPod(target)
+
+		// if a build pod is not found, lets just run the build.fan
+		if (buildPod.errCode == "notBuildPod")
+			return RunCmd() {
+				if (it.args == null)
+					it.args = Str[,]
+				it.args.add("build.fan")
+			}.run
+
 		if (buildPod.errMsg != null) {
 			log.warn("Could not compile script - ${buildPod.errMsg}")
 			return 1
