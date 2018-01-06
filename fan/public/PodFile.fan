@@ -1,40 +1,34 @@
 
 ** Represents a pod version with a backing file.
-const class PodFile {
+abstract class PodFile {
+
 	** The name of this pod.
 	const Str		name
 	
 	** The version of this pod.
 	const Version	version
 	
-	** Where the pod is located.
-	** May have a local 'file:' or a remote 'http:' scheme.
+	** Absolute URL where the pod is located.
 	const Uri		url
+	
+	Repository	repository {
+		private set
+	}
 	
 	internal new make(|This|in) { in(this) }
 	
-	internal static new makeFromFile(File file) {
-		zip	:= Zip.read(file.in)
-		try {
-			File? 		entry
-			[Str:Str]?	metaProps
-			while (metaProps == null && (entry = zip.readNext) != null) {
-				if (entry.uri == `/meta.props`)
-					metaProps = entry.readProps
-			}
-			if (metaProps == null)
-				throw Err("Pod file ${file.normalize.osPath} does not contain `/meta.props`")
-			return PodVersion(file, metaProps).toPodFile
-
-		} finally {
-			zip.close
-		}	
+	** The backing file for this pod.
+	** If the pod has a remote location, this will download it to a local / memory representation.
+	File file() {
+		repository.download(this)
 	}
 	
-	** The backing file for this pod.
-	** Convenience for 'podFile.url.toFile'.
-	File file() {
-		url.toFile
+	Void delete() {
+		repository.delete(this)
+	}
+	
+	Void installTo(Repository repository) {
+		repository.upload(this)		
 	}
 	
 	** This pod version expressed as a dependency.
@@ -46,12 +40,7 @@ const class PodFile {
 		Depend("$name $version")
 	}
 
-	@NoDoc
-	override Str toStr() 			{ "$name $version" }
-	
-	@NoDoc
-	override Int hash() 			{ file.hash }
-	
-	@NoDoc
-	override Bool equals(Obj? that)	{ file == (that as PodFile)?.file }
+	@NoDoc override Str toStr() 			{ "$name $version - $url" }
+	@NoDoc override Int hash() 				{ url.hash }
+	@NoDoc override Bool equals(Obj? that)	{ (that as PodFile)?.url == url }
 }

@@ -78,8 +78,8 @@ fanrRepo.eggbox		= http://eggbox.fantomfactory.org/fanr/
 
 # ---- Remote Repository Credentials ------------------------------------------
 #
-# fanrRepo.fantomFactory.username	= username
-# fanrRepo.fantomFactory.password	= password
+# fanrRepo.eggbox.username	= username
+# fanrRepo.eggbox.password	= password
 
 
 
