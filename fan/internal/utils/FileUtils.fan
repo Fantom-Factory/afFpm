@@ -1,13 +1,8 @@
 
 internal const class FileUtils {
-
-	static File toAbsDir(Str dirPath) {
-		// because this is used for tempDir, workDir, and file repos - if dirPath happens to be rel, make it rel to FAN_HOME
-		toRelDir(Env.cur.homeDir, dirPath)
-	}
 	
 	** Warning! Dir may not exist!
-	static File toRelDir(File baseDir, Str dirPath) {
+	static File toAbsDir(Str dirPath, File baseDir := Env.cur.homeDir) {
 		dir := toDir(dirPath)
 		if (dir.uri.isPathAbs.not)
 			dir = baseDir + dir.uri

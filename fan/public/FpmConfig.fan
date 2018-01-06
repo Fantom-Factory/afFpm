@@ -1,6 +1,22 @@
 using fanr
 
-** Represents configuration as parsed from a hierarchy of 'fpm.props' files.
+** FpmConfig is gathered from a hierarchy of 'fpm.props' files. These files are looked for in the following locations:
+** 
+** - '<FAN_HOME>/etc/afFpm/fpm.props'
+** - '<WORK_DIR>/etc/afFpm/fpm.props'
+** - './fpm.props'
+** 
+** Note that the config files are additive but the values are not. If all 3 files exist, then all 3 files are merged together, 
+** with config values from a more specific file replacing (or overriding) values found in less specific one.
+** 
+** '<WORK_DIR>' may be specified with the 'FPM_ENV_PATH' environment variable. This means that **ALL** the config for FPM may 
+** live outside of the Fantom installation. The only FPM file that needs to live in the Fantom installation is the 'afFpm.pod' 
+** file itself.
+** 
+** Config may be removed by specifying an empty string as a value. For example, to remove the eggbox repository:
+** 
+**   fanrRepo.eggbox = 
+** 
 const class FpmConfig {
 	private static const Log 	log := FpmConfig#.pod.log
 
@@ -18,13 +34,10 @@ const class FpmConfig {
 	** 'homeDir' is always the last entry in the list, so it is never empty.
 	const File[]	workDirs
 	
-	** A list of directories where pods are picked up from.
-	const File[]	podDirs
+	** A map of named directory repositories. These are essentially just dirs of pods. 
+	const Str:File	dirRepos
 	
-	** A map of named local file system repositories.
-	const Str:File 	fileRepos
-
-	** A map of named remote fanr repositories.
+	** A map of named fanr repositories, may be local or remote.
 	const Str:Uri	fanrRepos
 	
 	** A list of libraries used to launch applications
@@ -85,72 +98,85 @@ const class FpmConfig {
 		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + (envPaths ?: "")
 		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + homeDir.osPath.toStr
 		this.workDirs = workDirs.split(File.pathSep.chars.first).map { toAbsDir(it) }.unique
-
-		fileRepos := (Str:File) fpmProps.findAll |path, name| {
-			name.startsWith("fileRepo.")
-		}.reduce(Str:File[:] { ordered=true }) |Str:File repos, Str path, name| {
-			repos[name["fileRepo.".size..-1]] = toAbsDir(path.trim)
-			return repos
-		}
-		if (fileRepos.containsKey("default").not)
-			fileRepos["default"] = this.workDirs.first.plus(`fpmRepo-default/`, false)
-//		Darn It!  fanHome is a podDir, not a 
-//		if (fileRepos.containsKey("fanHome").not)
-//			if (fileRepos["default"] != homeDir)
-//				fileRepos["fanHome"] = homeDir
-		this.fileRepos = fileRepos
 		
 		tempDir := fpmProps["tempDir"]
 		if (tempDir == null)
 			tempDir = this.workDirs.first.plus(`temp/`, false).osPath.toStr
 		this.tempDir = toAbsDir(tempDir)
 
-		podDirs := fpmProps["podDirs"]
-		this.podDirs = podDirs?.split(File.pathSep.chars.first)?.map { toRelDir(baseDir, it) }?.findAll |File dir->Bool| { dir.exists }?.unique ?: File#.emptyList
+		dirRepos := (Str:File) fpmProps.findAll |path, name| {
+			name.startsWith("dirRepo.")
+		}.reduce(Str:File[:] { ordered=true }) |Str:File repos, Str? path, key| {
+			path = path.trimToNull
+			if (path == null) return repos	// allow config to be removed
+			name := key["dirRepo.".size..-1]
+			file := toRelDir(path.trim, baseDir)
+			repos[name] = file
+			return repos
+		}
 
 		fanrRepos := (Str:Uri) fpmProps.findAll |path, name| {
-			name.startsWith("fanrRepo.") && name.endsWith(".username").not && name.endsWith(".password").not
-		}.reduce(Str:Uri[:] { ordered=true }) |Str:Uri repos, Str path, key| {
-			url  := path.trim.toUri
+			name.startsWith("fanrRepo.") && !name.endsWith(".username") && !name.endsWith(".password")
+		}.reduce(Str:Uri[:] { ordered=true }) |Str:Uri repos, Str? path, key| {
+			path = path.trimToNull
+			if (path == null) return repos	// allow config to be removed
 			name := key["fanrRepo.".size..-1]
-			if (url.scheme != "http" && url.scheme != "https")
-				throw Err("Invalid URI scheme for fanr repo '${name}', only http and https permitted: ${url}")
+			url  := Uri(path, false)
+
+			if (url?.scheme != "http" && url?.scheme != "https")
+				url = toRelDir(path, baseDir).uri
+			else 
+				if (url.userInfo != null)
+					url	= url.toStr.replace("${url.userInfo}@", "").toUri
 			repos[name] = url
 			return repos
 		}
-		this.fanrRepos		= fanrRepos
-		
-		this.launchPods 	= fpmProps["launchPods"]?.split(',') ?: Str#.emptyList
-		
-		this.configFiles	= configFiles ?: File[,]
-		
-		this._rawConfig		= fpmProps
-		
+
+		// if not defined, add "fanHome" as a new directory repo
+		if (!dirRepos.containsKey("fanHome"))
+			dirRepos["fanHome"] = homeDir + `lib/fan/`
+
+		// if "default" is not defined, set it to fanHome so FPM becomes a drop in replacement for fanr
+		// this allows people to update their fanHome env by default
+		if (!fanrRepos.containsKey("default") && !dirRepos.containsKey("default"))
+			dirRepos["default"] = homeDir + `lib/fan/`
+
 		// as Env is available to the entire FVM, be nice and remove any credentials
 		// it's just lip service really, as anyone could re-read the fpm.config files
-		this.rawConfig		= fpmProps.exclude |val, key| { key.endsWith(".username") || key.endsWith(".password") }
+		rawConfig := fpmProps.exclude |val, key| { key.endsWith(".username") || key.endsWith(".password") }
+		rawConfig = rawConfig.map |val, key| {
+			userInfo := Uri(val, false)?.userInfo
+			return userInfo != null ? val.replace("${userInfo}@", "") : val
+		}
+
+		this.dirRepos		= dirRepos
+		this.fanrRepos		= fanrRepos
+		this.launchPods 	= fpmProps["launchPods"]?.split(',') ?: Str#.emptyList
+		this.configFiles	= configFiles ?: File[,]
+		this.rawConfig		= rawConfig
+		this._rawConfig		= fpmProps
 	}
 	
-	** Returns a fanr 'Repo' instance for the named repository. 
-	** May be either a 'fileRepo' or a 'fanrRepo'. 
-	** 
-	** 'username' and 'password' are only used if a 'fanrRepo' is returned.
-	Repo fanrRepo(Str repoName, Str? username := null, Str? password := null) {
-		// FPM doesn't need / use a local fanr repo, but others may find it useful
-		if (fileRepos.containsKey(repoName))
-			return Repo.makeForUri(fileRepos[repoName].uri)
-		
-		if (fanrRepos.containsKey(repoName)) {
-			if (username == null)
-				username = _rawConfig["fanrRepo.${repoName}.username"]
-			if (password == null)
-				password = _rawConfig["fanrRepo.${repoName}.password"]
-			return toFanrRepo(fanrRepos[repoName], username, password)
-		}
-		
-		allRepoNames := fileRepos.keys.addAll(fanrRepos.keys).sort
-		throw ArgErr("Cound not find remote repo with name '${repoName}'. Available repos: " + allRepoNames.join(","))
-	}
+//	** Returns a fanr 'Repo' instance for the named repository. 
+//	** May be either a 'fileRepo' or a 'fanrRepo'. 
+//	** 
+//	** 'username' and 'password' are only used if a 'fanrRepo' is returned.
+//	Repo fanrRepo(Str repoName, Str? username := null, Str? password := null) {
+//		// FPM doesn't need / use a local fanr repo, but others may find it useful
+//		if (fileRepos.containsKey(repoName))
+//			return Repo.makeForUri(fileRepos[repoName].uri)
+//		
+//		if (fanrRepos.containsKey(repoName)) {
+//			if (username == null)
+//				username = _rawConfig["fanrRepo.${repoName}.username"]
+//			if (password == null)
+//				password = _rawConfig["fanrRepo.${repoName}.password"]
+//			return toFanrRepo(fanrRepos[repoName], username, password)
+//		}
+//		
+//		allRepoNames := fileRepos.keys.addAll(fanrRepos.keys).sort
+//		throw ArgErr("Cound not find remote repo with name '${repoName}'. Available repos: " + allRepoNames.join(","))
+//	}
 
 	** Dumps debug output to a string. The string will look similar to:
 	** 
@@ -159,42 +185,42 @@ const class FpmConfig {
 	** 
 	**    Target Pod : shStackHubAdmin 0+
 	**      Home Dir : C:\Apps\fantom-1.0.68
-	**     Work Dirs : C:\Repositories\Fantom, C:\Apps\fantom-1.0.68
-	**      Pod Dirs : C:\Projects\StackHub\stackhub-admin\lib
+	**     Work Dirs : C:\Repositories\Fantom
+	**                 C:\Apps\fantom-1.0.68
 	**      Temp Dir : C:\Repositories\Fantom\temp
 	**  Config Files : C:\Apps\fantom-1.0.68\etc\afFpm\config.props
-	**    File Repos :
+	** 
+	**     Dir Repos :
+	**          acme = C:\Projects\acmeApp\lib
+	** 
+	**    Fanr Repos :
 	**       default = C:\Repositories\Fantom\repo-default
 	**       release = C:\Repositories\Fantom\repo-release
-	**    Fanr Repos :
 	** fantomFactory = http://eggbox.fantomfactory.org/fanr/
 	**       repo302 = http://repo.status302.com/fanr/
 	** <pre
 	Str dump() {
 		str := ""
-		str += "      Base Dir : ${baseDir.osPath}\n"
-		str += "  Fan Home Dir : ${homeDir.osPath}\n"
+		str += "      Base Dir : " + dumpList([baseDir])
+		str += "  Fan Home Dir : " + dumpList([homeDir])
 		str += "     Work Dirs : " + dumpList(workDirs)
-		str += "      Pod Dirs : " + dumpList(podDirs)
-		str += "      Temp Dir : ${tempDir.osPath}\n"
+		str += "      Temp Dir : " + dumpList([tempDir])
 		str += "  Config Files : " + dumpList(configFiles)
 
-		if (fileRepos.size > 0)
-			str += "\n"
-		str += "    File Repos : " + (fileRepos.isEmpty ? "(none)" : "") + "\n"
-		maxDir := fileRepos.keys.reduce(14) |Int size, repoName| { size.max(repoName.size) } as Int
-		fileRepos.each |repoDir, repoName| {
-			str += repoName.justr(maxDir) + " = " + repoDir.osPath + "\n"
+		if (dirRepos.size > 0) str += "\n"
+		str += "     Dir Repos : " + (dirRepos.isEmpty ? "(none)" : "") + "\n"
+		maxDir := dirRepos.keys.reduce(14) |Int size, repoName| { size.max(repoName.size) } as Int
+		dirRepos.each |repoFile, repoName| {
+			exists := repoFile.exists ? "" : " (does not exist)"
+			str += repoName.justr(maxDir) + " = " + repoFile.osPath + exists + "\n"
 		}
 
-		if (fanrRepos.size > 0)
-			str += "\n"
+		if (fanrRepos.size > 0) str += "\n"
 		str += "    Fanr Repos : " + (fanrRepos.isEmpty ? "(none)" : "") + "\n"
 		maxDir = fanrRepos.keys.reduce(14) |Int size, repoName| { size.max(repoName.size) } as Int
 		fanrRepos.each |repoUrl, repoName| {
 			usr	:= repoUrl.userInfo == null ? "" : repoUrl.userInfo + "@"
-			// Fantom Str.replace() bug - see http://fantom.org/forum/topic/2413
-			url	:= usr.isEmpty ? repoUrl.toStr : repoUrl.toStr.replace(usr, "")
+			url	:= repoUrl.toStr.replace(usr, "")
 			str += repoName.justr(maxDir) + " = " + url + "\n"
 		}
 
@@ -208,27 +234,28 @@ const class FpmConfig {
 		str := "${files.first.osPath}\n"
 		if (files.size > 1)
 			files[1..-1].each {
-				str += "".justr(14) + "   ${it.osPath}\n"
+				exists := it.exists ? "" : " (does not exist)"
+				str += "".justr(14) + "   ${it.osPath}${exists}\n"
 			}
 		return str
 	}
 
-	internal static Repo toFanrRepo(Uri url, Str? usr := null, Str? pwd := null) {
-		userStr	 := url.userInfo == null ? "" : url.userInfo + "@"
-		repoUrl	 := url.toStr.replace(userStr, "").toUri
-		// TODO do proper percent decoding
-		username := Uri.decode(url.userInfo?.split(':')?.getSafe(0)?.replace("%40", "@") ?: "").toStr.trimToNull	// decode percent encoding
-		password := Uri.decode(url.userInfo?.split(':')?.getSafe(1)?.replace("%40", "@") ?: "").toStr.trimToNull
-		if (usr != null)	username = usr
-		if (pwd != null)	password = pwd
-		return Repo.makeForUri(repoUrl, username, password)
-	}
+//	internal static Repo toFanrRepo(Uri url, Str? usr := null, Str? pwd := null) {
+//		userStr	 := url.userInfo == null ? "" : url.userInfo + "@"
+//		repoUrl	 := url.toStr.replace(userStr, "").toUri
+//		// TODO do proper percent decoding
+//		username := Uri.decode(url.userInfo?.split(':')?.getSafe(0)?.replace("%40", "@") ?: "").toStr.trimToNull	// decode percent encoding
+//		password := Uri.decode(url.userInfo?.split(':')?.getSafe(1)?.replace("%40", "@") ?: "").toStr.trimToNull
+//		if (usr != null)	username = usr
+//		if (pwd != null)	password = pwd
+//		return Repo.makeForUri(repoUrl, username, password)
+//	}
 	
 	private static File toAbsDir(Str dirPath) {
 		FileUtils.toAbsDir(dirPath)
 	}
 	
-	private static File toRelDir(File baseDir, Str dirPath) {
-		FileUtils.toRelDir(baseDir, dirPath)
+	private static File toRelDir(Str dirPath, File baseDir) {
+		FileUtils.toAbsDir(dirPath, baseDir)
 	}
 }
