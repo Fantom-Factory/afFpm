@@ -5,8 +5,8 @@ internal class Utils {
 		if (dep1.name != dep2.name)
 			return false
 		
-		ran1 := versionTtoRangeList(dep1)
-		ran2 := versionTtoRangeList(dep2)
+		ran1 := versionToRangeList(dep1)
+		ran2 := versionToRangeList(dep2)
 
 		return ran1.all |ver1| {
 			ran2.any |ver2, y| {
@@ -20,7 +20,7 @@ internal class Utils {
 		}
 	}
 	
-	private static Range[][] versionTtoRangeList(Depend dep) {
+	private static Range[][] versionToRangeList(Depend dep) {
 		(0..<dep.size).toList.map |i->Range[]| {
 			if (!dep.isPlus(i) && !dep.isRange(i)) {
 				ver := dep.version(i)
@@ -46,37 +46,29 @@ internal class Utils {
 			throw Err("WTF is: ${dep.version(i)}")
 		}
 	}
-	
-	static Void main() {
-		d:= Depend("dude 1.2")
-		l:=versionTtoRangeList(d)
 
-//		l:= Int?[v.major, v.minor, v.build, v.patch].map { it ?: 0 }
-		echo(l)
-	}
-
-	** Dumps the output similar to the following:
-	** 
-	** pre>
-	** Could not satisfy the following constraints:
-	** 
-	**     afPlastic (1.2, 1.3)
-	**         afIoc@2.1 ------> afPlastic 1.2
-	**         afBedSheet@1.5 -> afPlastic 1.4
-	** 	
-	**     afEfan (1.5, 1.2, 2.3)
-	**         afIoc@2.1 ------> afEfan 1.2
-	**         afBedSheet@1.5 -> afEfan 1.4
-	** <pre
-	static Str dumpUnresolved(UnresolvedPod[] unresolvedPods) {
-		if (unresolvedPods.isEmpty) return ""
-
-		output	:= "Could not satisfy the following constraints:\n"
-		unresolvedPods.each |unresolvedPod| {
-			output	+= unresolvedPod.dump
-		}
-		return output
-	}
+//	** Dumps the output similar to the following:
+//	** 
+//	** pre>
+//	** Could not satisfy the following constraints:
+//	** 
+//	**     afPlastic (1.2, 1.3)
+//	**         afIoc@2.1 ------> afPlastic 1.2
+//	**         afBedSheet@1.5 -> afPlastic 1.4
+//	** 	
+//	**     afEfan (1.5, 1.2, 2.3)
+//	**         afIoc@2.1 ------> afEfan 1.2
+//	**         afBedSheet@1.5 -> afEfan 1.4
+//	** <pre
+//	static Str dumpUnresolved(UnresolvedPod[] unresolvedPods) {
+//		if (unresolvedPods.isEmpty) return ""
+//
+//		output	:= "Could not satisfy the following constraints:\n"
+//		unresolvedPods.each |unresolvedPod| {
+//			output	+= unresolvedPod.dump
+//		}
+//		return output
+//	}
 	
 	static Str[]? splitQuotedStr(Str? str) {
 		if (str?.trimToNull == null)	return null
