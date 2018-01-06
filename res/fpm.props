@@ -40,43 +40,46 @@
 
 
 
-# ---- Pod Directories --------------------------------------------------------
+# ---- Directory Repositories -------------------------------------------------
 #
-# Pods found in pod directories take precedence over local repositories. Pod
-# file names must have the format: <pod name>.pod
-#  
+# Directories of pods. These take precedence over (local) fanr repositories. 
 # Paths may be absolute or relative to the current directory.
-
-podDirs					= lib#{File.pathSep}lib\\fan
-
-
-
-# ---- Local Repositories -----------------------------------------------------
 #
 # Repositories are named with the syntax:
 #
-#  fileRepo.<name> = <location> 
+#  dirRepo.<name> = <path>
 #
-# Note there should always be a local repository named 'default'. If not 
-# defined it defaults to: ${workDir}/fpmRepo-default/
+# Note there should always be a repository named 'default'. If not defined it 
+# defaults to a dirRepo at ${fanHome}/lib/fan/
 #
-# fileRepo.default		= C:\\Repositories\\Fantom\\fpmRepo-default\\
+dirRepo.lib			= lib/
+dirRepo.libfan		= lib/fan/
 
 
 
-# ---- Remote Repositories ----------------------------------------------------
+# ---- Fanr Repositories ------------------------------------------------------
+#
+# May be a local path or a remote URL.
+# Local paths may be absolute or relative to the current directory.
 #
 # Repositories are named with the syntax:
 #
-#  fanrRepo.<name> = <url> 
+#  fanrRepo.<name> = <path / url> 
 #
+# Note there should always be a repository named 'default'. If not defined it 
+# defaults to a dirRepo at ${fanHome}/lib/fan/
+#
+# fanrRepo.default	= C:\\Repositories\\Fantom\\fpmRepo-default\\
+# fanrRepo.status302= http://repo.status302.com/fanr/
+# fanrRepo.fantom	= http://fantom.org/fanr/
 fanrRepo.eggbox		= http://eggbox.fantomfactory.org/fanr/
-#fanrRepo.status302	= http://repo.status302.com/fanr/
-#fanrRepo.fantom		= http://fantom.org/fanr/
 
 
 
 # ---- Remote Repository Credentials ------------------------------------------
+#
+# Credentials can be stored as user info in the fanr URL, but sometimes it's
+# easier to be explicit.
 #
 # fanrRepo.eggbox.username	= username
 # fanrRepo.eggbox.password	= password
@@ -89,5 +92,5 @@ fanrRepo.eggbox		= http://eggbox.fantomfactory.org/fanr/
 # pod. Example:
 # 
 #   C:\> fpm run afBedSheet myWebApp@1.2
-
+#
 launchPods				= afBedSheet, afReflux
