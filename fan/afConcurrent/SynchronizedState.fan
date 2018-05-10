@@ -30,7 +30,7 @@ using concurrent::Future
 **     Buf buf := Buf()
 ** }
 ** <pre
-const class SynchronizedState {
+internal const class SynchronizedState {
 	private const |->Obj?| 		stateFactory
 	private const LocalRef 		stateRef
 	

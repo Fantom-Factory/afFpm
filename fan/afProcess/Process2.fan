@@ -8,7 +8,7 @@ using concurrent::ActorPool
 
 ** Process manages spawning external OS processes.
 ** Goes one better than the standard 'sys::Process' as this constantly stream keyboard input to the new process.
-class Process2 {
+internal class Process2 {
 	
 	private JProcess?		jProc
 	private PipeInToOut?	inPipe
@@ -172,7 +172,7 @@ class Process2 {
 	}
 }
 
-const class PipeInToOut {
+internal const class PipeInToOut {
 	private const Synchronized		thread
 	private const Unsafe			inStreamRef
 	private const Unsafe			outStreamRef

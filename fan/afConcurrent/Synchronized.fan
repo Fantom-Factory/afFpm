@@ -31,7 +31,7 @@ using concurrent
 **     new make(|This|in) { in(this) }
 ** }
 ** <pre
-const class Synchronized {
+internal const class Synchronized {
 	private static const Log	log 	:= Synchronized#.pod.log
 	
 	** The 'Actor' used to process all sync and async calls.

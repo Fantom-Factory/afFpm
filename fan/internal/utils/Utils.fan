@@ -47,28 +47,28 @@ internal class Utils {
 		}
 	}
 
-//	** Dumps the output similar to the following:
-//	** 
-//	** pre>
-//	** Could not satisfy the following constraints:
-//	** 
-//	**     afPlastic (1.2, 1.3)
-//	**         afIoc@2.1 ------> afPlastic 1.2
-//	**         afBedSheet@1.5 -> afPlastic 1.4
-//	** 	
-//	**     afEfan (1.5, 1.2, 2.3)
-//	**         afIoc@2.1 ------> afEfan 1.2
-//	**         afBedSheet@1.5 -> afEfan 1.4
-//	** <pre
-//	static Str dumpUnresolved(UnresolvedPod[] unresolvedPods) {
-//		if (unresolvedPods.isEmpty) return ""
-//
-//		output	:= "Could not satisfy the following constraints:\n"
-//		unresolvedPods.each |unresolvedPod| {
-//			output	+= unresolvedPod.dump
-//		}
-//		return output
-//	}
+	** Dumps the output similar to the following:
+	** 
+	** pre>
+	** Could not satisfy the following constraints:
+	** 
+	**     afPlastic (1.2, 1.3)
+	**         afIoc@2.1 ------> afPlastic 1.2
+	**         afBedSheet@1.5 -> afPlastic 1.4
+	** 	
+	**     afEfan (1.5, 1.2, 2.3)
+	**         afIoc@2.1 ------> afEfan 1.2
+	**         afBedSheet@1.5 -> afEfan 1.4
+	** <pre
+	static Str dumpUnresolved(UnresolvedPod[] unresolvedPods) {
+		if (unresolvedPods.isEmpty) return ""
+
+		output	:= "Could not satisfy the following constraints:\n"
+		unresolvedPods.each |unresolvedPod| {
+			output	+= unresolvedPod.dump
+		}
+		return output
+	}
 	
 	static Str[]? splitQuotedStr(Str? str) {
 		if (str?.trimToNull == null)	return null

@@ -23,7 +23,7 @@ class Build : BuildPod {
 			"compiler   1.0.67 - 1.0",		// for afPlastic
 		]
 
-		srcDirs = [`fan/`, `fan/afConcurrent/`, `fan/afPlastic/`, `fan/afProcess/`, `fan/internal/`, `fan/internal/utils/`, `fan/public/`, `test/`]
+		srcDirs = [`fan/`, `fan/afConcurrent/`, `fan/afPlastic/`, `fan/afProcess/`, `fan/internal/`, `fan/internal/resolve/`, `fan/internal/utils/`, `fan/public/`, `test/`]
 		resDirs = [`doc/`, `res/`]
 		
 		docApi	= true
