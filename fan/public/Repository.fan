@@ -15,11 +15,13 @@ mixin Repository {
 	internal abstract File		download(PodFile podFile)
 	internal abstract Void		delete(PodFile podFile)
 	internal abstract PodFile[]	resolve(Depend depend)
+	internal abstract Bool		isLocal()
 }
 
 class LocalFileRepository : Repository {
 	override Str	name
 	override Uri	url
+	override Bool	isLocal	:= true
 	
 	new make(|This| f) { f(this) }
 
@@ -34,6 +36,7 @@ class LocalFileRepository : Repository {
 class LocalFanrRepository : Repository {
 	override Str	name
 	override Uri	url
+	override Bool	isLocal	:= true
 	
 	new make(|This| f) { f(this) }
 
@@ -48,6 +51,7 @@ class LocalFanrRepository : Repository {
 class RemoteFanrRepository : Repository {
 	override Str	name
 	override Uri	url
+	override Bool	isLocal	:= false
 	
 	new make(|This| f) { f(this) }
 
