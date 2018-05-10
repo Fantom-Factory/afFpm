@@ -113,7 +113,7 @@ internal class TestFpmConfig : Test {
 			"fanrRepo.eggbox.username"	: "username",
 			"fanrRepo.eggbox.password"	: "password",
 		])
-echo(config.fanrRepos)
+
 		verifyEq(config.fanrRepos["eggbox"], `http://eggbox.fantomfactory.org/fanr/`)
 		verifyEq(config.rawConfig["fanrRepo.eggbox.username"], null)
 		verifyEq(config.rawConfig["fanrRepo.eggbox.password"], null)

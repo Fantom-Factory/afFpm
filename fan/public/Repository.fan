@@ -4,11 +4,17 @@ mixin Repository {
 	abstract Str name()
 	abstract Uri url()
 	
+	// ????
 	abstract Void read()
 	
-	internal abstract Void upload(PodFile podFile)
-	internal abstract File download(PodFile podFile)
-	internal abstract Void delete(PodFile podFile)
+	PodFile[] find(Depend depends) {
+		throw UnsupportedErr()
+	}
+	
+	internal abstract Void		upload(PodFile podFile)
+	internal abstract File		download(PodFile podFile)
+	internal abstract Void		delete(PodFile podFile)
+	internal abstract PodFile[]	resolve(Depend depend)
 }
 
 class LocalFileRepository : Repository {
@@ -22,6 +28,7 @@ class LocalFileRepository : Repository {
 	internal override Void upload(PodFile podFile) { }
 	internal override File download(PodFile podFile) { throw UnsupportedErr() }
 	internal override Void delete(PodFile podFile) { }
+	internal override PodFile[]	resolve(Depend depend) { throw UnsupportedErr() }
 }
 
 class LocalFanrRepository : Repository {
@@ -35,6 +42,7 @@ class LocalFanrRepository : Repository {
 	internal override Void upload(PodFile podFile) { }
 	internal override File download(PodFile podFile) { throw UnsupportedErr() }
 	internal override Void delete(PodFile podFile) { }
+	internal override PodFile[]	resolve(Depend depend) { throw UnsupportedErr() }
 }
 
 class RemoteFanrRepository : Repository {
@@ -48,4 +56,5 @@ class RemoteFanrRepository : Repository {
 	internal override Void upload(PodFile podFile) { }
 	internal override File download(PodFile podFile) { throw UnsupportedErr() }
 	internal override Void delete(PodFile podFile) { }
+	internal override PodFile[]	resolve(Depend depend) { throw UnsupportedErr() }
 }
