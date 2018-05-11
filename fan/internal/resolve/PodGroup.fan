@@ -4,33 +4,37 @@ internal class PodGroup {
 	const Str				name
 	const Depend[]			dependsOn
 	const Str				dependsOnHash
+		  PodConstraint[]?	_constraints
 	
-	private PodFile:Bool	pods
+	private PodFile[]		pods
+	private Depend:Bool		matched
 	
 	new make(PodFile pod) {
 		this.name 			=  pod.name
 		this.dependsOn		=  pod.dependsOn
 		this.dependsOnHash	= dependsOn.dup.sort.join(" ")
-		this.pods			= PodFile:Bool[pod:false]
+		this.matched		= Depend:Bool[pod.depend:false]
+		this.pods			= PodFile[pod]
 	}
 	
 	Void add(PodFile pod) {
-		pods[pod] = false
+		matched[pod.depend] = false
+		pods.add(pod)
 	}
 
 	Void reset() {
-		pods.each |val, key| { pods[key] = false }
+		matched.each |val, key| { matched[key] = false }
 	}
 
 	Bool noMatch(Depend dependsOn) {
 		fail := true
 		// pods.all() will *not* iterate through all the keys if false is returned
-		pods.each |val, key| {
+		matched.each |val, key| {
 			if (val == true)
 				return
 			out := dependsOn.match(key.version).not
 			if (out)
-				pods[key] = true
+				matched[key] = true
 			else
 				fail = false
 		}
@@ -38,16 +42,25 @@ internal class PodGroup {
 	}
 	
 	PodFile latest() {
-		// TODO optimise
-		pods.exclude { it }.keys.sort.last
+		depend := matched.exclude { it }.keys.max
+		return pods.find { it.depend == depend } 
 	}
 	
 	PodConstraint[] constraints() {
-		return pods.keys.first.constraints
+		if (_constraints == null) {
+			pod := pods.first
+			_constraints = pod.dependsOn.map |dependsOn| {
+				PodConstraint {
+					it.pod			= pod.depend
+					it.dependsOn	= dependsOn
+				}
+			}
+		}
+		return _constraints
 	}
 
 	private Version[] versions() {
-		pods.keys.map { it.version  }
+		matched.keys.map { it.version  }
 	}
 	
 	override Str toStr() {

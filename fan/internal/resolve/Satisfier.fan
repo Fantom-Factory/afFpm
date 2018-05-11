@@ -1,10 +1,10 @@
 
 internal class Satisfier {
-	private const Log			log
+	private const Log			log				:= typeof.pod.log
 			Str?				targetPod
 
 	internal Repository[]		repositories
-			 Str:PodFile		resolvedPods	:= Str:PodFile[:]
+	internal Str:PodFile		resolvedPods	:= Str:PodFile[:]
 	internal UnresolvedPod[]	unresolvedPods	:= UnresolvedPod#.emptyList 
 
 	private PodNode[]			initNodes		:= PodNode[,]
@@ -60,15 +60,6 @@ internal class Satisfier {
 	PodFile[] availablePodVersions(Str podName) {
 		allNodes[podName].podVersions
 	}
-	
-	internal PodNode addPod(Str podName) {
-		podNode := PodNode {
-			it.name = podName
-		}
-		allNodes[podName] = podNode
-		initNodes.add(podNode)
-		return podNode
-	}
 
 	Bool isEmpty() {
 		initNodes.isEmpty
@@ -90,7 +81,10 @@ internal class Satisfier {
 
 		// there's an opportunity for podPerms to overflow here! (Scary!) 
 		// but there's no Err, the number just wraps round to zero
-		podPerms  := (Int) allNodes.vals.reduce(1) |Int tot, node| { tot * node.podVersions.size }
+		podPerms  := (Int) allNodes.vals.reduce(1) |Int tot, node| {
+			tot * node.podVersions.size
+			
+		}
 		totalVers := (Int) allNodes.vals.reduce(0) |Int tot, node| { tot + node.podVersions.size }
 		log.debug("Found ${totalVers.toLocale} versions of ${allNodes.size.toLocale} different pod" + s(allNodes.size))
 		
@@ -156,10 +150,7 @@ internal class Satisfier {
 					// found a working combination!
 	//				fin = true	// gotta find them all!
 					solutions.add(
-						podMap
-							.map { it.latest }
-//							.exclude |PodFile p->Bool| { p.url == null }
-//							.map |PodFile p->PodFile| { p.toPodFile }
+						podMap.map { it.latest }
 					)
 				}
 			}
@@ -205,7 +196,9 @@ internal class Satisfier {
 			solRanks := solutions.map |solution->Obj| {
 				// we could normalise the rank index for each pod to 1 -> 10
 				// but pfft - why bother complicate things further!?
-				score := solution.reduce(0) |Int score, PodFile pod->Int| { score + podRanks[pod.name].index(pod.version) }
+				score := solution.reduce(0) |Int score, PodFile pod->Int| {
+					score + podRanks[pod.name].index(pod.version)
+				}
 				return [score, solution]
 			} as Obj[][]
 			resolvedPods = solRanks.min |s1, s2->Int| { s1[0] <=> s2[0] }.last
@@ -271,7 +264,13 @@ internal class Satisfier {
 		}
 	}
 
-	private PodNode? resolveNode(Depend dependency) {
+	internal PodNode addInitPod(Depend pod) {
+		podNode := resolveNode(pod)
+		initNodes.add(podNode)
+		return podNode
+	}
+
+	private PodNode resolveNode(Depend dependency) {
 		allNodes.getOrAdd(dependency.name) {
 			PodNode {
 				it.name = dependency.name
@@ -280,7 +279,7 @@ internal class Satisfier {
 	}
 	
 	private Depend:PodFile[]	cash		:= Depend:PodFile[][:]
-	private PodFile[] resolve(Depend dependency) {
+	PodFile[] resolve(Depend dependency) {
 		cash.getOrAdd(dependency) |->PodFile[]| {
 			
 			// first lets check if this dependency 'fits' into any existing
@@ -340,9 +339,10 @@ internal class PodNode {
 	PodGroup[] reduceProblemSpace() {
 		groups := Str:PodGroup[:]
 		podVersions.each |pod| {
-			group := groups[pod.dependsOnHash]
+			hash  := pod.dependsOn.dup.rw.sort.join("; ")
+			group := groups[hash]
 			if (group == null)
-				groups[pod.dependsOnHash] = PodGroup(pod)
+				groups[hash] = PodGroup(pod)
 			else
 				group.add(pod)
 		}
