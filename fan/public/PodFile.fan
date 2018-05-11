@@ -15,11 +15,19 @@ class PodFile {
 	const Depend	depend
 
 	** The repository where this Pod file is held.
-	Repository	repository { private set }
+	Repository		repository { private set }
 	
 	internal new make(|This|in) {
 		in(this)
 		this.depend	= Depend("$name $version")
+	}
+	
+	internal new makeFields(Str name, Version version, Uri url, Repository repository) {
+		this.name		= name
+		this.version	= version
+		this.url		= url
+		this.depend		= Depend("$name $version")
+		this.repository	= repository
 	}
 	
 	** The backing file for this pod.
@@ -39,16 +47,7 @@ class PodFile {
 
 	Depend[] dependsOn() {
 		// TODO cache
-		throw UnsupportedErr()
-	}
-	
-	internal Str dependsOnHash() {
-		dependsOn.dup.rw.sort.join("; ")
-	}
-	
-	PodConstraint[] constraints() {
-		// TODO cache
-		throw UnsupportedErr()		
+		repository.dependencies(this)
 	}
 	
 	@NoDoc override Str toStr() 			{ "$name $version - $url" }

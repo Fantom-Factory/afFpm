@@ -7,6 +7,9 @@ const class PodConstraint {
 	
 	** The dependency. May be multiple and complex, e.g. 'bar 0.2-0.8, 1.1.2, 1.6+'
 	const Depend	dependsOn
+	
+	@NoDoc
+ 	new make(|This|? in) { in?.call(this) }
 
 	@NoDoc
 	override Str toStr() {
@@ -17,7 +20,4 @@ const class PodConstraint {
 	override Int compare(Obj that) {
 		pod.name <=> (that as PodConstraint).pod.name
 	}
-	
-	@NoDoc
- 	new make(|This|? in) { in?.call(this) }
 }
