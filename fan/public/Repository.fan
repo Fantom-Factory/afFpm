@@ -5,7 +5,7 @@ mixin Repository {
 	abstract Uri url()
 	
 	// ????
-	abstract Void read()
+//	abstract Void read()
 	
 	PodFile[] find(Depend depends) {
 		throw UnsupportedErr()
@@ -14,19 +14,26 @@ mixin Repository {
 	internal abstract Void		upload			(PodFile podFile)
 	internal abstract File		download		(PodFile podFile)
 	internal abstract Void		delete			(PodFile podFile)
-	internal abstract Depend[]	dependencies	(PodFile podFile)	
+	
 	internal abstract PodFile[]	resolve			(Depend depend)
+	internal abstract Depend[]	dependencies	(PodFile podFile)	
 	internal abstract Bool		isLocal			()
+	
+	@NoDoc override Int hash() 				{ url.hash }
+	@NoDoc override Bool equals(Obj? that)	{ (that as Repository)?.url == url }
 }
 
-class LocalFileRepository : Repository {
+internal class SinglePodRepository : Repository {
 	override Str	name
 	override Uri	url
 	override Bool	isLocal	:= true
 	
-	new make(|This| f) { f(this) }
+	new make(File podFile) {
+		this.name	= podFile.name
+		this.url	= podFile.normalize.uri
+	}
 
-	override Void read() { }
+//	override Void read() { }
 	
 	internal override Void upload(PodFile podFile) { }
 	internal override File download(PodFile podFile) { throw UnsupportedErr() }
@@ -35,14 +42,36 @@ class LocalFileRepository : Repository {
 	internal override Depend[] dependencies(PodFile podFile) { throw UnsupportedErr() }
 }
 
-class LocalFanrRepository : Repository {
+internal class LocalDirRepository : Repository {
 	override Str	name
 	override Uri	url
 	override Bool	isLocal	:= true
 	
-	new make(|This| f) { f(this) }
+	new make(Str name, File dir) {
+		this.name	= name
+		this.url	= dir.normalize.uri
+	}
 
-	override Void read() { }
+//	override Void read() { }
+	
+	internal override Void upload(PodFile podFile) { }
+	internal override File download(PodFile podFile) { throw UnsupportedErr() }
+	internal override Void delete(PodFile podFile) { }
+	internal override PodFile[]	resolve(Depend depend) { throw UnsupportedErr() }
+	internal override Depend[] dependencies(PodFile podFile) { throw UnsupportedErr() }
+}
+
+internal class LocalFanrRepository : Repository {
+	override Str	name
+	override Uri	url
+	override Bool	isLocal	:= true
+	
+	new make(Str name, File dir) {
+		this.name	= name
+		this.url	= dir.normalize.uri
+	}
+
+//	override Void read() { }
 
 	internal override Void upload(PodFile podFile) { }
 	internal override File download(PodFile podFile) { throw UnsupportedErr() }
@@ -51,14 +80,17 @@ class LocalFanrRepository : Repository {
 	internal override Depend[] dependencies(PodFile podFile) { throw UnsupportedErr() }
 }
 
-class RemoteFanrRepository : Repository {
+internal class RemoteFanrRepository : Repository {
 	override Str	name
 	override Uri	url
 	override Bool	isLocal	:= false
 	
-	new make(|This| f) { f(this) }
+	new make(Str name, Uri url, Str? username, Str? password) {
+		this.name	= name
+		this.url	= url
+	}
 
-	override Void read() { }
+//	override Void read() { }
 
 	internal override Void upload(PodFile podFile) { }
 	internal override File download(PodFile podFile) { throw UnsupportedErr() }

@@ -71,7 +71,7 @@ const class FpmConfig {
 		workDirs := "" as Str
 		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + (envPaths ?: "")
 		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + homeDir.osPath
-		workFile := workDirs.split(File.pathSep.chars.first).map { toAbsDir(it) + `etc/afFpm/fpm.props` }.unique as File[]
+		workFile := workDirs.split(File.pathSep.chars.first).exclude { it.isEmpty }.map { toAbsDir(it) + `etc/afFpm/fpm.props` }.unique as File[]
 		if (fpmFile != null)
 			workFile.insert(0, fpmFile)
 		workFile = workFile.findAll { it.exists }
@@ -94,10 +94,15 @@ const class FpmConfig {
 
 		this.homeDir = homeDir
 		
-		workDirs := fpmProps["workDirs"]
+		strInterpol := |Str? str->Str?| {
+			str == null ? null :
+			str.replace("\$fanHome", homeDir.osPath).replace("\${fanHome}", homeDir.osPath)
+		}
+		
+		workDirs := strInterpol(fpmProps["workDirs"])
 		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + (envPaths ?: "")
 		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + homeDir.osPath.toStr
-		this.workDirs = workDirs.split(File.pathSep.chars.first).map { toAbsDir(it) }.unique
+		this.workDirs = workDirs.split(File.pathSep.chars.first).exclude { it.isEmpty }.map { toAbsDir(it) }.unique
 		
 		tempDir := fpmProps["tempDir"]
 		if (tempDir == null)
@@ -110,7 +115,7 @@ const class FpmConfig {
 			path = path.trimToNull
 			if (path == null) return repos	// allow config to be removed
 			name := key["dirRepo.".size..-1]
-			file := toRelDir(path.trim, baseDir)
+			file := toRelDir(strInterpol(path.trim), baseDir)
 			repos[name] = file
 			return repos
 		}
@@ -126,16 +131,27 @@ const class FpmConfig {
 			if (url?.scheme != "http" && url?.scheme != "https")
 				url = toRelDir(path, baseDir).uri
 			else 
+				// FIXME add username + password to fpmProps
 				if (url.userInfo != null)
 					url	= url.toStr.replace("${url.userInfo}@", "").toUri
 			repos[name] = url
 			return repos
 		}
-
+		
 		// if not defined, add "fanHome" as a new directory repo
 		if (!dirRepos.containsKey("fanHome"))
 			dirRepos["fanHome"] = homeDir + `lib/fan/`
 
+		// add workDirs to dirRepos (note the last dir is always fanHome, so ignore that one)
+		if (this.workDirs.size > 1)
+			if (!dirRepos.containsKey("workDir"))
+				dirRepos["workDir"] = this.workDirs.first + `lib/fan/`
+		if (this.workDirs.size > 2)
+			this.workDirs.eachRange(1..<-1) |dir, i| {
+				if (!dirRepos.containsKey("workDir[$i]"))
+					dirRepos["workDir[$i]"] = dir + `lib/fan/`
+			}
+		
 		// if "default" is not defined, set it to fanHome so FPM becomes a drop in replacement for fanr
 		// this allows people to update their fanHome env by default
 		if (!fanrRepos.containsKey("default") && !dirRepos.containsKey("default"))
@@ -149,6 +165,22 @@ const class FpmConfig {
 			return userInfo != null ? val.replace("${userInfo}@", "") : val
 		}
 
+		both := dirRepos.keys.intersection(fanrRepos.keys)
+		if (both.size > 0)
+			throw Err("Repository '" + both.join(", ") + "' is defined as both a dirRepo AND a fanrRepo")
+
+		// not sure if I want to cache them all here
+//		allRepos := Str:Repository[:]
+//		dirRepos .each |file, name| { allRepos[name] = LocalDirRepository(name, file) }
+//		fanrRepos.each | url, name| { 
+//			username := fpmProps["fanrRepo.${name}.username"]
+//			password := fpmProps["fanrRepo.${name}.password"]
+//			if (url.scheme == null   || url.scheme == "file")
+//				allRepos[name] = LocalFanrRepository(name, url.toFile)
+//			if (url.scheme == "http" || url.scheme == "https")
+//				allRepos[name] = RemoteFanrRepository(name, url, username, password)
+//		}
+
 		this.dirRepos		= dirRepos
 		this.fanrRepos		= fanrRepos
 		this.launchPods 	= fpmProps["launchPods"]?.split(',') ?: Str#.emptyList
@@ -156,44 +188,66 @@ const class FpmConfig {
 		this.rawConfig		= rawConfig
 		this._rawConfig		= fpmProps
 	}
-	
-//	** Returns a fanr 'Repo' instance for the named repository. 
-//	** May be either a 'fileRepo' or a 'fanrRepo'. 
-//	** 
-//	** 'username' and 'password' are only used if a 'fanrRepo' is returned.
-//	Repo fanrRepo(Str repoName, Str? username := null, Str? password := null) {
-//		// FPM doesn't need / use a local fanr repo, but others may find it useful
-//		if (fileRepos.containsKey(repoName))
-//			return Repo.makeForUri(fileRepos[repoName].uri)
-//		
-//		if (fanrRepos.containsKey(repoName)) {
-//			if (username == null)
-//				username = _rawConfig["fanrRepo.${repoName}.username"]
-//			if (password == null)
-//				password = _rawConfig["fanrRepo.${repoName}.password"]
-//			return toFanrRepo(fanrRepos[repoName], username, password)
-//		}
-//		
-//		allRepoNames := fileRepos.keys.addAll(fanrRepos.keys).sort
-//		throw ArgErr("Cound not find remote repo with name '${repoName}'. Available repos: " + allRepoNames.join(","))
+
+//	internal static Repo toFanrRepo(Uri url, Str? usr := null, Str? pwd := null) {
+//		userStr	 := url.userInfo == null ? "" : url.userInfo + "@"
+//		repoUrl	 := url.toStr.replace(userStr, "").toUri
+//		// TODO do proper percent decoding - use URI.decode(xxx,xxx,xxx)
+//		username := Uri.decode(url.userInfo?.split(':')?.getSafe(0)?.replace("%40", "@") ?: "").toStr.trimToNull	// decode percent encoding
+//		password := Uri.decode(url.userInfo?.split(':')?.getSafe(1)?.replace("%40", "@") ?: "").toStr.trimToNull
+//		if (usr != null)	username = usr
+//		if (pwd != null)	password = pwd
+//		return Repo.makeForUri(repoUrl, username, password)
 //	}
+
+	** Returns a 'Repository' instance for the named repository. 
+	** 'repoName' may be either a 'dirRepo' or a 'fanrRepo'. 
+	Repository repository(Str repoName, Str? username := null, Str? password := null) {
+		
+		if (dirRepos.containsKey(repoName))
+			return LocalDirRepository(repoName, dirRepos[repoName])
+		
+		if (fanrRepos.containsKey(repoName)) {
+			if (username == null)
+				username = _rawConfig["fanrRepo.${repoName}.username"]
+			if (password == null)
+				password = _rawConfig["fanrRepo.${repoName}.password"]
+			url := fanrRepos[repoName]
+			if (url.scheme == null   || url.scheme == "file")
+				return LocalFanrRepository(repoName, url.toFile)
+			if (url.scheme == "http" || url.scheme == "https")
+				return RemoteFanrRepository(repoName, url, username, password)
+			throw ArgErr("Unknown scheme '${url.scheme}' in $url")
+		}
+		
+		allRepoNames := dirRepos.keys.addAll(fanrRepos.keys).sort
+		throw ArgErr("Cound not find repository with name '${repoName}'. Available repos: " + allRepoNames.join(","))
+	}
+	
+	** Returns a list of all repositories.
+	Repository[] repositories() {
+		repos1 :=  dirRepos.keys.map { repository(it) }
+		repos2 := fanrRepos.keys.map { repository(it) }
+		return repos1.addAll(repos2).unique		// default and fanHome may be the same
+	}
 
 	** Dumps debug output to a string. The string will look similar to:
 	** 
 	** pre>
 	** FPM Environment:
 	** 
-	**    Target Pod : shStackHubAdmin 0+
-	**      Home Dir : C:\Apps\fantom-1.0.68
+	**    Target Pod : afIoc 3.0+
+	**      Home Dir : C:\Apps\fantom-1.0.70
 	**     Work Dirs : C:\Repositories\Fantom
-	**                 C:\Apps\fantom-1.0.68
+	**                 C:\Apps\fantom-1.0.70
 	**      Temp Dir : C:\Repositories\Fantom\temp
-	**  Config Files : C:\Apps\fantom-1.0.68\etc\afFpm\config.props
+	**  Config Files : C:\Apps\fantom-1.0.70\etc\afFpm\config.props
 	** 
 	**     Dir Repos :
 	**          acme = C:\Projects\acmeApp\lib
 	** 
 	**    Fanr Repos :
+	**       fanHome = C:\Apps\fantom-1.0.70/lib/fan/
 	**       default = C:\Repositories\Fantom\repo-default
 	**       release = C:\Repositories\Fantom\repo-release
 	** fantomFactory = http://eggbox.fantomfactory.org/fanr/
@@ -239,17 +293,6 @@ const class FpmConfig {
 			}
 		return str
 	}
-
-//	internal static Repo toFanrRepo(Uri url, Str? usr := null, Str? pwd := null) {
-//		userStr	 := url.userInfo == null ? "" : url.userInfo + "@"
-//		repoUrl	 := url.toStr.replace(userStr, "").toUri
-//		// TODO do proper percent decoding
-//		username := Uri.decode(url.userInfo?.split(':')?.getSafe(0)?.replace("%40", "@") ?: "").toStr.trimToNull	// decode percent encoding
-//		password := Uri.decode(url.userInfo?.split(':')?.getSafe(1)?.replace("%40", "@") ?: "").toStr.trimToNull
-//		if (usr != null)	username = usr
-//		if (pwd != null)	password = pwd
-//		return Repo.makeForUri(repoUrl, username, password)
-//	}
 	
 	private static File toAbsDir(Str dirPath) {
 		FileUtils.toAbsDir(dirPath)
