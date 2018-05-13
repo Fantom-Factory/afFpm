@@ -20,25 +20,6 @@ mixin Repository {
 	@NoDoc override Bool equals(Obj? that)	{ (that as Repository)?.url == url }
 }
 
-internal class LocalFanrRepository : Repository {
-	override Str	name
-	override Uri	url
-	override Bool	isLocal	:= true
-	
-	new make(Str name, File dir) {
-		this.name	= name
-		this.url	= dir.normalize.uri
-	}
-
-//	override Void read() { }
-
-	override Void upload(PodFile podFile) { }
-	override File download(PodFile podFile) { throw UnsupportedErr() }
-	override Void delete(PodFile podFile) { }
-	override PodFile[]	resolveAll() { throw UnsupportedErr() }
-	override PodFile[]	resolve(Depend depend) { throw UnsupportedErr() }
-}
-
 internal class RemoteFanrRepository : Repository {
 	override Str	name
 	override Uri	url

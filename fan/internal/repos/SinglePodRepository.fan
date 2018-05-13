@@ -27,22 +27,6 @@ internal class SinglePodRepository : Repository {
 	private Str:Str readMetaProps(File file) {
 		if (file.exists.not)
 			throw IOErr("File not found: ${file.normalize.osPath}")
-
-		zip	:= Zip.read(file.in)
-		try {
-			File? 		entry
-			[Str:Str]?	metaProps
-			while (metaProps == null && (entry = zip.readNext) != null) {
-				if (entry.uri == `/meta.props`)
-					metaProps = entry.readProps
-			}
-			if (metaProps == null)
-				throw IOErr("Could not find `/meta.props` in pod file: ${file.normalize.osPath}")
-
-			return metaProps
-
-		} finally {
-			zip.close
-		}	
+		return FileUtils.readMetaProps(file)
 	}
 }

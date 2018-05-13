@@ -1,5 +1,5 @@
 
-internal class BuildPodRepository : Repository {
+internal class StubPodRepository : Repository {
 	override Str		name 
 	override Bool		isLocal	:= true
 	
@@ -7,7 +7,7 @@ internal class BuildPodRepository : Repository {
 		this.name		= name
 	}
 
-	override Uri		url			()					{ `build:${name}` }
+	override Uri		url			()					{ `stub:${name}` }
 	override Void		upload		(PodFile podFile)	{ throw UnsupportedErr() }
 	override File		download	(PodFile podFile)	{ throw UnsupportedErr() }
 	override Void		delete		(PodFile podFile)	{ throw UnsupportedErr() }

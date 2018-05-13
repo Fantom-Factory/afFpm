@@ -30,7 +30,7 @@ internal class Satisfier {
 		}
 
 		addInitPod(Depend("$name $version"), false)
-			.addPodVersions([PodFile(name, version, dependsOn, `build:$name`, BuildPodRepository(name))])
+			.addPodVersions([PodFile(name, version, dependsOn, `build:$name`, StubPodRepository(name))])
 		targetPod	= "${name} ${version}"
 		building	= name
 	}
