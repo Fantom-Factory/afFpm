@@ -2,9 +2,9 @@
 internal class LocalDirRepository : Repository {
 	override Str			name
 	override Uri			url
-	override Bool			isLocal	:= true
-	private  File			dir
+	override Bool			isLocal		:= true
 	private  File:PodFile?	fileCache	:= File:PodFile?[:]
+	private  File			dir
 	
 	new make(Str name, File dir) {
 		this.name	= name
@@ -16,16 +16,16 @@ internal class LocalDirRepository : Repository {
 	}
 
 	override Void upload(PodFile podFile) {
-		newFile := dir.plus(`${podFile.depend.name}.pod`)
+		newFile := download(podFile)
 		podFile.file.copyTo(newFile, ["overwrite" : true])
 	}
 
 	override File download(PodFile podFile) {
-		dir.plus(`${podFile.depend.name}.pod`)
+		dir.plus(`${podFile.name}.pod`)
 	}
 
 	override Void delete(PodFile podFile) {
-		dir.plus(`${podFile.depend.name}.pod`).delete
+		download(podFile).delete
 	}
 
 	override PodFile[] resolveAll() {
@@ -58,23 +58,7 @@ internal class LocalDirRepository : Repository {
 	private [Str:Str]? readMetaProps(File file) {
 		// pods may not exist, but they must be valid
 		if (file.exists.not)
-			return null
-
-		zip	:= Zip.read(file.in)
-		try {
-			File? 		entry
-			[Str:Str]?	metaProps
-			while (metaProps == null && (entry = zip.readNext) != null) {
-				if (entry.uri == `/meta.props`)
-					metaProps = entry.readProps
-			}
-			if (metaProps == null)
-				throw IOErr("Could not find `/meta.props` in pod file: ${file.normalize.osPath}")
-
-			return metaProps
-
-		} finally {
-			zip.close
-		}	
+			return null		
+		return FileUtils.readMetaProps(file)
 	}
 }
