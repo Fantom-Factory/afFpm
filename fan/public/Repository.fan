@@ -15,6 +15,7 @@ mixin Repository {
 	internal abstract File		download		(PodFile podFile)
 	internal abstract Void		delete			(PodFile podFile)
 	
+	internal abstract PodFile[]	resolveAll		()
 	internal abstract PodFile[]	resolve			(Depend depend)
 	internal abstract Depend[]	dependencies	(PodFile podFile)	
 	internal abstract Bool		isLocal			()
@@ -35,11 +36,12 @@ internal class SinglePodRepository : Repository {
 
 //	override Void read() { }
 	
-	internal override Void upload(PodFile podFile) { }
-	internal override File download(PodFile podFile) { throw UnsupportedErr() }
-	internal override Void delete(PodFile podFile) { }
-	internal override PodFile[]	resolve(Depend depend) { throw UnsupportedErr() }
-	internal override Depend[] dependencies(PodFile podFile) { throw UnsupportedErr() }
+	override Void upload(PodFile podFile) { }
+	override File download(PodFile podFile) { throw UnsupportedErr() }
+	override Void delete(PodFile podFile) { }
+	override PodFile[]	resolveAll() { throw UnsupportedErr() }
+	override PodFile[]	resolve(Depend depend) { throw UnsupportedErr() }
+	override Depend[] dependencies(PodFile podFile) { throw UnsupportedErr() }
 }
 
 internal class LocalDirRepository : Repository {
@@ -54,11 +56,12 @@ internal class LocalDirRepository : Repository {
 
 //	override Void read() { }
 	
-	internal override Void upload(PodFile podFile) { }
-	internal override File download(PodFile podFile) { throw UnsupportedErr() }
-	internal override Void delete(PodFile podFile) { }
-	internal override PodFile[]	resolve(Depend depend) { throw UnsupportedErr() }
-	internal override Depend[] dependencies(PodFile podFile) { throw UnsupportedErr() }
+	override Void upload(PodFile podFile) { }
+	override File download(PodFile podFile) { throw UnsupportedErr() }
+	override Void delete(PodFile podFile) { }
+	override PodFile[]	resolveAll() { throw UnsupportedErr() }
+	override PodFile[]	resolve(Depend depend) { throw UnsupportedErr() }
+	override Depend[] dependencies(PodFile podFile) { throw UnsupportedErr() }
 }
 
 internal class LocalFanrRepository : Repository {
@@ -73,11 +76,12 @@ internal class LocalFanrRepository : Repository {
 
 //	override Void read() { }
 
-	internal override Void upload(PodFile podFile) { }
-	internal override File download(PodFile podFile) { throw UnsupportedErr() }
-	internal override Void delete(PodFile podFile) { }
-	internal override PodFile[]	resolve(Depend depend) { throw UnsupportedErr() }
-	internal override Depend[] dependencies(PodFile podFile) { throw UnsupportedErr() }
+	override Void upload(PodFile podFile) { }
+	override File download(PodFile podFile) { throw UnsupportedErr() }
+	override Void delete(PodFile podFile) { }
+	override PodFile[]	resolveAll() { throw UnsupportedErr() }
+	override PodFile[]	resolve(Depend depend) { throw UnsupportedErr() }
+	override Depend[] dependencies(PodFile podFile) { throw UnsupportedErr() }
 }
 
 internal class RemoteFanrRepository : Repository {
@@ -92,9 +96,10 @@ internal class RemoteFanrRepository : Repository {
 
 //	override Void read() { }
 
-	internal override Void upload(PodFile podFile) { }
-	internal override File download(PodFile podFile) { throw UnsupportedErr() }
-	internal override Void delete(PodFile podFile) { }
-	internal override PodFile[]	resolve(Depend depend) { throw UnsupportedErr() }
-	internal override Depend[] dependencies(PodFile podFile) { throw UnsupportedErr() }
+	override Void upload(PodFile podFile) { }
+	override File download(PodFile podFile) { throw UnsupportedErr() }
+	override Void delete(PodFile podFile) { }
+	override PodFile[]	resolveAll() { throw UnsupportedErr() }
+	override PodFile[]	resolve(Depend depend) { throw UnsupportedErr() }
+	override Depend[] dependencies(PodFile podFile) { throw UnsupportedErr() }
 }

@@ -1,16 +1,15 @@
 
 internal class Satisfier {
-	private const Log			log				:= typeof.pod.log
+			const Log			log				:= typeof.pod.log
 			Str?				targetPod
 //			Str?				building
 
-	internal Repository[]		repositories
-	internal Str:PodFile		resolvedPods	:= Str:PodFile[:]
-	internal UnresolvedPod[]	unresolvedPods	:= UnresolvedPod#.emptyList 
+			Repositories		repositories
+			Str:PodFile			resolvedPods	:= Str:PodFile[:]
+			UnresolvedPod[]		unresolvedPods	:= UnresolvedPod#.emptyList 
 
 	private PodNode[]			initNodes		:= PodNode[,]
-	internal Str:PodNode		allNodes		:= Str:PodNode[:] { it.ordered = true }
-	
+	private Str:PodNode			allNodes		:= Str:PodNode[:] { it.ordered = true }
 	private	Duration			startTime		:= Duration.now
 
 //	new make(FpmConfig config, File[] podFiles, Log log) {
@@ -276,33 +275,7 @@ internal class Satisfier {
 			PodNode {
 				it.name = dependency.name
 			}
-		}.addPodVersions(resolve(dependency))
-	}
-	
-	private Depend:PodFile[]	cash		:= Depend:PodFile[][:]
-	PodFile[] resolve(Depend dependency) {
-		cash.getOrAdd(dependency) |->PodFile[]| {
-			
-			// first lets check if this dependency 'fits' into any existing
-			// we don't want to contact remote fanr repos if we don't have to
-			existing := cash.find |vers, dep->Bool| { Utils.dependFits(dependency, dep) }
-			
-			if (existing != null) {
-				// only return what we need
-				return existing.findAll { dependency.match(it.version) }
-			}
-			
-			// naa, lets do the full resolve hog
-			allVersions := (PodFile[]) repositories.map { it.resolve(dependency) }.flatten
-			
-			// we could just do 'allVersions.unique()' but we want to make sure local podVersions trump remote ones 
-			versions := allVersions.findAll { it.repository.isLocal }.unique
-			allVersions.each {
-				if (!it.repository.isLocal && !versions.contains(it)) 
-					versions.add(it)
-			}
-			return versions
-		}
+		}.addPodVersions(repositories.resolve(dependency))
 	}
 	
 	private static Str s(Int size) {
