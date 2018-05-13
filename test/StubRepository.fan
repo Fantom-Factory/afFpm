@@ -2,7 +2,6 @@
 class StubRepository : Repository {
 	
 	private PodFile[]		pods		:= [,]
-	private Depend:Depend[]	dependsOn	:= [:]
 	
 	override Str	name	:= "StubRepo"
 	override Uri	url		:= `stubrepo`
@@ -18,12 +17,9 @@ class StubRepository : Repository {
 		pods.findAll { it.fits(depend) }
 	}
 	
-	internal override Depend[] dependencies(PodFile podFile) { dependsOn[podFile.depend] }
-	
 	Void add(Str dependency, Str? dependents := null) {
-		pod := Depend(dependency.replace("@", " "))
-		pods.add(PodFile(pod.name, pod.version, `stub:${dependency}`, this))
-		depends	:= dependents?.split(',')?.map { Depend(it) } ?: Depend#.emptyList
-		dependsOn[pod] = depends
+		pod 		:= Depend(dependency.replace("@", " "))
+		dependsOn	:= dependents?.split(',')?.map { Depend(it) } ?: Depend#.emptyList
+		pods.add(PodFile(pod.name, pod.version, dependsOn, `stub:${dependency}`, this))
 	}
 }
