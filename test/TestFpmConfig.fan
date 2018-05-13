@@ -100,11 +100,32 @@ internal class TestFpmConfig : Test {
 		verifyEq(config.dirRepos["default"], homeDir + `lib/fan/`)
 
 		// test rel path
-		// if people want it relative to FAN_HOME, add a ${fanHome} str replace macro
 		config = makeFpmConfig(null, ["dirRepo.default":"repo"])
 		verifyEq(config.dirRepos.size, 2)
 		verifyEq(config.dirRepos["fanHome"], homeDir + `lib/fan/`)
 		verifyEq(config.dirRepos["default"], `./repo/`.toFile.normalize)
+
+		// test workDirs
+		config = makeFpmConfig(null, ["workDirs":"C:\\Temp"])
+		verifyEq(config.dirRepos.size, 3)
+		verifyEq(config.dirRepos["fanHome"], homeDir + `lib/fan/`)
+		verifyEq(config.dirRepos["default"], homeDir + `lib/fan/`)
+		verifyEq(config.dirRepos["workDir"], `file:/C:/Temp/lib/fan/`.toFile)
+
+		// test workDirs x 2
+		config = makeFpmConfig(null, ["workDirs":"C:\\Temp;C:\\Temp2"])
+		verifyEq(config.dirRepos.size, 4)
+		verifyEq(config.dirRepos["fanHome"], homeDir + `lib/fan/`)
+		verifyEq(config.dirRepos["default"], homeDir + `lib/fan/`)
+		verifyEq(config.dirRepos["workDir"], `file:/C:/Temp/lib/fan/`.toFile)
+		verifyEq(config.dirRepos["workDir[1]"], `file:/C:/Temp2/lib/fan/`.toFile)
+
+		// if people want it relative to FAN_HOME, add a ${fanHome} str replace macro
+		config = makeFpmConfig(null, ["dirRepo.default":"\${fanHome}/repo", "workDirs":"\${fanHome}/work"])
+		verifyEq(config.dirRepos.size, 3)
+		verifyEq(config.dirRepos["fanHome"], homeDir + `lib/fan/`)
+		verifyEq(config.dirRepos["default"], homeDir + `repo/`)
+		verifyEq(config.dirRepos["workDir"], homeDir + `work/lib/fan/`)
 	}
 	
 	Void testRawConfigRemovesCreds() {
@@ -118,6 +139,15 @@ internal class TestFpmConfig : Test {
 		verifyEq(config.rawConfig["fanrRepo.eggbox.username"], null)
 		verifyEq(config.rawConfig["fanrRepo.eggbox.password"], null)
 		verifyEq(config.rawConfig["fanrRepo.eggbox"], "http://eggbox.fantomfactory.org/fanr/")
+	}
+	
+	Void testBadConfigDupRepoName() {
+		verifyErrMsg(Err#, "Repository 'eggbox' is defined as both a dirRepo AND a fanrRepo") {
+			makeFpmConfig(null, [
+				"fanrRepo.eggbox"   : "http://eggbox.fantomfactory.org/fanr/",
+				"dirRepo.eggbox"	: "eggbox",
+			])
+		}
 	}
 	
 	private FpmConfig makeFpmConfig(Str? envPaths, Str:Str fpmProps) {

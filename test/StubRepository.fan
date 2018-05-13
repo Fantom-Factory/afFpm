@@ -8,8 +8,6 @@ class StubRepository : Repository {
 	override Uri	url		:= `stubrepo`
 	override Bool	isLocal	:= true
 	
-	override Void read() { throw UnsupportedErr() }
-	
 	internal override Void upload		(PodFile podFile)	{ throw UnsupportedErr() }
 	internal override File download		(PodFile podFile)	{ throw UnsupportedErr() }
 	internal override Void delete		(PodFile podFile)	{ throw UnsupportedErr() }
