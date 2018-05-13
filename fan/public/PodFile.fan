@@ -8,10 +8,13 @@ class PodFile {
 	** The version of this pod.
 	const Version	version
 	
-	** Absolute URL where the pod is located.
+	** The dependencies of this pod.
+	const Depend[]	dependsOn
+
+	** Absolute URL of where this pod is located.
 	const Uri		url
 	
-	** This pod version expressed as a dependency.
+	** This pod's name and version expressed as a dependency.
 	const Depend	depend
 
 	** The repository where this pod file is held.
@@ -19,9 +22,10 @@ class PodFile {
 	
 	** Internal ctor
 	@NoDoc
-	new make(Str name, Version version, Uri url, Repository repository) {
+	new make(Str name, Version version, Depend[] dependsOn, Uri url, Repository repository) {
 		this.name		= name
 		this.version	= version
+		this.dependsOn	= dependsOn
 		this.url		= url
 		this.depend		= Depend("$name $version")
 		this.repository	= repository
@@ -41,11 +45,6 @@ class PodFile {
 	** Installs this pod in to the given repository.
 	Void installTo(Repository repository) {
 		repository.upload(this)
-	}
-
-	** Returns the dependencies of this pod.
-	Depend[] dependsOn() {
-		repository.dependencies(this)
 	}
 	
 	** Returns 'true' if this *fits* the given dependency.

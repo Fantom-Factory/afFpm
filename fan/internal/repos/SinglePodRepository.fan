@@ -5,13 +5,17 @@ internal class SinglePodRepository : Repository {
 	override Bool		isLocal	:= true
 	private	 File		file
 	private	 PodFile[]	podFile
-	private	 Depend[]?	dependsOn
 	
 	new make(File file) {
 		this.name		= file.name
 		this.url		= file.normalize.uri
 		this.file		= file
-		this.podFile	= [readFile(file)]
+		
+		metaProps		:= readMetaProps(file)
+		podName			:= metaProps["pod.name"]
+		podVersion		:= Version(metaProps["pod.version"], true)
+		podDependsOn	:= metaProps["pod.depends"].split(';').map { Depend(it, true) }
+		this.podFile	= [PodFile(podName, podVersion, podDependsOn, this.url, this)]
 	}
 
 	override Void		upload		(PodFile podFile)	{ throw UnsupportedErr() }
@@ -19,9 +23,8 @@ internal class SinglePodRepository : Repository {
 	override Void		delete		(PodFile podFile)	{ file.delete }
 	override PodFile[]	resolveAll	()					{ podFile }
 	override PodFile[]	resolve		(Depend depend)		{ podFile.first.fits(depend) ? podFile : PodFile#.emptyList }
-	override Depend[]	dependencies(PodFile podFile)	{ podFile == this.podFile.first ? dependsOn : throw UnknownPodErr(podFile.depend.toStr) }
 	
-	private PodFile readFile(File file) {
+	private Str:Str readMetaProps(File file) {
 		if (file.exists.not)
 			throw IOErr("File not found: ${file.normalize.osPath}")
 
@@ -36,9 +39,7 @@ internal class SinglePodRepository : Repository {
 			if (metaProps == null)
 				throw IOErr("Could not find `/meta.props` in pod file: ${file.normalize.osPath}")
 
-			this.dependsOn = metaProps["pod.depends"].split(';').map { Depend(it, true) }
-			
-			return PodFile(metaProps["pod.name"], Version(metaProps["pod.version"], true), file.normalize.uri, this)
+			return metaProps
 
 		} finally {
 			zip.close
