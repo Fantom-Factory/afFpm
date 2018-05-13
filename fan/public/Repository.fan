@@ -24,6 +24,25 @@ mixin Repository {
 	@NoDoc override Bool equals(Obj? that)	{ (that as Repository)?.url == url }
 }
 
+internal class BuildPodRepository : Repository {
+	override Str		name 
+	override Bool		isLocal	:= true
+	private  Depend[]	dependsOn
+	
+	new make(Str name, Depend[] dependsOn) {
+		this.name		= name
+		this.dependsOn	= dependsOn
+	}
+
+	override Uri		url()						{ `build:${name}` }
+	override Void		upload(PodFile podFile)		{ throw UnsupportedErr() }
+	override File		download(PodFile podFile)	{ throw UnsupportedErr() }
+	override Void		delete(PodFile podFile)		{ throw UnsupportedErr() }
+	override PodFile[]	resolveAll()				{ throw UnsupportedErr() }
+	override PodFile[]	resolve(Depend depend)		{ throw UnsupportedErr() }
+	override Depend[]	dependencies(PodFile podFile) { dependsOn }
+}
+
 internal class SinglePodRepository : Repository {
 	override Str	name
 	override Uri	url
