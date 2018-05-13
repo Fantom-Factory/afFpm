@@ -12,6 +12,8 @@ class StubRepository : Repository {
 	internal override File download		(PodFile podFile)	{ throw UnsupportedErr() }
 	internal override Void delete		(PodFile podFile)	{ throw UnsupportedErr() }
 	
+	override PodFile[]	resolveAll() { pods }
+	
 	internal override PodFile[]	resolve	(Depend depend) 	{
 		pods.findAll { depend.name == it.name && depend.match(it.version) }
 	}

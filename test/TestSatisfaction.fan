@@ -146,7 +146,7 @@ internal class TestSatisfaction : Test {
 	
 	private Void satisfyDependencies(Str pods) {
 		satisfier = Satisfier {
-			it.repositories = [repository]
+			it.repositories = Repositories([repository])
 		}
 		
 		pods.split(',').map { Depend(it) }.each |Depend d| {

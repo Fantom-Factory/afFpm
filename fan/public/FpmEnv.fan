@@ -18,10 +18,6 @@ abstract const class FpmEnv : Env {
 	** A map of dependent pods that have been resolved specifically for the 'targetPod'. 
 	const Str:PodFile		resolvedPods
 	
-//	** A map of all pods used in this environment.
-//	** Similar to 'resolvedPods' but additionally includes all pods from 'workDirs' and 'homeDir'.  
-//	const Str:PodFile		allPodFiles
-	
 	** A list of unsatisfied pods for this targeted environment.
 	const UnresolvedPod[]	unresolvedPods
 
@@ -45,10 +41,12 @@ abstract const class FpmEnv : Env {
 
 		this.fpmConfig	= fpmConfig
 
+		repositories := Repositories(fpmConfig.repositories).localOnly
+		
 		try {
 			podSatisfier	:= Satisfier {
-				it.log			= log
-				it.repositories	= fpmConfig.repositories
+				it.log			= this.log
+				it.repositories	= repositories
 			}
 			findTarget(podSatisfier)
 			podSatisfier.satisfyDependencies
@@ -58,17 +56,6 @@ abstract const class FpmEnv : Env {
 			unresolvedPods	= podSatisfier.unresolvedPods
 			if (targetPod.endsWith(" 0"))
 				targetPod += "+"
-
-//			// add all (unresolved) pods from the the home and work dirs
-//			podFiles	:= resolvedPods.dup.rw
-//			if (podSatisfier.building != null)
-//				podFiles.remove(podSatisfier.building)
-//			podRegex	:= ".+\\.pod".toRegex
-//			// note that workDirs includes homeDir
-//			fpmConfig.podDirs .each {              (it).listFiles(podRegex).each { if (it.isDir.not && podFiles.containsKey(it.basename).not) podFiles[it.basename] = PodFile(it) } }
-//			fpmConfig.workDirs.each { (it + `lib/fan/`).listFiles(podRegex).each { if (it.isDir.not && podFiles.containsKey(it.basename).not) podFiles[it.basename] = PodFile(it) } }
-//
-//			this.allPodFiles = podFiles
 
 		} catch (UnknownPodErr err) {
 			// todo auto-download / install the pod dependency!??
@@ -81,48 +68,41 @@ abstract const class FpmEnv : Env {
 		} finally {
 			this.unresolvedPods	= this.unresolvedPods	!= null ? this.unresolvedPods	: [,]
 			this.resolvedPods	= this.resolvedPods		!= null ? this.resolvedPods		: [:]
-//			this.allPodFiles 	= this.allPodFiles		!= null ? this.allPodFiles		: [:]
 			this.targetPod		= this.targetPod		!= null ? this.targetPod		: "???"
 		}
 		
 		loggedLatest := false
-		if (targetPod == "???") {
-			echo("FPM: Could not target pod - defaulting to latest pod versions")
-			loggedLatest = true
-			this.allPodFiles = podSatisfier.podResolvers.resolveAll(allPodFiles.rw) { remove(targetPod.split.first) }
-		}
-
-		if (Env.cur.vars["FPM_ALL_PODS"]?.toBool(false) ?: false) {
-			echo("FPM: Found env var: FPM_ALL_PODS = true; making all pods available")
-			loggedLatest = true
-			
-			// don't overwrite the pod versions we've already resolved - just make other pods available
-			morePodFiles := podSatisfier.podResolvers.resolveAll(allPodFiles.rw)
-			allPodFiles  := this.resolvedPodFiles.rw
-			morePodFiles.each |val, key| {
-				if (!allPodFiles.containsKey(key))
-					allPodFiles[key] = val
+		if (targetPod == "???")
+			if (!loggedLatest) {
+				loggedLatest = true
+				echo("FPM: Could not target pod - defaulting to latest pod versions")
+				this.resolvedPods = repositories.resolveAll
 			}
-			this.allPodFiles = allPodFiles
-		}
+
+		if (Env.cur.vars["FPM_ALL_PODS"]?.toBool(false) ?: false)
+			if (!loggedLatest) {
+				loggedLatest = true
+				echo("FPM: Found env var: FPM_ALL_PODS = true; making all pods available")
+				this.resolvedPods = repositories.resolveAll
+			}
 		
 		// ---- dump info to logs ----
 		
-		if (targetPod.startsWith("afFpm").not)
+		if (!targetPod.startsWith("afFpm"))
 			// if there's something wrong, then make sure the user sees the dump
 			if (error != null || unresolvedPods.size > 0)
 				log.info(dump)
-			else
-				log.debug(dump)
+			 else
+				if (log.isDebug)
+					log.debug(dump)
 
 		if (unresolvedPods.size > 0) {
 			log.warn(Utils.dumpUnresolved(unresolvedPods))
-			if (!loggedLatest)
+			if (!loggedLatest) {
+				loggedLatest = true
 				log.warn("Defaulting to latest pod versions")
-			if (targetPod == "???")
-				this.allPodFiles = podSatisfier.podResolvers.resolveAll(allPodFiles.rw) { remove(targetPod.split.first) }
-			else
-				this.allPodFiles = podSatisfier.podResolvers.resolveAll(allPodFiles.rw)
+				this.resolvedPods = repositories.resolveAll
+			}
 		}
 
 		if (error != null) {
@@ -143,24 +123,24 @@ abstract const class FpmEnv : Env {
 	
 	** Return the list of pod names for all the pods currently installed in this environment.
 	override Str[] findAllPodNames() {
-		allPodFiles.keys 
+		resolvedPods.keys 
 	}
 
 	** Resolve the pod file for the given pod name.
 	override File? findPodFile(Str podName) {
-		allPodFiles.get(podName)?.file
+		resolvedPods[podName]?.file
 	}
 
 	** Find all the files in the environment which match a relative path such as 'etc/foo/config.props'. 
 	override File[] findAllFiles(Uri uri) {
 		if (uri.isPathAbs) throw ArgErr("Uri must be rel: $uri")
-		return fileDirs.map { it + uri }.exclude |File f->Bool| { f.exists.not }
+		return fpmConfig.workDirs.map { it + uri }.exclude |File f->Bool| { f.exists.not }
 	}
 
 	** Find a file in the environment using a relative path such as 'etc/foo/config.props'. 
 	override File? findFile(Uri uri, Bool checked := true) {
 		if (uri.isPathAbs) throw ArgErr("Uri must be rel: $uri")
-		return fileDirs.eachWhile |dir| {
+		return fpmConfig.workDirs.eachWhile |dir| {
 			f := dir.plus(uri, false)
 			return f.exists ? f : null
 		} ?: (checked ? throw UnresolvedErr(uri.toStr) : null)
