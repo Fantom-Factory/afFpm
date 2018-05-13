@@ -82,7 +82,7 @@ internal const class FpmEnvDefault : FpmEnv {
 		if (arg == null || arg.endsWith(".fan"))
 			return null
 
-		// TODO: check for version e.g. afIoc@3.0
+		// TODO check for version e.g. afIoc@3.0
 		dependStr := (Str?) null
 		if (arg.all { isAlphaNum })
 			dependStr = arg

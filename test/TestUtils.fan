@@ -41,7 +41,7 @@ internal class TestUtils :Test {
 		verifyDependsNot("afBedSheet 1.1+", 	"afBedSheet 1.2+")
 		verifyDependsNot("afBedSheet 1.2.2+", 	"afBedSheet 1.2.4+")
 		
-		// TODO: multi-examples
+		// TODO multi-examples
 	}
 	
 	Void verifyDepends(Str d1, Str d2) {
