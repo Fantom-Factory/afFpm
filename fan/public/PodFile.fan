@@ -1,5 +1,5 @@
 
-** Represents a pod version with a backing file.
+** Represents a pod backed by a repository.
 class PodFile {
 
 	** The name of this pod.
@@ -14,15 +14,12 @@ class PodFile {
 	** This pod version expressed as a dependency.
 	const Depend	depend
 
-	** The repository where this Pod file is held.
+	** The repository where this pod file is held.
 	Repository		repository { private set }
 	
-	internal new make(|This|in) {
-		in(this)
-		this.depend	= Depend("$name $version")
-	}
-	
-	internal new makeFields(Str name, Version version, Uri url, Repository repository) {
+	** Internal ctor
+	@NoDoc
+	new make(Str name, Version version, Uri url, Repository repository) {
 		this.name		= name
 		this.version	= version
 		this.url		= url
@@ -36,16 +33,24 @@ class PodFile {
 		repository.download(this)
 	}
 	
+	** Deletes this pod from its owning repository.
 	Void delete() {
 		repository.delete(this)
 	}
 	
+	** Installs this pod in to the given repository.
 	Void installTo(Repository repository) {
 		repository.upload(this)
 	}
 
+	** Returns the dependencies of this pod.
 	Depend[] dependsOn() {
 		repository.dependencies(this)
+	}
+	
+	** Returns 'true' if this *fits* the given dependency.
+	Bool fits(Depend depend) {
+		depend.name == this.name && depend.match(this.version)
 	}
 	
 	@NoDoc override Str toStr() 			{ "$name $version - $url" }

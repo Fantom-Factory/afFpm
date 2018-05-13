@@ -15,14 +15,14 @@ class StubRepository : Repository {
 	override PodFile[]	resolveAll() { pods }
 	
 	internal override PodFile[]	resolve	(Depend depend) 	{
-		pods.findAll { depend.name == it.name && depend.match(it.version) }
+		pods.findAll { it.fits(depend) }
 	}
 	
 	internal override Depend[] dependencies(PodFile podFile) { dependsOn[podFile.depend] }
 	
 	Void add(Str dependency, Str? dependents := null) {
 		pod := Depend(dependency.replace("@", " "))
-		pods.add(PodFile.makeFields(pod.name, pod.version, `stub:${dependency}`, this))
+		pods.add(PodFile(pod.name, pod.version, `stub:${dependency}`, this))
 		depends	:= dependents?.split(',')?.map { Depend(it) } ?: Depend#.emptyList
 		dependsOn[pod] = depends
 	}
