@@ -150,7 +150,7 @@ internal class TestSatisfaction : Test {
 		}
 		
 		pods.split(',').map { Depend(it) }.each |Depend d| {
-			satisfier.addInitPod(d)
+			satisfier.addInitPod(d, true)
 		}
 
 		satisfier.targetPod = "TestPod"

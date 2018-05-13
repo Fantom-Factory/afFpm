@@ -33,7 +33,6 @@ class PodFile {
 	** The backing file for this pod.
 	** If the pod has a remote location, this will download it to a local / memory representation.
 	File file() {
-		// TODO cache
 		repository.download(this)
 	}
 	
@@ -42,11 +41,10 @@ class PodFile {
 	}
 	
 	Void installTo(Repository repository) {
-		repository.upload(this)		
+		repository.upload(this)
 	}
 
 	Depend[] dependsOn() {
-		// TODO cache
 		repository.dependencies(this)
 	}
 	

@@ -21,11 +21,10 @@ abstract const class FpmEnv : Env {
 	** A list of unsatisfied pods for this targeted environment.
 	const UnresolvedPod[]	unresolvedPods
 
-	// FIXME
-//	@NoDoc
-//	static new make() {
-//		FpmEnvDefault()
-//	}
+	@NoDoc
+	static new make() {
+		FpmEnvDefault()
+	}
 
 	@NoDoc
 	new makeManual(FpmConfig fpmConfig, File[] f4PodFiles, |This|? in := null) : super.make(Env.cur) {

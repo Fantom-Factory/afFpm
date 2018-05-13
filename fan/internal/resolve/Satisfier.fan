@@ -2,7 +2,7 @@
 internal class Satisfier {
 			const Log			log				:= typeof.pod.log
 			Str?				targetPod
-//			Str?				building
+			Str?				building
 
 			Repositories		repositories
 			Str:PodFile			resolvedPods	:= Str:PodFile[:]
@@ -12,49 +12,49 @@ internal class Satisfier {
 	private Str:PodNode			allNodes		:= Str:PodNode[:] { it.ordered = true }
 	private	Duration			startTime		:= Duration.now
 
-//	new make(FpmConfig config, File[] podFiles, Log log) {
-//		this.log 			= log
-//		this.podResolvers	= PodResolvers(config, podFiles)
-//	}
-
 	new make(|This| f) { f(this) }
 
 	
-//	Void setBuildTargetFromBuildPod(BuildPod buildPod, Bool checkDependencies) {
-//		podName	:= buildPod.podName 
-//		version	:= buildPod.version 
-//		depends	:= buildPod.depends 
-//		setBuildTarget(podName, version, depends.map { Depend(it, false) }.exclude { it == null }, checkDependencies)
+	Void setBuildTargetFromBuildPod(BuildPod buildPod) {
+		podName	:= buildPod.podName 
+		version	:= buildPod.version 
+		depends	:= buildPod.depends 
+		setBuildTarget(podName, version, depends.map { Depend(it, false) }.exclude { it == null })
+	}
+
+	Void setBuildTarget(Str name, Version version, Depend[] dependsOn) {
+		// check the build dependencies exist
+		dependsOn.each {
+			if (repositories.resolve(it).isEmpty)
+				throw UnknownPodErr("Could not resolve pod: ${it}")
+		}
+
+		addInitPod(Depend("$name $version"), false)
+			.addPodVersions([PodFile(name, version, `build:$name`, BuildPodRepository(name, dependsOn))])
+		targetPod	= "${name} ${version}"
+		building	= name
+	}
+	
+	Void setRunTarget(Depend podDepend) {
+		podNode := addInitPod(podDepend, true).pickLatestVersion
+		
+		if (podNode.podVersions.isEmpty)
+			throw UnknownPodErr("Could not resolve pod: ${podDepend}")
+		
+		targetPod	= podDepend.toStr		
+	}
+	
+//	internal PodNode addInitPod(Depend pod) {
+//		podNode := resolveNode(pod)
+//		initNodes.add(podNode)
+//		return podNode
 //	}
-//
-//	Void setBuildTarget(Str name, Version version, Depend[] depends, Bool checkDependencies) {
-//		addPod(name) {
-//			// check the build dependencies exist
-//			if (checkDependencies)
-//				depends.each {
-//					if (podResolvers.resolve(it).isEmpty)
-//						throw UnknownPodErr("Could not resolve pod: ${it}")
-//				}
-//
-//			it.podVersions = [PodFile(null, Str:Str[
-//				"pod.name"		: name,
-//				"pod.version"	: version.toStr,
-//				"pod.depends"	: depends.join(";")
-//			])]
-//		}
-//		targetPod	= "${name} ${version}"
-//		building	= name
-//	}
-//	
-//	Void setRunTarget(Depend podDepend) {
-//		podNode := addPod(podDepend.name) {
-//			it.podVersions = podResolvers.resolve(podDepend)
-//		}.pickLatestVersion
-//		
-//		if (podNode.podVersions.isEmpty)
-//			throw UnknownPodErr("Could not resolve pod: ${podDepend}")
-//		
-//		targetPod	= podDepend.toStr		
+//	private PodNode resolveNode(Depend dependency) {
+//		allNodes.getOrAdd(dependency.name) {
+//			PodNode {
+//				it.name = dependency.name
+//			}
+//		}.addPodVersions(repositories.resolve(dependency))
 //	}
 	
 	PodFile[] availablePodVersions(Str podName) {
@@ -257,24 +257,22 @@ internal class Satisfier {
 			if (stack.contains(podVersion.depend).not) {
 				stack.add(podVersion.depend)			
 				podVersion.dependsOn.each |depend| {
-					innerNode := resolveNode(depend)
+					innerNode := resolveNode(depend, true)
 					expandNode(innerNode, stack)
 				}
 			}
 		}
 	}
 
-	internal PodNode addInitPod(Depend pod) {
-		podNode := resolveNode(pod)
+	internal PodNode addInitPod(Depend pod, Bool resolve) {
+		podNode := resolveNode(pod, resolve)
 		initNodes.add(podNode)
 		return podNode
 	}
 
-	private PodNode resolveNode(Depend dependency) {
+	private PodNode resolveNode(Depend dependency, Bool resolve) {
 		allNodes.getOrAdd(dependency.name) {
-			PodNode {
-				it.name = dependency.name
-			}
+			PodNode { it.name = dependency.name }
 		}.addPodVersions(repositories.resolve(dependency))
 	}
 	
