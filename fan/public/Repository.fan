@@ -4,9 +4,6 @@ mixin Repository {
 	abstract Str name()
 	abstract Uri url()
 	
-	// ????
-//	abstract Void read()
-	
 	PodFile[] find(Depend depends) {
 		throw UnsupportedErr()
 	}
@@ -22,45 +19,6 @@ mixin Repository {
 	
 	@NoDoc override Int hash() 				{ url.hash }
 	@NoDoc override Bool equals(Obj? that)	{ (that as Repository)?.url == url }
-}
-
-internal class BuildPodRepository : Repository {
-	override Str		name 
-	override Bool		isLocal	:= true
-	private  Depend[]	dependsOn
-	
-	new make(Str name, Depend[] dependsOn) {
-		this.name		= name
-		this.dependsOn	= dependsOn
-	}
-
-	override Uri		url()						{ `build:${name}` }
-	override Void		upload(PodFile podFile)		{ throw UnsupportedErr() }
-	override File		download(PodFile podFile)	{ throw UnsupportedErr() }
-	override Void		delete(PodFile podFile)		{ throw UnsupportedErr() }
-	override PodFile[]	resolveAll()				{ throw UnsupportedErr() }
-	override PodFile[]	resolve(Depend depend)		{ throw UnsupportedErr() }
-	override Depend[]	dependencies(PodFile podFile) { dependsOn }
-}
-
-internal class SinglePodRepository : Repository {
-	override Str	name
-	override Uri	url
-	override Bool	isLocal	:= true
-	
-	new make(File podFile) {
-		this.name	= podFile.name
-		this.url	= podFile.normalize.uri
-	}
-
-//	override Void read() { }
-	
-	override Void upload(PodFile podFile) { }
-	override File download(PodFile podFile) { throw UnsupportedErr() }
-	override Void delete(PodFile podFile) { }
-	override PodFile[]	resolveAll() { throw UnsupportedErr() }
-	override PodFile[]	resolve(Depend depend) { throw UnsupportedErr() }
-	override Depend[] dependencies(PodFile podFile) { throw UnsupportedErr() }
 }
 
 internal class LocalDirRepository : Repository {

@@ -1,5 +1,5 @@
 
-internal const class FileUtils {
+internal const mixin FileUtils {
 	
 	** Warning! Dir may not exist!
 	static File toAbsDir(Str dirPath, File baseDir := Env.cur.homeDir) {
