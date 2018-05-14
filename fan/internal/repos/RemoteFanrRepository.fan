@@ -1,15 +1,15 @@
 using fanr::Repo
 using fanr::PodSpec
 
-internal class RemoteFanrRepository : Repository {
-	override Str		name
-	override Uri		url
-	override Bool		isLocal		:= false
-	private  CorePods	corePods	:= CorePods()
-	private  Bool		queryCore
-	private	 Repo		repo
-	private	 Log		log			:= typeof.pod.log
-	private	 Int		numVersions	:= 5
+internal const class RemoteFanrRepository : Repository {
+	override const Str		name
+	override const Uri		url
+	override const Bool		isLocal		:= false
+	private  const CorePods	corePods	:= CorePods()
+	private  const Bool		queryCore			// get from Env vars?
+	private	 const Repo		repo
+	private	 const Log		log			:= typeof.pod.log
+	private	 const Int		numVersions	:= 5	// get from Env vars?
 
 	new make(Str name, Uri url, Str? username, Str? password) {
 		this.name	= name

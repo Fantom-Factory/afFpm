@@ -1,7 +1,7 @@
 
-internal class StubPodRepository : Repository {
-	override Str		name 
-	override Bool		isLocal	:= true
+internal const class StubPodRepository : Repository {
+	override const Str		name 
+	override const Bool		isLocal	:= true
 	
 	new make(Str name) {
 		this.name		= name

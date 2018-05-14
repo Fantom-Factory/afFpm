@@ -1,5 +1,5 @@
 
-mixin Repository {
+const mixin Repository {
 
 	abstract Str name()
 	abstract Uri url()
