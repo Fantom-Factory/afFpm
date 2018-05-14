@@ -34,15 +34,7 @@ internal class Repositories {
 			}
 			
 			// naa, lets do the full resolve hog
-			allVersions := (PodFile[]) repositories.map { it.resolve(dependency) }.flatten
-			
-			// we could just do 'allVersions.unique()' but we want to make sure local podVersions trump remote ones 
-			versions := allVersions.findAll { it.repository.isLocal }.unique
-			allVersions.each {
-				if (!it.repository.isLocal && !versions.contains(it)) 
-					versions.add(it)
-			}
-			return versions
+			return repositories.map { it.resolve(dependency) }.flatten
 		}
 	}
 }

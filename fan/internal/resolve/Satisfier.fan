@@ -13,7 +13,6 @@ internal class Satisfier {
 	private	Duration			startTime		:= Duration.now
 
 	new make(|This| f) { f(this) }
-
 	
 	Void setBuildTargetFromBuildPod(BuildPod buildPod) {
 		podName	:= buildPod.podName 
@@ -23,6 +22,8 @@ internal class Satisfier {
 	}
 
 	Void setBuildTarget(Str name, Version version, Depend[] dependsOn) {
+		echo("setBuildTarget - $name $version")
+
 		// check the build dependencies exist
 		dependsOn.each {
 			if (repositories.resolve(it).isEmpty)
@@ -30,43 +31,28 @@ internal class Satisfier {
 		}
 
 		addInitPod(Depend("$name $version"), false)
-			.addPodVersions([PodFile(name, version, dependsOn, `build:$name`, StubPodRepository(name))])
+			.addPodVersions([PodFile(name, version, dependsOn, `build:$name`, StubPodRepository.instance)])
 		targetPod	= "${name} ${version}"
 		building	= name
+		
+		echo("INIR PDS: $initNodes")
 	}
 	
 	Void setRunTarget(Depend podDepend) {
 		podNode := addInitPod(podDepend, true).pickLatestVersion
 		
-		if (podNode.podVersions.isEmpty)
+		if (podNode.isEmpty)
 			throw UnknownPodErr("Could not resolve pod: ${podDepend}")
 		
 		targetPod	= podDepend.toStr		
 	}
 	
-//	internal PodNode addInitPod(Depend pod) {
-//		podNode := resolveNode(pod)
-//		initNodes.add(podNode)
-//		return podNode
-//	}
-//	private PodNode resolveNode(Depend dependency) {
-//		allNodes.getOrAdd(dependency.name) {
-//			PodNode {
-//				it.name = dependency.name
-//			}
-//		}.addPodVersions(repositories.resolve(dependency))
-//	}
-	
 	PodFile[] availablePodVersions(Str podName) {
 		allNodes[podName].podVersions
 	}
 
-	Bool isEmpty() {
-		initNodes.isEmpty
-	}
-	
 	This satisfyDependencies() {
-		// TODO have some sort of trace / verbose flag where we show *everything*!
+		// TODO have some sort of trace / verbose flag where we show *everything*! + dump to file
 		if (targetPod == null)
 			return this
 		
@@ -75,21 +61,35 @@ internal class Satisfier {
 		if (targetPod != null && targetPod.startsWith("afFpm"))
 			log.level = LogLevel.info
 		
+		if (log.isDebug) {
+
+			allPods := (PodFile[]) allNodes.vals.map { it.podVersions }.flatten.unique
+
+			echo("ALL NODES $allNodes.vals.first.podVersions")
+			echo("Test code:")
+			allPods.each |pod| {
+				echo("addDep(${pod.depend.toStr.toCode}, " + pod.dependsOn.join(", ").toCode + ")")
+			}
+			
+			initPods := (PodFile[]) initNodes.map { it.podVersions }.flatten.unique
+			echo(initNodes)
+		}
+		
 		log.debug("Resolving pods for $targetPod")
 
 		allNodes.vals.each { expandNode(it, Depend[,]) }
 
-		// there's an opportunity for podPerms to overflow here! (Scary!) 
+		// there's an opportunity for podPerms to overflow here! (Scary @ 9,223,372,036,854,775,807!) 
 		// but there's no Err, the number just wraps round to zero
 		podPerms  := (Int) allNodes.vals.reduce(1) |Int tot, node| {
-			tot * node.podVersions.size
+			tot * node.size
 			
 		}
-		totalVers := (Int) allNodes.vals.reduce(0) |Int tot, node| { tot + node.podVersions.size }
+		totalVers := (Int) allNodes.vals.reduce(0) |Int tot, node| { tot + node.size }
 		log.debug("Found ${totalVers.toLocale} versions of ${allNodes.size.toLocale} different pod" + s(allNodes.size))
 		
 		// reduce PodVersions into groups
-		// this reduces the problem space from 661,348,800,000 dependency permutations to just 12,288!		
+		// this can reduce the problem space from 610,397,977,600 dependency permutations to just 138,240!		
 		nos := (PodGroup[][]) allNodes.vals.map { it.reduceProblemSpace }.exclude { it->isEmpty }
 
 		grpPerms	:= (Int) nos.reduce(1) |Int tot, vers| { tot * vers.size }
@@ -148,7 +148,7 @@ internal class Satisfier {
 
 				} else {
 					// found a working combination!
-	//				fin = true	// gotta find them all!
+//					fin = true	// gotta find them all!
 					solutions.add(
 						podMap.map { it.latest }
 					)
@@ -296,7 +296,7 @@ internal class Satisfier {
 @Serializable
 internal class PodNode {
 	const 	Str			name
-			PodFile[]?	podVersions
+			PodFile[]?	podVersions { private set }
 
 	new make(|This|in) { in(this) }
 
@@ -307,7 +307,19 @@ internal class PodNode {
 	}
 	
 	This addPodVersions(PodFile[] pods) {
-		podVersions = (podVersions == null) ? pods : podVersions.addAll(pods).unique.sort.reverse	// highest first
+		if (podVersions == null)
+			podVersions = PodFile[,]
+		
+		
+		pods.each |pod| {
+			if (!podVersions.any { it.fits(pod.depend) })
+				podVersions.add(pod)
+		}
+		
+		pods.sortr
+
+//		// FIXME
+//		podVersions = (podVersions == null) ? pods : podVersions.addAll(pods).unique.sortr	// highest first
 		return this
 	}
 	
@@ -323,6 +335,9 @@ internal class PodNode {
 		}
 		return groups.vals
 	}
+	
+	Bool isEmpty() { podVersions.isEmpty }
+	Int size() { podVersions.size }
 	
 	override Str toStr() 			{ podVersions?.first?.toStr ?: "${name} XXX" }
 	override Int hash() 			{ name.hash }
