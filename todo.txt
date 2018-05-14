@@ -1,0 +1,101 @@
+
+config.mode = overwrite / addative
+
+build build.fan
+test pod
+run pod
+query pod+ver
+delete
+
+install
+
+update  (pod / build.fan)
+
+when to add pod dirs? Do we always add them? Or just work dirs? or just home dir?
+
+-o  --offline
+-d  --debug
+-js --javascript
+
+-t  --target pod / build.fan
+-r  --repo
+
+install / copy
+pod may be a dir of pods
+If the repo is remote, then don't query for dependencies / contact remotes
+installs a single pod
+
+update
+resolves all dependencies
+
+
+`fpm:default/afIoc/3.0` --> PodFile
+
+
+fpm update build.fan [-r release]
+
+fpm -o update -d build.fan [-r release]   <-- allow flags to be anywhere
+need new cmd line parser
+ 
+ 
+!! FPM F4 - cache the resolved pods - only re-resolve if the dependencies change !! 
+ 
+ 
+Env Vars
+
+FAN_ENV_PODS
+FPM_ALL_PODS = true
+FPM_DEBUG = true
+FPM_TARGET
+FPM_TRACE = true
+ 
+ 
+FPM: Building cwApp 0.2.0.225
+=============================
+
+[00:46:57 14-May-18] [debug] [afFpm] 
+[00:46:57 14-May-18] [debug] [afFpm] Fantom Pod Manager 0.0.13
+[00:46:57 14-May-18] [debug] [afFpm] =========================
+[00:46:57 14-May-18] [debug] [afFpm] 
+[00:46:58 14-May-18] [debug] [afFpm] Resolving pods for cwApp 0.2.0.225
+[00:46:58 14-May-18] [debug] [afFpm] Found 104 versions of 49 different pods
+[00:46:58 14-May-18] [debug] [afFpm] Calculated 550,502,400 dependency pod permutations
+[00:46:58 14-May-18] [debug] [afFpm] Collapsed to    69,120 dependency group permutations
+[00:46:58 14-May-18] [debug] [afFpm] Stated problem space in 750ms
+[00:46:58 14-May-18] [debug] [afFpm] Solving...
+[00:47:07 14-May-18] [debug] [afFpm]           ...Done
+[00:47:07 14-May-18] [debug] [afFpm] Cached 1751 bad dependency groups
+[00:47:07 14-May-18] [debug] [afFpm] Found 8 solutions in 8sec
+[00:47:07 14-May-18] [debug] [afFpm] 
+
+
+[17:47:13 14-May-18] [debug] [afFpmV2]
+[17:47:13 14-May-18] [debug] [afFpmV2] Fantom Pod Manager 0.2.0
+[17:47:13 14-May-18] [debug] [afFpmV2] ========================
+[17:47:13 14-May-18] [debug] [afFpmV2]
+[17:47:13 14-May-18] [debug] [afFpmV2] Resolving pods for cwApp 0.2.0.225
+[17:47:14 14-May-18] [debug] [afFpmV2] Found 112 versions of 49 different pods
+[17:47:14 14-May-18] [debug] [afFpmV2] Calculated 60,397,977,600 dependency pod permutations
+[17:47:14 14-May-18] [debug] [afFpmV2] Collapsed to      138,240 dependency group permutations
+[17:47:14 14-May-18] [debug] [afFpmV2] Stated problem space in 823ms
+[17:47:14 14-May-18] [debug] [afFpmV2] Solving...
+[17:47:20 14-May-18] [debug] [afFpmV2]           ...Done
+[17:47:20 14-May-18] [debug] [afFpmV2] Cached 1218 bad dependency groups
+[17:47:20 14-May-18] [debug] [afFpmV2] Found 16 solutions in 6sec
+[17:47:20 14-May-18] [debug] [afFpmV2]
+
+
+[23:10:33 14-May-18] [debug] [afFpmV2]
+[23:10:33 14-May-18] [debug] [afFpmV2] Fantom Pod Manager 0.2.0
+[23:10:33 14-May-18] [debug] [afFpmV2] ========================
+[23:10:33 14-May-18] [debug] [afFpmV2]
+[23:10:33 14-May-18] [debug] [afFpmV2] Resolving pods for cwApp 0.2.0.225
+[23:10:33 14-May-18] [debug] [afFpmV2] Found 104 versions of 49 different pods
+[23:10:34 14-May-18] [debug] [afFpmV2] Calculated 550,502,400 dependency pod permutations
+[23:10:34 14-May-18] [debug] [afFpmV2] Collapsed to    69,120 dependency group permutations
+[23:10:34 14-May-18] [debug] [afFpmV2] Stated problem space in 806ms
+[23:10:34 14-May-18] [debug] [afFpmV2] Solving...
+[23:10:37 14-May-18] [debug] [afFpmV2]           ...Done
+[23:10:37 14-May-18] [debug] [afFpmV2] Cached 1218 bad dependency groups
+[23:10:37 14-May-18] [debug] [afFpmV2] Found 8 solutions in 3sec
+[23:10:37 14-May-18] [debug] [afFpmV2]
