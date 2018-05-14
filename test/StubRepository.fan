@@ -8,8 +8,8 @@ const class StubRepository : Repository {
 	override const Uri	url		:= `stubrepo`
 	override const Bool	isLocal	:= true
 	
+	internal override File download		(PodFile podFile)	{ Buf().toFile(podFile.url) }
 	internal override Void upload		(PodFile podFile)	{ throw UnsupportedErr() }
-	internal override File download		(PodFile podFile)	{ throw UnsupportedErr() }
 	internal override Void delete		(PodFile podFile)	{ throw UnsupportedErr() }
 	
 	override PodFile[]	resolveAll() { pods }
@@ -18,9 +18,9 @@ const class StubRepository : Repository {
 		pods.findAll { it.fits(depend) }
 	}
 	
-	Void add(Str dependency, Str? dependents := null) {
+	Void add(Str dependency, Str dependents) {
 		pod 		:= Depend(dependency.replace("@", " "))
-		dependsOn	:= dependents?.split(',')?.map { Depend(it) } ?: Depend#.emptyList
+		dependsOn	:= dependents.split(',').exclude { it.isEmpty }.map { Depend(it, true) }
 		pods.add(PodFile(pod.name, pod.version, dependsOn, `stub:${dependency}`, this))
 	}
 }

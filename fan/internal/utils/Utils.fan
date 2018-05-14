@@ -105,4 +105,25 @@ internal class Utils {
 
 		return strings
 	}
+	
+	static Str dumpEnv(Str targetPod, PodFile[] resolvedPods, FpmConfig? fpmConfig) {
+		str	:= "\n\n"
+		str += "FPM Environment:\n"
+		str += "\n"
+		str += "    Target Pod : ${targetPod}\n"
+		str += fpmConfig?.dump ?: ""
+		str += "\n"
+		str += "Resolved ${resolvedPods.size} pod" + (resolvedPods.size == 1 ? "" : "s") + (resolvedPods.size == 0 ? "" : ":") + "\n"
+		
+		maxNom := resolvedPods.reduce(0) |Int size, pod| { size.max(pod.name.size) } as Int
+		maxVer := resolvedPods.reduce(0) |Int size, pod| { size.max(pod.version.toStr.size) }
+		resolvedPods.sort.each |podFile| {
+			str += podFile.name.justr(maxNom + 2) + " " + podFile.version.toStr.justl(maxVer) + " - " + podFile.file.osPath + "\n"
+		}
+		str += "\n"
+		
+		// unsatisfied constraints and errors should be logged separately after this dump 
+
+		return str
+	}
 }

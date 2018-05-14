@@ -61,30 +61,13 @@ internal class Satisfier {
 		if (targetPod != null && targetPod.startsWith("afFpm"))
 			log.level = LogLevel.info
 		
-		if (log.isDebug) {
-
-			allPods := (PodFile[]) allNodes.vals.map { it.podVersions }.flatten.unique
-
-			echo("ALL NODES $allNodes.vals.first.podVersions")
-			echo("Test code:")
-			allPods.each |pod| {
-				echo("addDep(${pod.depend.toStr.toCode}, " + pod.dependsOn.join(", ").toCode + ")")
-			}
-			
-			initPods := (PodFile[]) initNodes.map { it.podVersions }.flatten.unique
-			echo(initNodes)
-		}
-		
 		log.debug("Resolving pods for $targetPod")
 
 		allNodes.vals.each { expandNode(it, Depend[,]) }
 
 		// there's an opportunity for podPerms to overflow here! (Scary @ 9,223,372,036,854,775,807!) 
 		// but there's no Err, the number just wraps round to zero
-		podPerms  := (Int) allNodes.vals.reduce(1) |Int tot, node| {
-			tot * node.size
-			
-		}
+		podPerms  := (Int) allNodes.vals.reduce(1) |Int tot, node| { tot * node.size }
 		totalVers := (Int) allNodes.vals.reduce(0) |Int tot, node| { tot + node.size }
 		log.debug("Found ${totalVers.toLocale} versions of ${allNodes.size.toLocale} different pod" + s(allNodes.size))
 		
@@ -100,19 +83,19 @@ internal class Satisfier {
 		log.debug("Collapsed to " + grpPermsStr.justr(maxPermSize - 13) + " dependency group permutation" + s(grpPerms))
 		log.debug("Stated problem space in ${(Duration.now - startTime).toLocale}")
 		log.debug("Solving...")
+		
+		if (Env.cur.vars["FPM_TRACE"] == "true")
+			writeTraceFile
+		
 		startTime = Duration.now
-
 		max := nos.map { it.size }
 		cur := Int[,].fill(0, max.size)
 		
 		// a single err should be formed from multiple constraints, where A, B, C !==> D
 //		err := (Str:PodVersion[]) allNodes.map { PodVersion[,] }
 		fin := false
-		solutions := [Str:PodFile][,]
-
-		podMap  := Str:PodGroup[:] 
-		
-		
+		solutions	:= [Str:PodFile][,]
+		podMap 		:= Str:PodGroup[:] 
 		unsatisfied	:= UnresolvedPod[,]
 		badGroups	:= Int?[][,]
 
@@ -216,6 +199,25 @@ internal class Satisfier {
 		return this
 	}
 	
+	private Void writeTraceFile() {
+		file := `fpm-trace-deps.txt`.toFile
+		log.debug("Writing dependency trace file: $file.normalize.osPath")
+
+		out  	:= file.out
+		allPods := (PodFile[]) allNodes.vals.map { it.podVersions }.flatten.sort
+
+		out.printLine("// Trace dependency file for $targetPod - ${DateTime.now.toLocale}")
+		out.printLine
+		allPods.each |pod| {
+			out.printLine("addDep(${pod.depend.toStr.toCode}, " + pod.dependsOn.join(", ").toCode + ")")
+		}
+		
+		initPods := (PodFile[]) initNodes.map { it.podVersions }.flatten.sort
+		out.printLine("satisfyDependencies(" + initPods.join(", ") { it.depend.toStr }.toCode + ")")
+
+		out.flush.close
+	}
+	
 	private UnresolvedPod[]? logErr(PodConstraint[] unsat) {
 		conGrps := groupBy(unsat) |PodConstraint con->Str| { con.dependsOn.name }
 		unresolvedPods := (UnresolvedPod[]) conGrps.map |PodConstraint[] cons, Str name->UnresolvedPod| {
@@ -310,16 +312,11 @@ internal class PodNode {
 		if (podVersions == null)
 			podVersions = PodFile[,]
 		
-		
 		pods.each |pod| {
 			if (!podVersions.any { it.fits(pod.depend) })
 				podVersions.add(pod)
-		}
-		
-		pods.sortr
-
-//		// FIXME
-//		podVersions = (podVersions == null) ? pods : podVersions.addAll(pods).unique.sortr	// highest first
+		}		
+		podVersions.sortr
 		return this
 	}
 	
