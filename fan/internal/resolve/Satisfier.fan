@@ -209,6 +209,9 @@ internal class Satisfier {
 			unresolvedPods = unsatisfied
 		}
 		
+		if (targetPod != null)
+			resolvedPods.remove(targetPod.split.first)
+		
 		log.level = oldLogLevel
 		return this
 	}

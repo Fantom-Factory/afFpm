@@ -47,8 +47,10 @@ internal const class LocalDirRepository : Repository {
 	}
 
 	private PodFile? getOrMake(File file) {
-		fileCache.getOrAdd(file) |->PodFile| {
+		fileCache.getOrAdd(file) |->PodFile?| {
 			metaProps		:= readMetaProps(file)
+			if (metaProps == null)
+				return null
 			podName			:= metaProps["pod.name"]
 			podVersion		:= Version(metaProps["pod.version"], true)
 			podDependsOn	:= metaProps["pod.depends"].split(';').exclude { it.isEmpty }.map { Depend(it, true) }
