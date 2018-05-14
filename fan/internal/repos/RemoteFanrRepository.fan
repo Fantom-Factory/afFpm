@@ -51,6 +51,6 @@ internal const class RemoteFanrRepository : Repository {
 	
 	override PodFile[] resolveAll() {
 		// should only be called on local repos
-		throw UnsupportedErr()
+		throw UnsupportedErr("fanr does not support pod deletion")
 	}
 }
