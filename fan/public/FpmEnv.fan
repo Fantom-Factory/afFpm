@@ -15,6 +15,7 @@ abstract const class FpmEnv : Env {
 	** The name of the pod this environment is targeted to.
 	const Str				targetPod
 
+	// TODO this should be a list
 	** A map of dependent pods that have been resolved specifically for the 'targetPod'. 
 	const Str:PodFile		resolvedPods
 	
@@ -150,24 +151,6 @@ abstract const class FpmEnv : Env {
 
 	** Dumps the FPM environment to a string. This includes the FPM Config and a list of resolved pods.
 	Str dump() {
-		str	:= "\n\n"
-		str += "FPM Environment:\n"
-		str += "\n"
-		str += "    Target Pod : ${targetPod}\n"
-		str += fpmConfig.dump
-		str += "\n"
-		str += "Resolved ${resolvedPods.size} pod" + (resolvedPods.size == 1 ? "" : "s") + (resolvedPods.size == 0 ? "" : ":") + "\n"
-		
-		maxNom := resolvedPods.reduce(0) |Int size, pod| { size.max(pod.name.size) } as Int
-		maxVer := resolvedPods.reduce(0) |Int size, pod| { size.max(pod.version.toStr.size) }
-		resolvedPods.keys.sort.each |key| {
-			podFile := resolvedPods[key]
-			str += podFile.name.justr(maxNom + 2) + " " + podFile.version.toStr.justl(maxVer) + " - " + podFile.file.osPath + "\n"
-		}
-		str += "\n"
-		
-		// unsatisfied constraints and errors should be logged separately after this dump 
-
-		return str
+		Utils.dumpEnv(targetPod, resolvedPods.vals, fpmConfig)
 	}
 }

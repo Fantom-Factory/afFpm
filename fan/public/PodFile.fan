@@ -14,6 +14,8 @@ const class PodFile {
 	** Absolute URL of where this pod is located.
 	const Uri		url
 	
+	// FIXME PodFile.url vs  PodFile.location
+
 	** This pod's name and version expressed as a dependency.
 	const Depend	depend
 
@@ -21,8 +23,8 @@ const class PodFile {
 	const Repository repository
 	
 	** Internal ctor
-	@NoDoc
-	new make(Str name, Version version, Depend[] dependsOn, Uri url, Repository repository) {
+	@NoDoc	// reserve make() for serialisation - if / when it happens!
+	new makeFields(Str name, Version version, Depend[] dependsOn, Uri url, Repository repository) {
 		this.name		= name
 		this.version	= version
 		this.dependsOn	= dependsOn
