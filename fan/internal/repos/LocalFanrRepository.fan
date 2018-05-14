@@ -54,7 +54,7 @@ internal const class LocalFanrRepository : Repository {
 				return null
 			podName			:= metaProps["pod.name"]
 			podVersion		:= Version(metaProps["pod.version"], true)
-			podDependsOn	:= metaProps["pod.depends"].split(';').map { Depend(it, true) }
+			podDependsOn	:= metaProps["pod.depends"].split(';').exclude { it.isEmpty }.map { Depend(it, true) }
 			return PodFile(podName, podVersion, podDependsOn, file.uri, this)
 		}
 	}

@@ -14,7 +14,7 @@ internal const class SinglePodRepository : Repository {
 		metaProps		:= readMetaProps(file)
 		podName			:= metaProps["pod.name"]
 		podVersion		:= Version(metaProps["pod.version"], true)
-		podDependsOn	:= metaProps["pod.depends"].split(';').map { Depend(it, true) }
+		podDependsOn	:= metaProps["pod.depends"].split(';').exclude { it.isEmpty }.map { Depend(it, true) }
 		this.podFile	= [PodFile(podName, podVersion, podDependsOn, this.url, this)]
 	}
 
