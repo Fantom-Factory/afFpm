@@ -1,11 +1,12 @@
 
-class StubRepository : Repository {
+const class StubRepository : Repository {
 	
-	private PodFile[]		pods		:= [,]
+	private  const LocalRef	podsRef	:= LocalRef(#pods.qname) |->Obj?| { PodFile[,] }
+	private  PodFile[]	pods()		{ podsRef.val }
 	
-	override Str	name	:= "StubRepo"
-	override Uri	url		:= `stubrepo`
-	override Bool	isLocal	:= true
+	override const Str	name	:= "StubRepo"
+	override const Uri	url		:= `stubrepo`
+	override const Bool	isLocal	:= true
 	
 	internal override Void upload		(PodFile podFile)	{ throw UnsupportedErr() }
 	internal override File download		(PodFile podFile)	{ throw UnsupportedErr() }

@@ -1,10 +1,11 @@
 
-internal class LocalDirRepository : Repository {
-	override Str			name
-	override Uri			url
-	override Bool			isLocal		:= true
-	private  File:PodFile?	fileCache	:= File:PodFile?[:]
-	private  File			dir
+internal const class LocalDirRepository : Repository {
+	override const Str		name
+	override const Uri		url
+	override const Bool		isLocal			:= true
+	private  const LocalRef	fileCacheRef	:= LocalRef(#fileCache.qname) |->Obj?| { File:PodFile?[:] }
+	private  const File		dir
+	private  File:PodFile?	fileCache()		{ fileCacheRef.val }
 	
 	new make(Str name, File dir) {
 		this.name	= name
@@ -50,7 +51,7 @@ internal class LocalDirRepository : Repository {
 			metaProps		:= readMetaProps(file)
 			podName			:= metaProps["pod.name"]
 			podVersion		:= Version(metaProps["pod.version"], true)
-			podDependsOn	:= metaProps["pod.depends"].split(';').map { Depend(it, true) }
+			podDependsOn	:= metaProps["pod.depends"].split(';').exclude { it.isEmpty }.map { Depend(it, true) }
 			return PodFile(podName, podVersion, podDependsOn, file.uri, this)
 		}
 	}

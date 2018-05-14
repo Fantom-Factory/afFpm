@@ -1,13 +1,15 @@
 
-internal class LocalFanrRepository : Repository {
+internal const class LocalFanrRepository : Repository {
 	private static const Regex	podRegex	:= "(.+)-(.+)\\.pod".toRegex
 
-	override Str			name
-	override Uri			url
-	override Bool			isLocal		:= true
-	private  File:PodFile?	fileCache	:= File:PodFile?[:]
-	private  Str:PodName[]	nameCache	:= Str:PodName[][:]
-	private  File			dir
+	override const Str		name
+	override const Uri		url
+	override const Bool		isLocal			:= true
+	private  const LocalRef	fileCacheRef	:= LocalRef(#fileCache.qname) |->Obj?| { File:PodFile?[:] }
+	private  const LocalRef	nameCacheRef	:= LocalRef(#nameCache.qname) |->Obj?| { Str:PodName[][:] }
+	private  const File		dir
+	private  File:PodFile?	fileCache()		{ fileCacheRef.val }
+	private  Str:PodName[]	nameCache()		{ nameCacheRef.val }
 
 	new make(Str name, File dir) {
 		this.name	= name

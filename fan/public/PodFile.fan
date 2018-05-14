@@ -1,6 +1,6 @@
 
 ** Represents a pod backed by a repository.
-class PodFile {
+const class PodFile {
 
 	** The name of this pod.
 	const Str		name
@@ -18,7 +18,7 @@ class PodFile {
 	const Depend	depend
 
 	** The repository where this pod file is held.
-	Repository		repository { private set }
+	const Repository repository
 	
 	** Internal ctor
 	@NoDoc
