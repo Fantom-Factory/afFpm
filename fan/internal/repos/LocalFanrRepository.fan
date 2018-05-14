@@ -26,7 +26,7 @@ internal const class LocalFanrRepository : Repository {
 	}
 
 	override File download(PodFile podFile) {
-		dir.plus(`${podFile.name}-${podFile.version}.pod`)
+		dir.plus(`${podFile.name}/${podFile.name}-${podFile.version}.pod`)
 	}
 
 	override Void delete(PodFile podFile) {
@@ -48,8 +48,10 @@ internal const class LocalFanrRepository : Repository {
 	}
 	
 	private PodFile? getOrMake(File file) {
-		fileCache.getOrAdd(file) |->PodFile| {
+		fileCache.getOrAdd(file) |->PodFile?| {
 			metaProps		:= readMetaProps(file)
+			if (metaProps == null)
+				return null
 			podName			:= metaProps["pod.name"]
 			podVersion		:= Version(metaProps["pod.version"], true)
 			podDependsOn	:= metaProps["pod.depends"].split(';').map { Depend(it, true) }

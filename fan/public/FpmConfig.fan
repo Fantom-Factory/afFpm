@@ -18,6 +18,7 @@ using fanr
 **   fanrRepo.eggbox = 
 ** 
 const class FpmConfig {
+	private static const Uri 	propsFilename := `fpm2.props`
 	private static const Log 	log := FpmConfig#.pod.log
 
 	** The directory used to resolve relative files.
@@ -62,18 +63,19 @@ const class FpmConfig {
 	@NoDoc
 	static new makeFromDirs(File baseDir, File homeDir, Str? envPaths) {
 		baseDir = baseDir.normalize
-		
-		fpmFile := (File?) baseDir.plus(`fpm.props`).normalize
+		echo(baseDir)
+		fpmFile := (File?) baseDir.plus(propsFilename).normalize
 		while (fpmFile != null && !fpmFile.exists)
-			fpmFile = fpmFile.parent.parent?.plus(`fpm.props`)
+			fpmFile = fpmFile.parent.parent?.plus(propsFilename)
 
 		// this is a little bit chicken and egg - we use the workDir to find config.props to find the workDir! 
 		workDirs := "" as Str
 		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + (envPaths ?: "")
 		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + homeDir.osPath
-		workFile := workDirs.split(File.pathSep.chars.first).exclude { it.isEmpty }.map { toAbsDir(it) + `etc/afFpm/fpm.props` }.unique as File[]
+		workFile := workDirs.split(File.pathSep.chars.first).exclude { it.isEmpty }.map { toAbsDir(it) + `etc/afFpm/` + propsFilename }.unique as File[]
 		if (fpmFile != null)
 			workFile.insert(0, fpmFile)
+
 		workFile = workFile.findAll { it.exists }
 
 		fpmProps := Str:Str[:] { it.ordered = true }

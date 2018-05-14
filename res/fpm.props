@@ -52,6 +52,7 @@
 # Note there should always be a repository named 'default'. If not defined it 
 # defaults to a dirRepo at ${fanHome}/lib/fan/
 #
+# dirRepo.default	= ${fanHome}/lib/fan/
 dirRepo.lib			= lib/
 dirRepo.libfan		= lib/fan/
 
@@ -64,10 +65,7 @@ dirRepo.libfan		= lib/fan/
 #
 # Repositories are named with the syntax:
 #
-#  fanrRepo.<name> = <path / url> 
-#
-# Note there should always be a repository named 'default'. If not defined it 
-# defaults to a dirRepo at ${fanHome}/lib/fan/
+#  fanrRepo.<name> = <path | url> 
 #
 # fanrRepo.default	= C:\\Repositories\\Fantom\\fpmRepo-default\\
 # fanrRepo.status302= http://repo.status302.com/fanr/
