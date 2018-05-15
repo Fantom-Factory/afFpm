@@ -34,7 +34,7 @@ resolves all dependencies
 
 fpm update build.fan [-r release]
 
-fpm -o update -d build.fan [-r release]   <-- allow flags to be anywhere
+fpm -o update -d build.fan [-r release] other args  <-- allow flags to be anywhere
 need new cmd line parser
  
  

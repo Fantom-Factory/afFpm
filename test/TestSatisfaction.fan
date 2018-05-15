@@ -49,7 +49,7 @@ internal class TestSatisfaction : Test {
 		satisfyDependencies("afBed 2.0, afIoc 2.0")
 		verify(satisfier.resolvedPods.isEmpty)
 	}
-	
+
 	Void testPaths5() {
 		addDep("afBed 2.0", "afIoc 3.0, afPlastic 1.4 - 2.0")
 		addDep("afIoc 3.0", "afPlastic 3.0")
@@ -145,15 +145,8 @@ internal class TestSatisfaction : Test {
 	}
 	
 	private Void satisfyDependencies(Str pods) {
-		satisfier = Satisfier {
-			it.repositories = Repositories([repository])
-		}
-		
-		pods.split(',').map { Depend(it) }.each |Depend d| {
-			satisfier.addInitPod(d, true)
-		}
-
-		satisfier.targetPod = "TestPod"
+		dependsOn := pods.split(',').map { Depend(it) }
+		satisfier = Satisfier(TargetPod(Depend("TestPod 1.0"), dependsOn), Repositories([repository]))
 		satisfier.satisfyDependencies
 	}
 

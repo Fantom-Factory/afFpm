@@ -126,16 +126,9 @@ satisfyDependencies("afApp 0.2.0.225")
 		repository.add(dependency, dependents)
 	}
 	
-	private Void satisfyDependencies(Str pods) {
-		satisfier = Satisfier {
-			it.repositories = Repositories([repository])
-		}
-		
-		pods.split(',').exclude { it.isEmpty }.map { Depend(it) }.each |Depend d| {
-			satisfier.addInitPod(d, true)
-		}
-
-		satisfier.targetPod = pods
+	private Void satisfyDependencies(Str pod) {		
+		target := Depend(pod)
+		satisfier = Satisfier(TargetPod(target), Repositories([repository]))
 		satisfier.satisfyDependencies
 	}
 }
