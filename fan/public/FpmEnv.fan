@@ -12,10 +12,10 @@ abstract const class FpmEnv : Env {
 	** The config used for this environment.
 	const FpmConfig			fpmConfig
 	
-	** The name of the pod this environment is targeted to.
-	const Str				targetPod
+	** The pod this environment is targeted to.
+	const Depend			targetPod
 
-	// TODO this should be a list
+	// TODO this should be a list?
 	** A map of dependent pods that have been resolved specifically for the 'targetPod'. 
 	const Str:PodFile		resolvedPods
 	
@@ -29,7 +29,7 @@ abstract const class FpmEnv : Env {
 
 	@NoDoc
 	new makeManual(FpmConfig fpmConfig, File[] f4PodFiles, |This|? in := null) : super.make(Env.cur) {
-		in?.call(this)	// can't do field null comparison without an it-block ctor
+		in?.call(this)	// let F4 set its own logger
 
 		title := "Fantom Pod Manager ${typeof.pod.version}"
 		if (log.isDebug) {
@@ -44,18 +44,15 @@ abstract const class FpmEnv : Env {
 		repositories := Repositories(fpmConfig.repositories).localOnly
 		
 		try {
-			podSatisfier	:= Satisfier {
-				it.log			= this.log
-				it.repositories	= repositories
+			targetPod	 := findTarget
+			podSatisfier := Satisfier(targetPod, repositories) {
+				it.log	= this.log
 			}
-			findTarget(podSatisfier)
 			podSatisfier.satisfyDependencies
 			
-			targetPod		= podSatisfier.targetPod ?: "???"
-			resolvedPods	= podSatisfier.resolvedPods
-			unresolvedPods	= podSatisfier.unresolvedPods
-			if (targetPod.endsWith(" 0"))
-				targetPod += "+"
+			this.targetPod		= podSatisfier.targetPod
+			this.resolvedPods	= podSatisfier.resolvedPods
+			this.unresolvedPods	= podSatisfier.unresolvedPods
 
 		} catch (UnknownPodErr err) {
 			// todo auto-download / install the pod dependency!??
@@ -68,11 +65,11 @@ abstract const class FpmEnv : Env {
 		} finally {
 			this.unresolvedPods	= this.unresolvedPods	!= null ? this.unresolvedPods	: [,]
 			this.resolvedPods	= this.resolvedPods		!= null ? this.resolvedPods		: [:]
-			this.targetPod		= this.targetPod		!= null ? this.targetPod		: "???"
+			this.targetPod		= this.targetPod		!= null ? this.targetPod		: Depend("??? 0")
 		}
 		
 		loggedLatest := false
-		if (targetPod == "???")
+		if (targetPod.name == "???")
 			if (!loggedLatest) {
 				loggedLatest = true
 				echo("FPM: Could not target pod - defaulting to latest pod versions")
@@ -88,7 +85,7 @@ abstract const class FpmEnv : Env {
 		
 		// ---- dump info to logs ----
 		
-		if (!targetPod.startsWith("afFpm"))
+		if (!targetPod.name.startsWith("afFpm"))
 			// if there's something wrong, then make sure the user sees the dump
 			if (error != null || unresolvedPods.size > 0)
 				log.info(dump)
@@ -147,10 +144,36 @@ abstract const class FpmEnv : Env {
 	}
 
 	@NoDoc
-	internal abstract Void findTarget(Satisfier satisfier)
+	abstract TargetPod findTarget()
 
 	** Dumps the FPM environment to a string. This includes the FPM Config and a list of resolved pods.
 	Str dump() {
 		Utils.dumpEnv(targetPod, resolvedPods.vals, fpmConfig)
+	}
+}
+
+@NoDoc
+const class TargetPod {
+	const Depend	pod
+	const Depend[]?	dependencies
+
+	new make(Depend pod, Depend[]? dependencies := null) {
+		this.pod			= pod
+		this.dependencies	= dependencies
+	}
+	
+	internal static new fromBuildPod(BuildPod buildPod) {
+		podName	:= buildPod.podName 
+		version	:= buildPod.version 
+		depends	:= buildPod.depends 
+		return TargetPod(Depend("$podName $version"), depends.map { Depend(it, false) }.exclude { it == null })
+	}
+	
+	Bool resolveDependencies() {
+		dependencies == null
+	}
+	
+	PodFile podFile() {
+		PodFile(pod.name, pod.version, dependencies, `targetpod:${pod.name}`, StubPodRepository.instance)
 	}
 }

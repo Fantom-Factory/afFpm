@@ -23,7 +23,7 @@ const class FpmEnvF4 : FpmEnv {
 
 	private new makeInternal(FpmConfig fpmConfig, |This| in) : super.makeManual(fpmConfig, File#.emptyList, in) { }
 
-	override internal Void findTarget(Satisfier satisfier) {
-		satisfier.setBuildTarget(name, version, depends)
+	override TargetPod findTarget() {
+		TargetPod(Depend("$name $version"), depends)
 	}
 }

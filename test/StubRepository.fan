@@ -18,9 +18,9 @@ const class StubRepository : Repository {
 		pods.findAll { it.fits(depend) }
 	}
 	
-	Void add(Str dependency, Str dependents) {
+	Void add(Str dependency, Str? dependents) {
 		pod 		:= Depend(dependency.replace("@", " "))
-		dependsOn	:= dependents.split(',').exclude { it.isEmpty }.map { Depend(it, true) }
+		dependsOn	:= dependents == null ? Depend#.emptyList : dependents.split(',').exclude { it.isEmpty }.map { Depend(it, true) }
 		pods.add(PodFile(pod.name, pod.version, dependsOn, `stub:${dependency}`, this))
 	}
 }
