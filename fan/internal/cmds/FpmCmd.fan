@@ -17,13 +17,6 @@ class FpmCmd {
 		// http://stackoverflow.com/a/24121322/1532548
 		return 64	/* command line usage error */
 	}
-	
-	private static Depend? parseTarget(Str arg) {
-		dep := arg.replace("@", " ")
-		if (!dep.contains(" "))
-			dep += " 0+"
-		return Depend(dep, true)
-	}
 }
 
 

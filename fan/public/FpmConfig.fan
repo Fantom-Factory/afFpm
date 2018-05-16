@@ -112,8 +112,8 @@ const class FpmConfig {
 
 		dirRepos := (Str:File) fpmProps.findAll |path, name| {
 			name.startsWith("dirRepo.")
-		}.reduce(Str:File[:] { ordered=true }) |Str:File repos, Str? path, key| {
-			path = path.trimToNull
+		}.keys.sort.reduce(Str:File[:] { ordered=true }) |Str:File repos, key| {
+			path := fpmProps[key].trimToNull
 			if (path == null) return repos	// allow config to be removed
 			name := key["dirRepo.".size..-1]
 			file := toRelDir(strInterpol(path.trim), baseDir)
@@ -123,8 +123,8 @@ const class FpmConfig {
 
 		fanrRepos := (Str:Uri) fpmProps.findAll |path, name| {
 			name.startsWith("fanrRepo.") && !name.endsWith(".username") && !name.endsWith(".password")
-		}.reduce(Str:Uri[:] { ordered=true }) |Str:Uri repos, Str? path, key| {
-			path = path.trimToNull
+		}.keys.sort.reduce(Str:Uri[:] { ordered=true }) |Str:Uri repos, key| {
+			path := fpmProps[key].trimToNull
 			if (path == null) return repos	// allow config to be removed
 			name := key["fanrRepo.".size..-1]
 			url  := Uri(path, false)
