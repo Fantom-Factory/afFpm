@@ -49,7 +49,7 @@ class BuildCmd : FpmCmd {
 			return 1
 		}
 
-		log.info("FPM: Building ${buildPod}")
+		log.info("FPM building ${buildPod}")
 
 		process := Process2(cmds)
 		process.mergeErr = false

@@ -13,7 +13,7 @@ class HelpCmd : FpmCmd {
 			logAvailableCmds
 			return 0
 		}
-		
+
 		cmdType := FpmEnv#.pod.type("${cmd.capitalize}Cmd", false)
 		if (cmdType == null) {
 			log.info("Unknown command: ${cmd}\n")
@@ -45,7 +45,7 @@ class HelpCmd : FpmCmd {
 //		log.info("")
 //		logCmdSynopsis(QueryCmd#)
 //		logCmdSynopsis(InstallCmd#)
-//		logCmdSynopsis(UninstallCmd#)
+//		logCmdSynopsis(DeleteCmd#)
 //		logCmdSynopsis(UpdateCmd#)
 		log.info("\nUsage:
 		            fpm <command> [options]")
