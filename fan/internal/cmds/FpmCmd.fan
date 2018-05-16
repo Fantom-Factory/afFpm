@@ -6,14 +6,23 @@ class FpmCmd {
 
 	Log log	:= FpmCmd#.pod.log
 	
-	FpmConfig fpmConfig := FpmConfig()	// TODO set this explicitly
+	FpmConfig fpmConfig
 	
 	@Opt { aliases=["d"]; help="Prints debug information" }
 	Bool debug
 
+	new make(|This| f) { f(this) }
+	
 	virtual Int run() {
 		// http://stackoverflow.com/a/24121322/1532548
 		return 64	/* command line usage error */
+	}
+	
+	private static Depend? parseTarget(Str arg) {
+		dep := arg.replace("@", " ")
+		if (!dep.contains(" "))
+			dep += " 0+"
+		return Depend(dep, true)
 	}
 }
 
