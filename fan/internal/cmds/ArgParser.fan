@@ -1,7 +1,9 @@
 
 internal class ArgParser {
 	
-	Obj parse(Str[] args, Type cmdType) {
+	Str:|Str->Obj?| resolveFns	:= Str:|Str->Obj?|[:]
+	
+	Field:Obj? parse(Str[] args, Type cmdType) {
 		
 		boolOpts	:= Field:Str[][:]
 		strOpts		:= Field:Str[][:]
@@ -28,6 +30,8 @@ internal class ArgParser {
 		}
 		
 		coerceVal := |Field field, Str arg -> Obj?| {
+			if (resolveFns.containsKey(field.name))
+				return resolveFns[field.name](arg)
 			method := field.parent.method("parse${field.name.capitalize}", false)
 			if (method != null && method.isStatic)
 				return method.call(arg)
@@ -78,7 +82,7 @@ internal class ArgParser {
 		if (argsField != null)
 			ctorData[argsField] = argsData.toImmutable
 		
-		return cmdType.make([Field.makeSetFunc(ctorData)])
+		return ctorData
 	}
 }
 

@@ -25,7 +25,7 @@ class RunCmd : FpmCmd {
 	@Arg { help="Arguments to pass to fan"}
 	Str[]?	args
 
-	new make(|This| f) { f(this) }
+	new make(|This| f) : super(f) { }
 	
 	override Int run() {		
 		if (pod == null) {
@@ -52,12 +52,5 @@ class RunCmd : FpmCmd {
 			process.env["FPM_TARGET"]	= target.toStr
 
 		return process.run.join
-	}
-	
-	private static Depend? parseTarget(Str arg) {
-		dep := arg.replace("@", " ")
-		if (!dep.contains(" "))
-			dep += " 0+"
-		return Depend(dep, true)
 	}
 }

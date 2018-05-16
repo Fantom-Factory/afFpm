@@ -2,6 +2,7 @@
 internal class TestArgParser : Test {
 	
 	Void testTarget() {
+		// TODO target
 		cmd := null as FpmArgs
 
 		cmd = parse("cmd".split)
@@ -21,8 +22,6 @@ internal class TestArgParser : Test {
 		
 		cmd = parse("cmd afIoc".split)
 		verifyEq(cmd.target, `/dir/`)
-		
-		
 	}
 	
 	Void testArgs() {
@@ -120,6 +119,38 @@ internal class TestArgParser : Test {
 	}
 
 	FpmArgs parse(Str[] args) {
-		ArgParser().parse(args, FpmArgs#)
+		fieldData	:= ArgParser().parse(args, FpmArgs#)
+		itBlock		:= Field.makeSetFunc(fieldData)
+		return FpmArgs#.make([itBlock])
 	}
 }
+
+internal const class FpmArgs {
+	
+	@Arg
+	const Str	cmd			:= ""
+	
+	@Arg
+	const Str	targetStr	:= ""		// file (.pod or .fan) / dir / fpmUri	
+	
+	@Arg
+	const Str[]	args		:= Str#.emptyList
+
+	@Opt { aliases=["r"] }
+	const Str	repo		:= ""		// named or a dir
+	
+	@Opt { aliases=["o"] }
+	const Bool	offline
+
+	@Opt { aliases=["d"] }
+	const Bool	debug
+
+	@Opt { aliases=["js"] }
+	const Bool	javascript
+
+	const Uri	target
+	
+	new make(|This| f) { f(this) }
+}
+
+
