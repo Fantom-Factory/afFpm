@@ -63,7 +63,6 @@ const class FpmConfig {
 	@NoDoc
 	static new makeFromDirs(File baseDir, File homeDir, Str? envPaths) {
 		baseDir = baseDir.normalize
-		echo(baseDir)
 		fpmFile := (File?) baseDir.plus(propsFilename).normalize
 		while (fpmFile != null && !fpmFile.exists)
 			fpmFile = fpmFile.parent.parent?.plus(propsFilename)
@@ -164,7 +163,16 @@ const class FpmConfig {
 		rawConfig := fpmProps.exclude |val, key| { key.endsWith(".username") || key.endsWith(".password") }
 		rawConfig = rawConfig.map |val, key| {
 			userInfo := Uri(val, false)?.userInfo
-			return userInfo != null ? val.replace("${userInfo}@", "") : val
+			if (userInfo == null)
+				return val
+
+			repoName := key["fanrRepo.".size..-1]
+			username := Uri.decodeToken(userInfo.split(':').getSafe(0) ?: "", Uri.sectionPath).trimToNull
+			password := Uri.decodeToken(userInfo.split(':').getSafe(1) ?: "", Uri.sectionPath).trimToNull
+			_rawConfig["fanrRepo.${repoName}.username"] = username
+			_rawConfig["fanrRepo.${repoName}.password"] = password
+
+			return val.replace("${userInfo}@", "")
 		}
 
 		both := dirRepos.keys.intersection(fanrRepos.keys)
@@ -191,29 +199,16 @@ const class FpmConfig {
 		this._rawConfig		= fpmProps
 	}
 
-//	internal static Repo toFanrRepo(Uri url, Str? usr := null, Str? pwd := null) {
-//		userStr	 := url.userInfo == null ? "" : url.userInfo + "@"
-//		repoUrl	 := url.toStr.replace(userStr, "").toUri
-//		// TODO do proper percent decoding - use URI.decode(xxx,xxx,xxx)
-//		username := Uri.decode(url.userInfo?.split(':')?.getSafe(0)?.replace("%40", "@") ?: "").toStr.trimToNull	// decode percent encoding
-//		password := Uri.decode(url.userInfo?.split(':')?.getSafe(1)?.replace("%40", "@") ?: "").toStr.trimToNull
-//		if (usr != null)	username = usr
-//		if (pwd != null)	password = pwd
-//		return Repo.makeForUri(repoUrl, username, password)
-//	}
-
 	** Returns a 'Repository' instance for the named repository. 
 	** 'repoName' may be either a 'dirRepo' or a 'fanrRepo'. 
-	Repository repository(Str repoName, Str? username := null, Str? password := null) {
+	Repository? repository(Str repoName, Bool checked := true) {
 		
 		if (dirRepos.containsKey(repoName))
 			return LocalDirRepository(repoName, dirRepos[repoName])
 		
 		if (fanrRepos.containsKey(repoName)) {
-			if (username == null)
-				username = _rawConfig["fanrRepo.${repoName}.username"]
-			if (password == null)
-				password = _rawConfig["fanrRepo.${repoName}.password"]
+			username := _rawConfig["fanrRepo.${repoName}.username"]
+			password := _rawConfig["fanrRepo.${repoName}.password"]
 			url := fanrRepos[repoName]
 			if (url.scheme == null   || url.scheme == "file")
 				return LocalFanrRepository(repoName, url.toFile)
@@ -221,7 +216,8 @@ const class FpmConfig {
 				return RemoteFanrRepository(repoName, url, username, password)
 			throw ArgErr("Unknown scheme '${url.scheme}' in $url")
 		}
-		
+
+		if (!checked) return null
 		allRepoNames := dirRepos.keys.addAll(fanrRepos.keys).sort
 		throw ArgErr("Cound not find repository with name '${repoName}'. Available repos: " + allRepoNames.join(","))
 	}

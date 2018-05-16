@@ -1,16 +1,17 @@
 
-const class FpmArgs {
+internal const class FpmArgs {
 	
 	@Arg
 	const Str	cmd			:= ""
 	
 	@Arg
-	const Str	targetStr	:= ""		// file (.pod or .fan) / dir / fpmUri	
+	const Str	targetStr	:= ""	
 	
-	const Str[]	args		:= Str[,]
+	@Arg
+	const Str[]	args		:= Str#.emptyList
 
 	@Opt { aliases=["r"] }
-	const Str	repo		:= ""		// named or a dir
+	const Str	repo		:= ""
 	
 	@Opt { aliases=["o"] }
 	const Bool	offline
@@ -22,31 +23,32 @@ const class FpmArgs {
 	const Bool	javascript
 
 	new make(|This| f) { f(this) }
-}
-
-
-facet class Arg {
-	** Usage help, should be a single short line summary
-	const Str help := ""
-}
-
-facet class Opt {
-	** Usage help, should be a single short line summary
-	const Str help := ""
 	
-	** Aliases for the option
-	const Str[] aliases := Str[,]
-}
-
-
-class PodManager {
-	
-	const FpmConfig fpmConfig
-	
-	new make(FpmConfig fpmConfig) {
-		this.fpmConfig = fpmConfig
+	Uri? target() {
+		
+		throw Err()
 	}
 	
+	Repository repository(FpmConfig fpmConfig) {
+		// default, named, or localDir
+		if (repo.isEmpty)
+			return fpmConfig.repository("default")
+
+		dir := toDir(repo)
+		if (dir != null)
+			return LocalDirRepository("dir", dir)
+
+		return fpmConfig.repository(repo, true)
+	}
 	
-	
+	private static File? toDir(Str dirPath) {
+		file := FileUtils.toFile(dirPath)
+		// trailing slashes aren't added to dir paths that don't exist
+		if (file.exists.not)
+			file = file.uri.plusSlash.toFile
+		if (file.isDir)
+			return file
+		return null
+	}
 }
+

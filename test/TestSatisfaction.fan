@@ -95,8 +95,6 @@ internal class TestSatisfaction : Test {
 	}
 
 	Void testPaths9() {
-//		this.typeof.pod.log.level = LogLevel.debug
-//		echo("###########")
 		// ensure we don't just return the first solution found, as it may not contain the latest versions 
 		addDep("afEgg 5.0", "afBed 0+")
 
