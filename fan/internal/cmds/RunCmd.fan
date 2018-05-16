@@ -42,7 +42,7 @@ class RunCmd : FpmCmd {
 			// FIXME run javascript
 //			cmds.insert(0, "compilerJs::NodeRunner blah blah blah")
 
-		log.info("FPM: Running " + cmds.join(" "))
+		log.info("FPM running " + cmds.join(" "))
 
 		process := ProcessFactory.fanProcess(cmds)
 		process.mergeErr = false

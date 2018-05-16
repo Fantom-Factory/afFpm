@@ -2,9 +2,10 @@
 internal class Main {
 	
 	Int main(Str[] args) {
-		fpmConfig := FpmConfig()
-		
-		cmdStr := args.first
+		args		= args.rw
+		fpmConfig	:= FpmConfig()
+
+		cmdStr		:= args.first
 		if (cmdStr == null)
 			cmdStr = "dump"
 
@@ -12,13 +13,10 @@ internal class Main {
 			cmdStr = "help"
 
 		cmdType := Main#.pod.type("${cmdStr.lower.capitalize}Cmd", false)
-		
-		args = args.rw
-		if (cmdType != null && args.size > 0)
-			args.removeAt(0)
-
 		if (cmdType == null)
 			cmdType = HelpCmd#
+		else if (args.size > 0)
+			args.removeAt(0)
 		
 		ctorData := ArgParser() {
 			it.resolveFns["repo"]	= |Str arg->Obj?| { parseRepository(arg, fpmConfig) }
