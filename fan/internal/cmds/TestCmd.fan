@@ -1,33 +1,33 @@
 
-** Runs a Fantom application.
+** Tests a Fantom application.
 ** 
-** Executes a pod / method, within an FPM environment.
+** Executes tests via 'fant' within an FPM environment.
 ** 
-** The target environment is taken to be the containing pod of the executed method.
+** The target environment is taken to be the containing pod of the executed test.
 ** It may be explicitly overridden using the '-target' option.
 ** 
 ** Examples:
-**   C:\> fpm run myPod
-**   C:\> fpm run -js -target myPod2 myPod::MyClass
+**   C:\> fpm test myPod
+**   C:\> fpm test -js -target myPod myPod::TestClass
 ** 
 @NoDoc	// Fandoc is only saved for public classes
-class RunCmd : FpmCmd {
-	
-	@Opt { aliases=["t"]; help="The target pod; maybe used when running scripts" }
+class TestCmd : FpmCmd {
+
+	@Opt { aliases=["t"]; help="The target pod" }
 	Depend?	target
 
 	@Opt { aliases=["js"]; help="Run in Javascript environment (requies NodeJs)" }
 	Bool	javascript
 
-	@Arg { help="The Fantom pod / class / method to run"}
+	@Arg { help="The Fantom pod / class / method to test"}
 	Str?	pod
 
-	@Arg { help="Arguments to pass to fan"}
+	@Arg { help="Arguments to pass to fant"}
 	Str[]?	args
-
+	
 	new make(|This| f) : super(f) { }
 	
-	override Int run() {		
+	override Int run() {
 		if (pod == null) {
 			log.warn("Run what!?")
 			return invalidArgs
@@ -42,9 +42,9 @@ class RunCmd : FpmCmd {
 			// FIXME run javascript
 //			cmds.insert(0, "compilerJs::NodeRunner blah blah blah")
 
-		log.info("FPM: Running " + cmds.join(" "))
-
-		process := ProcessFactory.fanProcess(cmds)
+		log.info("FPM: Testing " + cmds.join(" "))
+		
+		process := ProcessFactory.fantProcess(cmds)
 		process.mergeErr = false
 		process.env["FAN_ENV"]		= FpmEnv#.qname
 		process.env["FPM_DEBUG"]	= debug.toStr

@@ -2,10 +2,12 @@
 internal class Main {
 	
 	Int main(Str[] args) {
-		
 		fpmConfig := FpmConfig()
 		
 		cmdStr := args.first
+		if (cmdStr == null)
+			cmdStr = "dump"
+
 		if (cmdStr == null || "\\? -? -h -help --help".split.contains(cmdStr))
 			cmdStr = "help"
 
@@ -30,7 +32,6 @@ internal class Main {
 		return cmd.run	
 	}
 
-	
 	private static Depend? parseTarget(Str arg) {
 		dep := arg.replace("@", " ")
 		if (!dep.contains(" "))
@@ -60,4 +61,3 @@ internal class Main {
 		return null
 	}
 }
-
