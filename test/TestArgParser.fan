@@ -148,7 +148,7 @@ internal const class FpmArgs {
 	@Opt { aliases=["js"] }
 	const Bool	javascript
 
-	const Uri	target
+	const Uri?	target
 	
 	new make(|This| f) { f(this) }
 }

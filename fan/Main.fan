@@ -8,17 +8,18 @@ internal class Main {
 		if (cmdStr == null)
 			cmdStr = "dump"
 
-		if (cmdStr == null || "\\? -? -h -help --help".split.contains(cmdStr))
+		if ("\\? -? -h -help --help".split.contains(cmdStr))
 			cmdStr = "help"
 
-		cmdType := Main#.pod.type("${cmdStr.lower.capitalize}Cmd", false) ?: HelpCmd#
-		
-		// todo call HelpCmd explicitly
+		cmdType := Main#.pod.type("${cmdStr.lower.capitalize}Cmd", false)
 		
 		args = args.rw
-		if (args.size > 0)
+		if (cmdType != null && args.size > 0)
 			args.removeAt(0)
 
+		if (cmdType == null)
+			cmdType = HelpCmd#
+		
 		ctorData := ArgParser() {
 			it.resolveFns["repo"]	= |Str arg->Obj?| { parseRepository(arg, fpmConfig) }
 			it.resolveFns["target"]	= |Str arg->Obj?| { parseTarget(arg) }
