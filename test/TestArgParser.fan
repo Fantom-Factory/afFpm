@@ -1,19 +1,43 @@
 
 internal class TestArgParser : Test {
 	
+	Void testTarget() {
+		cmd := null as FpmArgs
+
+		cmd = parse("cmd".split)
+		verifyEq(cmd.target, null)
+		
+		cmd = parse("cmd ioc.pod".split)
+		verifyEq(cmd.target, `ioc.pod`.toFile.normalize.uri)
+		
+		cmd = parse("cmd C:/ioc.pod".split)
+		verifyEq(cmd.target, `/ioc.pod`.toFile.normalize.uri)
+		
+		cmd = parse("cmd dir/".split)
+		verifyEq(cmd.target, `dir/`.toFile.normalize.uri)
+		
+		cmd = parse("cmd C:/dir/".split)
+		verifyEq(cmd.target, `/dir/`.toFile.normalize.uri)
+		
+		cmd = parse("cmd afIoc".split)
+		verifyEq(cmd.target, `/dir/`)
+		
+		
+	}
+	
 	Void testArgs() {
 		cmd := null as FpmArgs
-		
+
 		cmd = parse("".split)
 		verifyEq(cmd.cmd, 		"")
 		verifyEq(cmd.targetStr, "")
 		verifyEq(cmd.args,		Str[,])
-		
+
 		cmd = parse("cmd".split)
 		verifyEq(cmd.cmd, 		"cmd")
 		verifyEq(cmd.targetStr, "")
 		verifyEq(cmd.args,		Str[,])
-		
+
 		cmd = parse("cmd target".split)
 		verifyEq(cmd.cmd, 		"cmd")
 		verifyEq(cmd.targetStr, "target")
@@ -38,13 +62,13 @@ internal class TestArgParser : Test {
 		verifyEq(cmd.offline, 		false)
 		verifyEq(cmd.debug,			false)
 		verifyEq(cmd.javascript,	false)
-		
+
 		cmd = parse("-d".split)
 		verifyEq(cmd.repo, 			"")
 		verifyEq(cmd.offline, 		false)
 		verifyEq(cmd.debug,			true)
 		verifyEq(cmd.javascript,	false)
-		
+
 		cmd = parse("--debug".split)
 		verifyEq(cmd.repo, 			"")
 		verifyEq(cmd.offline, 		false)

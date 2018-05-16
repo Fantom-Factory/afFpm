@@ -9,7 +9,7 @@ const class FpmEnvF4 : FpmEnv {
 	static new make(FpmConfig fpmConfig, |This| in) {
 		try {
 			if (Env.cur.vars["FPM_DEBUG"]?.trimToNull == "true")
-				Log.get("afFpm").level = LogLevel.debug
+				FpmEnv#.pod.log.level = LogLevel.debug
 
 			return FpmEnvF4.makeInternal(fpmConfig, in)
 			

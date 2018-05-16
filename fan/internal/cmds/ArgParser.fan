@@ -6,7 +6,8 @@ internal class ArgParser {
 		boolOpts	:= Field:Str[][:]
 		strOpts		:= Field:Str[][:]
 		argFields	:= Field[,]
-		argsField	:= Str[,]
+		argsField	:= null as Field
+		argsData	:= Str[,]
 		ctorData	:= Field:Obj?[:]
 		
 		cmdType.fields.each |field| {
@@ -18,8 +19,21 @@ internal class ArgParser {
 				opt := (Opt) field.facet(Opt#)
 				strOpts[field] = ["--$field.name"].addAll( opt.aliases.map { "-$it" } )
 			}
-			if (field.hasFacet(Arg#))
-				argFields.add(field)
+			if (field.hasFacet(Arg#)) {
+				if (field.type.fits(Str[]#))
+					argsField = field
+				else
+					argFields.add(field)
+			}
+		}
+		
+		coerceVal := |Field field, Str arg -> Obj?| {
+			method := field.parent.method("parse${field.name.capitalize}", false)
+			if (method != null && method.isStatic)
+				return method.call(arg)
+			if (field.type.fits(Str#))
+				return arg
+			return field.type.method("fromStr").call(arg)
 		}
 		
 		consume := null as Field
@@ -28,7 +42,7 @@ internal class ArgParser {
 			
 			if (match == null)
 				if (consume != null) {
-					ctorData[consume] = arg
+					ctorData[consume] = coerceVal(consume, arg)
 					consume = null
 					match = true
 				}
@@ -53,16 +67,30 @@ internal class ArgParser {
 
 			if (match == null) {
 				if (argFields.isEmpty)
-					argsField.add(arg)
+					argsData.add(arg)
 				else {
 					field := argFields.removeAt(0)
-					ctorData[field] = arg
+					ctorData[field] = coerceVal(field, arg)
 				}
 			}
 		}
 		
-		ctorData[cmdType.field("args")] = argsField
+		if (argsField != null)
+			ctorData[argsField] = argsData.toImmutable
 		
 		return cmdType.make([Field.makeSetFunc(ctorData)])
 	}
+}
+
+internal facet class Arg {
+	** Usage help, should be a single short line summary
+	const Str help := ""
+}
+
+internal facet class Opt {
+	** Usage help, should be a single short line summary
+	const Str help := ""
+	
+	** Aliases for the option
+	const Str[] aliases := Str[,]
 }
