@@ -131,10 +131,16 @@ const class FpmConfig {
 
 			if (url?.scheme != "http" && url?.scheme != "https")
 				url = toRelDir(path, baseDir).uri
-			else 
-				// FIXME add username + password to fpmProps
-				if (url.userInfo != null)
-					url	= url.toStr.replace("${url.userInfo}@", "").toUri
+			else
+				if (url.userInfo != null) {
+					userInfo := url.userInfo.split(':')
+					repoName := key["fanrRepo.".size..-1]
+					username := Uri.decodeToken(userInfo.getSafe(0) ?: "", Uri.sectionPath).trimToNull
+					password := Uri.decodeToken(userInfo.getSafe(1) ?: "", Uri.sectionPath).trimToNull
+					fpmProps["fanrRepo.${repoName}.username"] = username
+					fpmProps["fanrRepo.${repoName}.password"] = password
+					url		= url.toStr.replace("${url.userInfo}@", "").toUri
+				}
 			repos[name] = url
 			return repos
 		}
@@ -163,16 +169,7 @@ const class FpmConfig {
 		rawConfig := fpmProps.exclude |val, key| { key.endsWith(".username") || key.endsWith(".password") }
 		rawConfig = rawConfig.map |val, key| {
 			userInfo := Uri(val, false)?.userInfo
-			if (userInfo == null)
-				return val
-
-			repoName := key["fanrRepo.".size..-1]
-			username := Uri.decodeToken(userInfo.split(':').getSafe(0) ?: "", Uri.sectionPath).trimToNull
-			password := Uri.decodeToken(userInfo.split(':').getSafe(1) ?: "", Uri.sectionPath).trimToNull
-			_rawConfig["fanrRepo.${repoName}.username"] = username
-			_rawConfig["fanrRepo.${repoName}.password"] = password
-
-			return val.replace("${userInfo}@", "")
+			return userInfo == null ? val : val.replace("${userInfo}@", "")
 		}
 
 		both := dirRepos.keys.intersection(fanrRepos.keys)
