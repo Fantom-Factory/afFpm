@@ -25,7 +25,7 @@ internal class Repositories {
 
 	** Called by Satisfier
 	PodFile[] resolve(Depend dependency, Str:Obj? options) {
-		isLocal		// this saves ~40 ms and ~700 invocations on cwApp
+		isLocal		// this saves ~40 ms and ~70 vs ~700 invocations on cwApp
 			? doResolve(dependency, options)
 			: cash.getOrAdd(dependency) |->PodFile[]| {
 				
