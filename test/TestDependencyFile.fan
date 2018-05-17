@@ -128,7 +128,7 @@ satisfyDependencies("afApp 0.2.0.225")
 	
 	private Void satisfyDependencies(Str pod) {		
 		target := Depend(pod)
-		satisfier = Satisfier(TargetPod(target), Repositories([repository]))
+		satisfier = Satisfier(TargetPod(target), Repositories([repository]), [:])
 		satisfier.satisfyDependencies
 	}
 }

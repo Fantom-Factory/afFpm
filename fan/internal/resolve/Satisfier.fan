@@ -8,17 +8,19 @@ internal class Satisfier {
 	private	Repositories	repositories
 	private PodNode[]		initNodes		:= PodNode[,]
 	private Str:PodNode		allNodes		:= Str:PodNode[:] { it.ordered = true }
+	private Str:Obj?		resolveOptions
 	private	Duration		startTime		:= Duration.now
 
-	new make(TargetPod target, Repositories	repositories, |This|? f := null) {
+	new make(TargetPod target, Repositories	repositories, Str:Obj? resolveOptions, |This|? f := null) {
 		f?.call(this)
 		
 		this.targetPod		= target.pod
 		this.repositories	= repositories
+		this.resolveOptions	= resolveOptions
 		
 		// check the build dependencies exist
 		target.dependencies?.each {
-			if (repositories.resolve(it).isEmpty)
+			if (repositories.resolve(it, resolveOptions).isEmpty)
 				throw UnknownPodErr("Could not resolve dependent pod: ${it}")
 		}
 		
@@ -180,9 +182,7 @@ internal class Satisfier {
 	}
 	
 	private Void writeTraceFile() {
-		file := `fpm-trace-deps.txt`.toFile
-		log.debug("Writing dependency trace file: $file.normalize.osPath")
-
+		file	:= `fpm-trace-deps.txt`.toFile
 		out  	:= file.out
 		allPods := (PodFile[]) allNodes.vals.map { it.podVersions }.flatten.sort
 
@@ -196,6 +196,7 @@ internal class Satisfier {
 		out.printLine("satisfyDependencies(" + initPods.join(", ") { it.depend.toStr }.toCode + ")")
 
 		out.flush.close
+		log.debug("Wrote dependency trace file: $file.normalize.osPath")
 	}
 	
 	private UnresolvedPod[]? logErr(PodConstraint[] unsat) {
@@ -263,7 +264,7 @@ internal class Satisfier {
 	private PodNode resolveNode(Depend dependency) {
 		allNodes.getOrAdd(dependency.name) {
 			PodNode { it.name = dependency.name }
-		}.addPodVersions(repositories.resolve(dependency))
+		}.addPodVersions(repositories.resolve(dependency, resolveOptions))
 	}
 	
 	private static Str s(Int size) {
@@ -300,8 +301,20 @@ internal class PodNode {
 		pods.each |pod| {
 			// don't use contains() or compare the URL, because the same version pod may come from different sources
 			// and we only need the one!
-			if (!podVersions.any { it.fits(pod.depend) })
+			existing := podVersions.find { it.fits(pod.depend) }
+			if (existing != null) {
+				// replace remote pods with local versions
+				if (existing.repository.isRemote && pod.repository.isLocal) {
+					idx := podVersions.index(existing)
+					podVersions[idx] = pod
+				}
+					
+			} else
 				podVersions.add(pod)
+
+//			if (!podVersions.any { it.fits(pod.depend) })
+//				podVersions.add(pod)
+
 		}		
 		podVersions.sortr
 		return this

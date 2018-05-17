@@ -1,7 +1,7 @@
 
 internal class ArgParser {
 	
-	Str:|Str->Obj?| resolveFns	:= Str:|Str->Obj?|[:]
+	Str:|Field,Str->Obj?| resolveFns	:= Str:|Field,Str->Obj?|[:]
 	
 	Field:Obj? parse(Str[] args, Type cmdType) {
 		
@@ -31,7 +31,7 @@ internal class ArgParser {
 		
 		coerceVal := |Field field, Str arg -> Obj?| {
 			if (resolveFns.containsKey(field.name))
-				return resolveFns[field.name](arg)
+				return resolveFns[field.name](field, arg)
 			method := field.parent.method("parse${field.name.capitalize}", false)
 			if (method != null && method.isStatic)
 				return method.call(arg)

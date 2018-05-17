@@ -8,13 +8,13 @@ const class StubRepository : Repository {
 	override const Uri	url		:= `stubrepo`
 	override const Bool	isLocal	:= true
 	
-	internal override File download		(PodFile podFile)	{ Buf().toFile(podFile.url) }
-	internal override Void upload		(PodFile podFile)	{ throw UnsupportedErr() }
-	internal override Void delete		(PodFile podFile)	{ throw UnsupportedErr() }
+	override File download		(PodFile podFile)	{ Buf().toFile(podFile.url) }
+	override Void upload		(PodFile podFile)	{ throw UnsupportedErr() }
+	override Void delete		(PodFile podFile)	{ throw UnsupportedErr() }
 	
 	override PodFile[]	resolveAll() { pods }
 	
-	internal override PodFile[]	resolve	(Depend depend) 	{
+	override PodFile[]	resolve	(Depend depend, Str:Obj? options) {
 		pods.findAll { it.fits(depend) }
 	}
 	

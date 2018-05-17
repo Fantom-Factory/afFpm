@@ -19,8 +19,8 @@ internal class Main {
 			args.removeAt(0)
 		
 		ctorData := ArgParser() {
-			it.resolveFns["repo"]	= |Str arg->Obj?| { parseRepository(arg, fpmConfig) }
-			it.resolveFns["target"]	= |Str arg->Obj?| { parseTarget(arg) }
+			it.resolveFns["repo"]	= |Field field, Str arg->Obj?| { parseRepo(field, arg, fpmConfig) }
+			it.resolveFns["target"]	= |Field field, Str arg->Obj?| { parseTarget(field, arg) }
 		}.parse(args, cmdType) {
 			it[FpmCmd#log]			= StdLogger()
 			it[FpmCmd#fpmConfig]	= fpmConfig
@@ -31,23 +31,27 @@ internal class Main {
 		return cmd.run	
 	}
 
-	private static Depend? parseTarget(Str arg) {
+	private static Depend? parseTarget(Field field, Str arg) {
 		dep := arg.replace("@", " ")
 		if (!dep.contains(" "))
 			dep += " 0+"
 		return Depend(dep, true)
 	}
 
-	private static Repository parseRepository(Str repo, FpmConfig fpmConfig) {
+	private static Repository? parseRepo(Field field, Str repo, FpmConfig fpmConfig) {
 		// default, named, or localDir
 		if (repo.isEmpty)
-			return fpmConfig.repository("default")
+			return field.type.isNullable ? null : fpmConfig.repository("default")
 
+		fpmRepo := fpmConfig.repository(repo, false)
+		if (fpmRepo != null)
+			return fpmRepo
+		
 		dir := toDir(repo)
 		if (dir != null)
 			return LocalDirRepository("dir", dir)
 
-		return fpmConfig.repository(repo, true)
+		throw ArgErr("Repository not found: $repo")
 	}
 	
 	private static File? toDir(Str dirPath) {
@@ -57,6 +61,7 @@ internal class Main {
 			file = file.uri.plusSlash.toFile
 		if (file.isDir)
 			return file
+		// todo does this ever return null?
 		return null
 	}
 }
