@@ -33,7 +33,7 @@ internal const class LocalDirRepository : Repository {
 		dir.listFiles(Regex.glob("*.pod")).map { getOrMake(it) }.exclude { it == null }
 	}
 
-	override PodFile[] resolve(Depend depend) {
+	override PodFile[] resolve(Depend depend, Str:Obj? options) {
 		file 	:= dir.plus(`${depend.name}.pod`)
 		podFile	:= getOrMake(file)
 

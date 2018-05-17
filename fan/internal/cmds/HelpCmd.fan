@@ -64,7 +64,7 @@ class HelpCmd : FpmCmd {
 	** Print usage of arguments and options.
 	private Int usage(Str cmd, Type cmdType) {
 		// get list of argument fields
-		args := cmdType.fields.findAll |f| { f.hasFacet(Arg#) }
+		args := cmdType.fields.findAll |f| { f.hasFacet(Arg#) }.exclude { it.hasFacet(NoDoc#) }
 
 		// get list of all documented options
 		opts := cmdType.fields.findAll |f| { f.hasFacet(Opt#) }.exclude { it.hasFacet(NoDoc#) }

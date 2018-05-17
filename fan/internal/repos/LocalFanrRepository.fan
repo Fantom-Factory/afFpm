@@ -33,7 +33,7 @@ internal const class LocalFanrRepository : Repository {
 		download(podFile).delete
 	}
 
-	override PodFile[] resolve(Depend depend) {
+	override PodFile[] resolve(Depend depend, Str:Obj? options) {
 		podNames := (PodName[]) nameCache.getOrAdd(depend.name) |->PodName[]| {
 			podDir := dir.plus(depend.name.toUri.plusSlash, true)
 			return podDir.listFiles(podRegex).map |file->PodName?| { PodName(file) }.exclude { it == null }

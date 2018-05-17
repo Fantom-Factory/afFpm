@@ -2,14 +2,11 @@ using fanr::Repo
 using fanr::PodSpec
 
 internal const class RemoteFanrRepository : Repository {
+	private  const CorePods	corePods	:= CorePods()
+	private	 const Repo		repo
 	override const Str		name
 	override const Uri		url
 	override const Bool		isLocal		:= false
-	private  const CorePods	corePods	:= CorePods()
-	private  const Bool		queryCore			// get from Env vars?
-	private	 const Repo		repo
-	private	 const Log		log			:= typeof.pod.log
-	private	 const Int		numVersions	:= 5	// get from Env vars?
 
 	new make(Str name, Uri url, Str? username, Str? password) {
 		this.name	= name
@@ -28,13 +25,17 @@ internal const class RemoteFanrRepository : Repository {
 	
 	override Void delete(PodFile podFile) { throw UnsupportedErr() }
 
-	override PodFile[] resolve(Depend depend) {
-		if (!queryCore && corePods.isCorePod(depend.name))
+	override PodFile[] resolve(Depend depend, Str:Obj? options) {
+		noCore  := (Bool) options.get("noCore",  false) 
+		maxPods := (Int ) options.get("maxPods", 5)
+		log     := (Log?) options.get("log")
+
+		if (noCore && corePods.isCorePod(depend.name))
 			return PodFile#.emptyList
 
-		log.info("Querying ${name} for ${depend}")
-//		log.info("Querying ${repoName} for ${dependency}" + ((latest == null) ? "" : " ( > $latest.version)"))
-		specs := repo.query(depend.toStr, numVersions)
+		log?.info("Querying ${name} for ${depend}")
+//		log?.info("Querying ${repoName} for ${dependency}" + ((latest == null) ? "" : " ( > $latest.version)"))
+		specs := repo.query(depend.toStr, maxPods)
 		files  := specs
 //			.findAll |PodSpec spec->Bool| {
 //				(latest == null) ? true : spec.version > latest.version
@@ -44,7 +45,7 @@ internal const class RemoteFanrRepository : Repository {
 			}.sort as PodFile[]
 
 		if (files.size > 0)
-			log.info("Found ${depend.name} " + files.join(", ") { it.version.toStr })
+			log?.info("Found ${depend.name} " + files.join(", ") { it.version.toStr })
 
 		return files
 	}

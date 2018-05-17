@@ -45,7 +45,7 @@ abstract const class FpmEnv : Env {
 		
 		try {
 			targetPod	 := findTarget
-			podSatisfier := Satisfier(targetPod, repositories) {
+			podSatisfier := Satisfier(targetPod, repositories, [:]) {
 				it.log	= this.log
 			}
 			podSatisfier.satisfyDependencies
