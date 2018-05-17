@@ -43,7 +43,7 @@ internal class Main {
 		if (repo.isEmpty)
 			return field.type.isNullable ? null : fpmConfig.repository("default")
 
-		fpmRepo := fpmConfig.repository(repo, false)
+		fpmRepo := fpmConfig.repository(repo)
 		if (fpmRepo != null)
 			return fpmRepo
 		

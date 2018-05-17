@@ -19,7 +19,6 @@ using fanr
 ** 
 const class FpmConfig {
 	private static const Uri 	propsFilename := `fpm2.props`
-	private static const Log 	log := FpmConfig#.pod.log
 
 	** The directory used to resolve relative files.
 	const File 		baseDir
@@ -198,14 +197,16 @@ const class FpmConfig {
 
 	** Returns a 'Repository' instance for the named repository. 
 	** 'repoName' may be either a 'dirRepo' or a 'fanrRepo'. 
-	Repository? repository(Str repoName, Bool checked := true) {
+	Repository? repository(Str repoName, Str? username := null, Str? password := null) {
 		
 		if (dirRepos.containsKey(repoName))
 			return LocalDirRepository(repoName, dirRepos[repoName])
 		
 		if (fanrRepos.containsKey(repoName)) {
-			username := _rawConfig["fanrRepo.${repoName}.username"]
-			password := _rawConfig["fanrRepo.${repoName}.password"]
+			if (username != null)
+				username = _rawConfig["fanrRepo.${repoName}.username"]
+			if (password != null)
+				password = _rawConfig["fanrRepo.${repoName}.password"]
 			url := fanrRepos[repoName]
 			if (url.scheme == null   || url.scheme == "file")
 				return LocalFanrRepository(repoName, url.toFile)
@@ -214,9 +215,7 @@ const class FpmConfig {
 			throw ArgErr("Unknown scheme '${url.scheme}' in $url")
 		}
 
-		if (!checked) return null
-		allRepoNames := dirRepos.keys.addAll(fanrRepos.keys).sort
-		throw ArgErr("Cound not find repository with name '${repoName}'. Available repos: " + allRepoNames.join(","))
+		return null
 	}
 	
 	** Returns a list of all repositories.
