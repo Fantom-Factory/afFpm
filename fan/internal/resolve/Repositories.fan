@@ -1,4 +1,48 @@
 
+
+internal class RepoMan {
+
+	Int		maxPods		:= 5
+	Bool	corePods	:= true
+	Log		log			:= FpmEnv#.pod.log
+
+	private Repositories repositories
+	
+	new make(Repository[] repositories) {
+		this.repositories = Repositories(repositories)
+	}
+	
+	This localOnly() {
+		repositories.localOnly
+		return this
+	}
+	
+	This remoteOnly() {
+		repositories.remoteOnly
+		return this
+	}
+	
+	PodFile[] resolve(Depend depend) {
+
+		repositories.resolve(depend, resolveOptions)
+		
+		
+//		satisfier := Satisfier(TargetPod(depend), repositories, resolveOptions) { it.log = this.log }
+//		satisfier.satisfyDependencies
+		
+	}
+	
+	Str:Obj? resolveOptions() {
+		Str:Obj?[
+			"maxPods"	: maxPods,
+			"corePods"	: corePods,
+			"log"		: log
+		]
+	}
+}
+
+
+// TODO rename to Resolver
 internal class Repositories {
 	private Repository[]		repositories
 	private Depend:PodFile[]	cash		:= Depend:PodFile[][:]
@@ -14,7 +58,13 @@ internal class Repositories {
 		return this
 	}
 	
-	Str:PodFile resolveAll() {
+	This remoteOnly() {
+		repositories = repositories.findAll { it.isRemote }
+		isLocal = false
+		return this
+	}
+	
+	internal Str:PodFile resolveAll() {
 		pods := Str:PodFile[:]
 		repositories.map { it.resolveAll }.flatten.each |PodFile pod| {
 			if (!pods.containsKey(pod.name) || pods[pod.name].version <= pod.version)
@@ -44,6 +94,24 @@ internal class Repositories {
 	}
 	
 	private PodFile[] doResolve(Depend dependency, Str:Obj? options) {
-		repositories.map { it.resolve(dependency, options) }.flatten
+		podVers := PodFile[,]
+		repositories.each {
+			pods := it.resolve(dependency, options)
+			pods.each |pod| {
+				// don't use contains() or compare the URL, because the same version pod may come from different sources
+				// and we only need the one!
+				existing := podVers.find { it.fits(pod.depend) }
+				if (existing == null)
+					podVers.add(pod)
+				else {
+					// replace remote pods with local versions
+					if (existing.repository.isRemote && pod.repository.isLocal) {
+						idx := podVers.index(existing)
+						podVers[idx] = pod
+					}
+				}
+			}
+		}
+		return podVers.sortr
 	}
 }

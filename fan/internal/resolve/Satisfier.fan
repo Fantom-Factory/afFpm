@@ -296,26 +296,24 @@ internal class PodNode {
 	
 	This addPodVersions(PodFile[] pods) {
 		if (podVersions == null)
-			podVersions = PodFile[,]
-		
-		pods.each |pod| {
-			// don't use contains() or compare the URL, because the same version pod may come from different sources
-			// and we only need the one!
-			existing := podVersions.find { it.fits(pod.depend) }
-			if (existing != null) {
-				// replace remote pods with local versions
-				if (existing.repository.isRemote && pod.repository.isLocal) {
-					idx := podVersions.index(existing)
-					podVersions[idx] = pod
+			podVersions = pods
+		else {
+			pods.each |pod| {
+				// don't use contains() or compare the URL, because the same version pod may come from different sources
+				// and we only need the one!
+				existing := podVersions.find { it.fits(pod.depend) }
+				if (existing == null)
+					podVersions.add(pod)
+				else {
+					// replace remote pods with local versions
+					if (existing.repository.isRemote && pod.repository.isLocal) {
+						idx := podVersions.index(existing)
+						podVersions[idx] = pod
+					}
 				}
-					
-			} else
-				podVersions.add(pod)
-
-//			if (!podVersions.any { it.fits(pod.depend) })
-//				podVersions.add(pod)
-
-		}		
+			}
+			
+		}
 		podVersions.sortr
 		return this
 	}

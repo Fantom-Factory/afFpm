@@ -26,11 +26,11 @@ internal const class RemoteFanrRepository : Repository {
 	override Void delete(PodFile podFile) { throw UnsupportedErr() }
 
 	override PodFile[] resolve(Depend depend, Str:Obj? options) {
-		noCore  := (Bool) options.get("noCore",  false) 
-		maxPods := (Int ) options.get("maxPods", 5)
-		log     := (Log?) options.get("log")
+		corePods := (Bool) options.get("corePods",  false) 
+		maxPods	 := (Int ) options.get("maxPods", 5)
+		log		 := (Log?) options.get("log")
 
-		if (noCore && corePods.isCorePod(depend.name))
+		if (!corePods && this.corePods.isCorePod(depend.name))
 			return PodFile#.emptyList
 
 		log?.info("Querying ${name} for ${depend}")
