@@ -42,51 +42,78 @@ class InstallCmd : FpmCmd {
 	Str? password
 	
 	@Arg { help="location or query for pod" }
-	Str pod
+	Str? pod
 
-	new make(|This| f) : super(f) { }
+	new make(|This| f) : super(f) {
+		if (repo == null) repo = fpmConfig.repository("default")
+		
+		// set any given credentials
+		if (username != null || password != null)
+			repo = fpmConfig.repository(repo.name, username, password)
+		
+		if (pod == null)
+			pod = "build.fan"
+	}
 
 	override Int run() {
 		log.info("FPM installing ${pod}")
 
-		// FIXME don't allow local repo dirs or remote repo URLs, only allow "named" repos - then a local dir can be used to collate pods into the one place
+		resolver := Resolver(fpmConfig.repositories { remove(repo) })
+		resolver.maxPods	= 1
+		resolver.corePods	= core
+		resolver.log		= log
 		
 		file := FileUtils.toFile(pod)
 		if (file.exists) {
-			if (file.isDir) {
-				// FIXME publish a dir of pods!
-//				podManager.publishPods(file, repo, username, password)
-			} else
-				// FIXME check this file is a pod!
+			
+			// install a single pod
+			if (file.ext == "pod") {
 				SinglePodRepository(file).podFile.installTo(repo)
-			return 0
-		}
+				return 0
+			}
+			
+			// update a build file
+			if (file.ext == "fan" && file.basename == "build") {
+				buildPod := BuildPod(file.name)
 
-//		if (pod == null || pod.endsWith(".fan")) {
-//			// TODO parse script for "using" statements and update those
-//			buildPod := BuildPod(pod ?: "build.fan")
-//			if (buildPod.errMsg != null) {
-//				log.err("Could not find / load 'build.fan'")
-//				return 101
-//			}
-//			podDepends.setBuildTargetFromBuildPod(buildPod, false)
-//		}	
-		
-		repos := Resolver(fpmConfig.repositories)
-		repos.maxPods	= 1
-		repos.corePods	= core
-		repos.log		= log
+				if (buildPod.errMsg != null) {
+					// TODO parse fan scripts for "using" statements and update those
+					log.err(buildPod.errMsg)
+					return invalidArgs
+				}
+
+				// update
+				pods := resolver.satisfyBuild(buildPod).findAll { it.repository.isRemote }
+				pods.each |p| {
+					log.info("Downloading ${p.depend} from ${p.repository.name} (${p.repository.url})")
+					p.installTo(repo)
+				}
+				return 0
+			}
+			
+			
+			// install a directory of pods
+			if (file.isDir) {
+				pods := file.listFiles(Regex.glob("*.pod"))
+				pods.each |pod| {
+					SinglePodRepository(pod).podFile.installTo(repo)
+				}
+				if (pods.isEmpty)
+					log.warn("No pods found in: $file.normalize.osPath")
+				return 0
+			}
+
+			throw Err("Only pods (or a directory of pods) may be installed")
+		}
 		
 		// if the dest repo is remote... 
 		//    ...query the local repos and publish to the remote
 		if (repo.isRemote) {
-			repos.localOnly
-			pods := repos.resolve(parseTarget(pod))
+			resolver.localOnly
+			pods := resolver.resolve(parseTarget(pod))
 			if (pods.isEmpty)
 				throw Err("Could not find pod: ${pod}")
 
-			// set any given credentials
-			repo = fpmConfig.repository(repo.name, username, password)
 			pods.first.installTo(repo)
 			return 0
 		}
@@ -94,8 +121,7 @@ class InstallCmd : FpmCmd {
 		// if the dest repo is local... (which it must be)
 		//    ...query the remote repos and publish to the local
 		if (repo.isLocal) {
-			repos.remoteOnly
-			newPod := repos.resolve(parseTarget(pod)).first
+			newPod := resolver.resolve(parseTarget(pod)).first
 			if (newPod == null)
 				throw Err("Could not find pod: ${newPod}")
 
@@ -103,7 +129,7 @@ class InstallCmd : FpmCmd {
 			newPod.installTo(repo)
 
 			// update
-			pods := repos.satisfy(parseTarget(pod)).findAll { it.repository.isRemote }
+			pods := resolver.satisfyPod(parseTarget(pod)).findAll { it.repository.isRemote }
 			pods.each |p| {
 				log.info("Downloading ${p.depend} from ${p.repository.name} (${p.repository.url})")
 				p.installTo(repo)
@@ -112,7 +138,7 @@ class InstallCmd : FpmCmd {
 			return 0
 		}
 		
-		return 0		
+		return 0
 	}
 	
 	private static Depend? parseTarget(Str arg) {

@@ -18,7 +18,9 @@ class DeleteCmd : FpmCmd {
 	@Arg { help="The pod to delete" }
 	Depend target
 	
-	new make(|This| f) : super(f) { }
+	new make(|This| f) : super(f) {
+		if (repo == null) repo = fpmConfig.repository("default")
+	}
 
 	override Int run() {
 		podFile := repo.resolve(target, [:]).first

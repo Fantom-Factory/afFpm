@@ -19,12 +19,6 @@ internal class Resolver {
 		return this
 	}
 	
-	This remoteOnly() {
-		repositories = repositories.findAll { it.isRemote }
-		isLocal = false
-		return this
-	}
-	
 	Str:PodFile resolveAll() {
 		pods := Str:PodFile[:]
 		repositories.map { it.resolveAll }.flatten.each |PodFile pod| {
@@ -34,8 +28,16 @@ internal class Resolver {
 		return pods
 	}
 
-	PodFile[] satisfy(Depend depend) {
-		satisfier := Satisfier(TargetPod(depend), this) { it.log = this.log }
+	PodFile[] satisfyPod(Depend depend) {
+		satisfy(TargetPod(depend))
+	}
+	
+	PodFile[] satisfyBuild(BuildPod buildPod) {
+		satisfy(TargetPod(buildPod))
+	}
+
+	private PodFile[] satisfy(TargetPod target) {
+		satisfier := Satisfier(target, this) { it.log = this.log }
 		satisfier.satisfyDependencies
 		return satisfier.resolvedPods.vals
 	}
