@@ -5,22 +5,19 @@ internal class Satisfier {
 			Str:PodFile			resolvedPods	:= Str:PodFile[:]
 			Str:UnresolvedPod	unresolvedPods	:= Str:UnresolvedPod[:] 
 
-	private	Repositories	repositories
+	private	Resolver		resolver
 	private PodNode[]		initNodes		:= PodNode[,]
 	private Str:PodNode		allNodes		:= Str:PodNode[:] { it.ordered = true }
-	private Str:Obj?		resolveOptions
 	private	Duration		startTime		:= Duration.now
 
-	new make(TargetPod target, Repositories	repositories, Str:Obj? resolveOptions, |This|? f := null) {
+	new make(TargetPod target, Resolver	resolver, |This|? f := null) {
 		f?.call(this)
-		
-		this.targetPod		= target.pod
-		this.repositories	= repositories
-		this.resolveOptions	= resolveOptions
+		this.targetPod	= target.pod
+		this.resolver	= resolver
 		
 		// check the build dependencies exist
 		target.dependencies?.each {
-			if (repositories.resolve(it, resolveOptions).isEmpty)
+			if (resolver.resolve(it).isEmpty)
 				throw UnknownPodErr("Could not resolve dependent pod: ${it}")
 		}
 		
@@ -271,7 +268,7 @@ internal class Satisfier {
 	private PodNode resolveNode(Depend dependency) {
 		allNodes.getOrAdd(dependency.name) {
 			PodNode { it.name = dependency.name }
-		}.addPodVersions(repositories.resolve(dependency, resolveOptions))
+		}.addPodVersions(resolver.resolve(dependency))
 	}
 	
 	private static Str s(Int size) {
