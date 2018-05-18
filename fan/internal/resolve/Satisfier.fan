@@ -1,9 +1,9 @@
 
 internal class Satisfier {
-			Log				log				:= typeof.pod.log
-			Depend			targetPod
-			Str:PodFile		resolvedPods	:= Str:PodFile[:]
-			UnresolvedPod[]	unresolvedPods	:= UnresolvedPod#.emptyList 
+			Log					log				:= typeof.pod.log
+			Depend				targetPod
+			Str:PodFile			resolvedPods	:= Str:PodFile[:]
+			Str:UnresolvedPod	unresolvedPods	:= Str:UnresolvedPod[:] 
 
 	private	Repositories	repositories
 	private PodNode[]		initNodes		:= PodNode[,]
@@ -172,7 +172,7 @@ internal class Satisfier {
 		
 		// convert errors to UnresolvedPods
 		if (solutions.isEmpty) {
-			unresolvedPods = unsatisfied
+			unsatisfied.each { unresolvedPods[it.name] = it }
 		}
 		
 		resolvedPods.remove(targetPod.name)
