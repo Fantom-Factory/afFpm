@@ -23,13 +23,13 @@ internal class RepoMan {
 	}
 	
 	PodFile[] resolve(Depend depend) {
-
 		repositories.resolve(depend, resolveOptions)
-		
-		
-//		satisfier := Satisfier(TargetPod(depend), repositories, resolveOptions) { it.log = this.log }
-//		satisfier.satisfyDependencies
-		
+	}
+	
+	PodFile[] satisfy(Depend depend) {
+		satisfier := Satisfier(TargetPod(depend), repositories, resolveOptions) { it.log = this.log }
+		satisfier.satisfyDependencies
+		return satisfier.resolvedPods.vals
 	}
 	
 	Str:Obj? resolveOptions() {

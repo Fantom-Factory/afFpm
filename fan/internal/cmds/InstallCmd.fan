@@ -95,19 +95,22 @@ class InstallCmd : FpmCmd {
 		//    ...query the remote repos and publish to the local
 		if (repo.isLocal) {
 			repos.remoteOnly
-			pods := repos.resolve(parseTarget(pod))
-			if (pods.isEmpty)
-				throw Err("Could not find pod: ${pod}")
+			newPod := repos.resolve(parseTarget(pod)).first
+			if (newPod == null)
+				throw Err("Could not find pod: ${newPod}")
 
-			pods.first.installTo(repo)
-//			log.info("Downloading ${specs.first} from ${name}")
-			
-			
+			log.info("Downloading ${newPod.depend} from ${newPod.repository.name} (${newPod.repository.url})")
+			newPod.installTo(repo)
+
+			// update
+			pods := repos.satisfy(parseTarget(pod)).findAll { it.repository.isRemote }
+			pods.each |p| {
+				log.info("Downloading ${p.depend} from ${p.repository.name} (${p.repository.url})")
+				p.installTo(repo)
+			}
 			
 			return 0
 		}
-
-		// FIXME now update
 		
 		return 0		
 	}

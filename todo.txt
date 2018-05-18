@@ -48,6 +48,7 @@ FPM_ALL_PODS = true
 FPM_DEBUG = true
 FPM_TARGET
 FPM_TRACE = true
+FPM_TIMEOUT = 3sec
  
  
 FPM: Building cwApp 0.2.0.225
