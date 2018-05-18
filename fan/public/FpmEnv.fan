@@ -15,12 +15,11 @@ abstract const class FpmEnv : Env {
 	** The pod this environment is targeted to.
 	const Depend			targetPod
 
-	// TODO this should be a list?
 	** A map of dependent pods that have been resolved specifically for the 'targetPod'. 
 	const Str:PodFile		resolvedPods
 	
 	** A list of unsatisfied pods for this targeted environment.
-	const UnresolvedPod[]	unresolvedPods
+	const Str:UnresolvedPod	unresolvedPods
 
 	@NoDoc
 	static new make() {
@@ -63,7 +62,7 @@ abstract const class FpmEnv : Env {
 			error = err
 
 		} finally {
-			this.unresolvedPods	= this.unresolvedPods	!= null ? this.unresolvedPods	: [,]
+			this.unresolvedPods	= this.unresolvedPods	!= null ? this.unresolvedPods	: [:]
 			this.resolvedPods	= this.resolvedPods		!= null ? this.resolvedPods		: [:]
 			this.targetPod		= this.targetPod		!= null ? this.targetPod		: Depend("??? 0")
 		}
@@ -94,7 +93,7 @@ abstract const class FpmEnv : Env {
 					log.debug(dump)
 
 		if (unresolvedPods.size > 0) {
-			log.warn(Utils.dumpUnresolved(unresolvedPods))
+			log.warn(Utils.dumpUnresolved(unresolvedPods.vals))
 			if (!loggedLatest) {
 				loggedLatest = true
 				log.warn("Defaulting to latest pod versions")
