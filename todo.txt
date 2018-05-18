@@ -36,7 +36,13 @@ fpm update build.fan [-r release]
 
 fpm -o update -d build.fan [-r release] other args  <-- allow flags to be anywhere
 need new cmd line parser
- 
+
+
+Explain How to:
+ - update dependencies for a project
+ - copy dependencies to a directory
+ - install a directory of pods (say you have a new skyspark download, and you want to use all the new pods)
+ - install dependencies for a fantom script
  
 !! FPM F4 - cache the resolved pods - only re-resolve if the dependencies change !! 
  

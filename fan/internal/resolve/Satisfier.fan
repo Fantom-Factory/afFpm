@@ -213,7 +213,7 @@ internal class Satisfier {
 			}
 		}.vals
 
-		// FIXME dodgy pod constraints!
+		// todo dodgy pod constraints!?
 		dodgy := unresolvedPods.any { it.isDodgy }
 		if (log.isDebug && !dodgy)
 			log.debug("\n-----\n" + Utils.dumpUnresolved(unresolvedPods))
