@@ -13,9 +13,10 @@ const mixin Repository {
 	abstract PodFile[]	resolveAll		()
 	
 	** Options are targeted at remote fanr repositories and may include:
-	**  - 'maxPods  (Int)'  - the maximum number of pods to return. (defaults to 5).
-	**  - 'corePods (Bool)' - also query for core pods.
-	**  - 'log      (Log)'  - query results will be logged to this.
+	**  - 'maxPods  (Int)'     - the maximum number of pods to return. (defaults to 5).
+	**  - 'corePods (Bool)'    - also query for core pods.
+	**  - 'minVer   (Version)' - the min pod version to query for.
+	**  - 'log      (Log)'     - query results will be logged to this.
 	abstract PodFile[]	resolve			(Depend depend, Str:Obj? options)
 	
 	@NoDoc override Str toStr() 			{ "$name - $url" }

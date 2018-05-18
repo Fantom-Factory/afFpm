@@ -10,7 +10,10 @@ internal class Resolver {
 	private	Bool 				isLocal
 
 	new make(Repository[] repositories) {
-		this.repositories = repositories
+		locals  := repositories.findAll { it.isLocal }
+		remotes := repositories.findAll { it.isRemote }
+		// make sure remotes are last so we make good use of the minVer option
+		this.repositories = locals.addAll(remotes)
 	}
 	
 	This localOnly() {
@@ -63,14 +66,18 @@ internal class Resolver {
 	
 	private PodFile[] doResolve(Depend dependency) {
 		podVers := PodFile[,]
+		minVer  := null as Version
 		repositories.each {
-			pods := it.resolve(dependency, options)
+			pods := it.resolve(dependency, options.rw.set("minVer", minVer))
 			pods.each |pod| {
 				// don't use contains() or compare the URL, because the same version pod may come from different sources
 				// and we only need the one!
 				existing := podVers.find { it.fits(pod.depend) }
-				if (existing == null)
+				if (existing == null) {
 					podVers.add(pod)
+					if (minVer == null || pod.version > minVer)
+						minVer = pod.version
+				}
 				else {
 					// replace remote pods with local versions
 					if (existing.repository.isRemote && pod.repository.isLocal) {
