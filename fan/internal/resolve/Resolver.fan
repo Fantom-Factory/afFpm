@@ -1,49 +1,10 @@
 
-
-internal class RepoMan {
-
-	Int		maxPods		:= 5
-	Bool	corePods	:= true
-	Log		log			:= FpmEnv#.pod.log
-
-	private Repositories repositories
+internal class Resolver {
 	
-	new make(Repository[] repositories) {
-		this.repositories = Repositories(repositories)
-	}
+			Int					maxPods		:= 5
+			Bool				corePods	:= true
+			Log					log			:= FpmEnv#.pod.log
 	
-	This localOnly() {
-		repositories.localOnly
-		return this
-	}
-	
-	This remoteOnly() {
-		repositories.remoteOnly
-		return this
-	}
-	
-	PodFile[] resolve(Depend depend) {
-		repositories.resolve(depend, resolveOptions)
-	}
-	
-	PodFile[] satisfy(Depend depend) {
-		satisfier := Satisfier(TargetPod(depend), repositories, resolveOptions) { it.log = this.log }
-		satisfier.satisfyDependencies
-		return satisfier.resolvedPods.vals
-	}
-	
-	Str:Obj? resolveOptions() {
-		Str:Obj?[
-			"maxPods"	: maxPods,
-			"corePods"	: corePods,
-			"log"		: log
-		]
-	}
-}
-
-
-// TODO rename to Resolver
-internal class Repositories {
 	private Repository[]		repositories
 	private Depend:PodFile[]	cash		:= Depend:PodFile[][:]
 	private	Bool 				isLocal
@@ -64,7 +25,7 @@ internal class Repositories {
 		return this
 	}
 	
-	internal Str:PodFile resolveAll() {
+	Str:PodFile resolveAll() {
 		pods := Str:PodFile[:]
 		repositories.map { it.resolveAll }.flatten.each |PodFile pod| {
 			if (!pods.containsKey(pod.name) || pods[pod.name].version <= pod.version)
@@ -73,10 +34,15 @@ internal class Repositories {
 		return pods
 	}
 
-	** Called by Satisfier
-	PodFile[] resolve(Depend dependency, Str:Obj? options) {
+	PodFile[] satisfy(Depend depend) {
+		satisfier := Satisfier(TargetPod(depend), this) { it.log = this.log }
+		satisfier.satisfyDependencies
+		return satisfier.resolvedPods.vals
+	}
+	
+	PodFile[] resolve(Depend dependency) {
 		isLocal		// this saves ~40 ms and ~70 vs ~700 invocations on cwApp
-			? doResolve(dependency, options)
+			? doResolve(dependency)
 			: cash.getOrAdd(dependency) |->PodFile[]| {
 				
 				// first lets check if this dependency 'fits' into any existing
@@ -89,11 +55,11 @@ internal class Repositories {
 				}
 				
 				// naa, lets do the full resolve hog
-				return doResolve(dependency, options)
+				return doResolve(dependency)
 			}
 	}
 	
-	private PodFile[] doResolve(Depend dependency, Str:Obj? options) {
+	private PodFile[] doResolve(Depend dependency) {
 		podVers := PodFile[,]
 		repositories.each {
 			pods := it.resolve(dependency, options)
@@ -113,5 +79,13 @@ internal class Repositories {
 			}
 		}
 		return podVers.sortr
+	}
+	
+	private once Str:Obj? options() {
+		Str:Obj?[
+			"maxPods"	: maxPods,
+			"corePods"	: corePods,
+			"log"		: log
+		]
 	}
 }

@@ -140,7 +140,7 @@ internal class TestDependencyFile : Test {
 	
 	private Void satisfyDependencies(Str pod) {		
 		target := Depend(pod)
-		satisfier = Satisfier(TargetPod(target), Repositories([repository]), [:])
+		satisfier = Satisfier(TargetPod(target), Resolver([repository]))
 		satisfier.satisfyDependencies
 	}
 }

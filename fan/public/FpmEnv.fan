@@ -40,11 +40,11 @@ abstract const class FpmEnv : Env {
 
 		this.fpmConfig	= fpmConfig
 
-		repositories := Repositories(fpmConfig.repositories).localOnly
+		resolver := Resolver(fpmConfig.repositories).localOnly
 		
 		try {
 			targetPod	 := findTarget
-			podSatisfier := Satisfier(targetPod, repositories, [:]) {
+			podSatisfier := Satisfier(targetPod, resolver) {
 				it.log	= this.log
 			}
 			podSatisfier.satisfyDependencies
@@ -72,14 +72,14 @@ abstract const class FpmEnv : Env {
 			if (!loggedLatest) {
 				loggedLatest = true
 				echo("FPM: Could not target pod - defaulting to latest pod versions")
-				this.resolvedPods = repositories.resolveAll
+				this.resolvedPods = resolver.resolveAll
 			}
 
 		if (Env.cur.vars["FPM_ALL_PODS"]?.toBool(false) ?: false)
 			if (!loggedLatest) {
 				loggedLatest = true
 				echo("FPM: Found env var: FPM_ALL_PODS = true; making all pods available")
-				this.resolvedPods = repositories.resolveAll
+				this.resolvedPods = resolver.resolveAll
 			}
 		
 		// ---- dump info to logs ----
@@ -97,7 +97,7 @@ abstract const class FpmEnv : Env {
 			if (!loggedLatest) {
 				loggedLatest = true
 				log.warn("Defaulting to latest pod versions")
-				this.resolvedPods = repositories.resolveAll
+				this.resolvedPods = resolver.resolveAll
 			}
 		}
 

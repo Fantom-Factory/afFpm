@@ -72,7 +72,7 @@ class InstallCmd : FpmCmd {
 //			podDepends.setBuildTargetFromBuildPod(buildPod, false)
 //		}	
 		
-		repos := RepoMan(fpmConfig.repositories)
+		repos := Resolver(fpmConfig.repositories)
 		repos.maxPods	= 1
 		repos.corePods	= core
 		repos.log		= log
