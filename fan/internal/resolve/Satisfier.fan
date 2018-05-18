@@ -69,6 +69,9 @@ internal class Satisfier {
 		if (Env.cur.vars["FPM_TRACE"] == "true")
 			writeTraceFile
 		
+		envTimeout := Env.cur.vars.get("FPM_TIMEOUT", "")
+		fpmTimeout := Duration.fromStr(envTimeout, false) ?: 3sec
+		
 		startTime = Duration.now
 		max := nos.map { it.size }
 		cur := Int[,].fill(0, max.size)
@@ -112,9 +115,13 @@ internal class Satisfier {
 						unsatisfied = badPods
 
 				} else {
-					// FIXME use first solution if over X seconds 
 					// found a working combination!
-//					fin = true	// gotta find them all!
+					// use first solution if resolving takes over X seconds 
+					if ((Duration.now - startTime) > fpmTimeout) {
+						fin = true
+						log.warn("Exceeded resolve timeout of ${fpmTimeout.toLocale}. Returning early, resolved pods may be sub-optimal.\nTo increase the timeout set the FPM_TIMEOUT environment variable to a valid Fantom duration, e.g. 5sec")
+					}
+					
 					solutions.add(
 						podMap.map { it.latest }
 					)
