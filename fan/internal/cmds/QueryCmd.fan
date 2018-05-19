@@ -1,5 +1,5 @@
 
-** Queries repositories for versions of a named pod.
+** Queries repositories for pods.
 ** 
 ** The whole FPM environment is queried, including all local file and remote 
 ** fanr repositories. 
@@ -7,7 +7,8 @@
 ** Examples:
 ** 
 **   C:\> fpm query myPod
-**   C:\> fpm query myPod 2.0+
+**   C:\> fpm query myPod@2.0+
+**   C:\> fpm query "myPod 2.0+"
 ** 
 @NoDoc	// Fandoc is only saved for public classes
 class QueryCmd : FpmCmd {

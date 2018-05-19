@@ -1,18 +1,18 @@
 
-** Installs a pod to a repository.
+** Installs pods to a repository.
 ** 
 ** The pod may be:
-**  - a file location, absolute or relative. Example, 'lib/myAweseomeGame.pod'
-**  - a simple search query. Example, '"afIoc 3.0"' or 'afIoc@3.0'
-**  - a directory of pods, absolute or relative. Example, 'lib/'
+**  - a file location       (e.g. 'lib/myGame.pod' or 'C:\lib\myGame.pod')
+**  - a simple search query (e.g. 'afIoc@3.0' or '"afIoc 3.0"')
+**  - a directory of pods   (e.g. 'lib/' or 'C:\lib\')
+**  - a build file          (e.g. 'build.fan' - use to update dependencies) 
 ** 
 ** The repository may be:
-**  - a named local repository (e.g. 'default')
-**  - a named remote repository (e.g. 'fantomFactory')
-**  - the directory of a local repository (e.g. 'C:\repo-release\')
-**  - the URL of a remote repository (e.g. 'http://eggbox.fantomfactory.org/fanr/')
+**  - a named repository    (e.g. 'eggbox')
+**  - a local directory     (e.g. 'lib/' or 'C:\lib\')
+**  - a remote fanr URL     (e.g. 'http://eggbox.fantomfactory.org/fanr/')
 ** 
-** All the above makes the 'install' command very versatile. Some examples:
+** All the above makes the 'install' command very versatile.
 ** 
 ** To download and install the latest pod from a remote repository:
 ** 
@@ -29,7 +29,7 @@
 @NoDoc	// Fandoc is only saved for public classes
 class InstallCmd : FpmCmd {
 	
-	@Opt { aliases=["r"]; help="Name or location of the repository to install to (defaults to 'default')" }
+	@Opt { aliases=["r"]; help="Name or location of repository to install to (defaults to 'default')" }
 	Repository repo
 
 	@Opt { aliases=["c"]; help="Query and install Fantom core pods" } 

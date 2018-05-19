@@ -42,13 +42,16 @@ class HelpCmd : FpmCmd {
 		logCmdSynopsis(BuildCmd#)
 		logCmdSynopsis(TestCmd#)
 		logCmdSynopsis(RunCmd#)
-//		log.info("")
-//		logCmdSynopsis(QueryCmd#)
-//		logCmdSynopsis(InstallCmd#)
-//		logCmdSynopsis(DeleteCmd#)
+		log.info("")
+		logCmdSynopsis(QueryCmd#)
+		logCmdSynopsis(InstallCmd#)
+		logCmdSynopsis(DeleteCmd#)
 //		logCmdSynopsis(UpdateCmd#)
 		log.info("\nUsage:
-		            fpm <command> [options]")
+		            fpm <command> [options]
+		          
+		          Example:
+		            fpm help install")
 	}
 	
 	private Void logCmdSynopsis(Type cmdType) {
@@ -100,7 +103,7 @@ class HelpCmd : FpmCmd {
 
 		col1 := "-$name"
 		if (!aliases.isEmpty)			col1 += ", -" + aliases.join(", -")
-		if (!field.type.fits(Bool#))	col1 += " <$field.type.name>"
+		//if (!field.type.fits(Bool#))	col1 += " <$field.type.name>"
 
 		col2 := help
 		return [col1, help]
