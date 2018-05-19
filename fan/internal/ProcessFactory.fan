@@ -24,7 +24,7 @@ internal class ProcessFactory {
 			try  {
 				pro := (Process2) processRef.val
 				if (pro.isAlive) {
-					log.debug("Killing Process: ${processCmd.val} " + pro.command[6..-1].join(" "))
+					log.warn("Killing Process: ${processCmd.val} " + pro.command[6..-1].join(" "))
 					pro.kill
 				}
 			} catch (Err err) {

@@ -32,7 +32,7 @@ class InstallCmd : FpmCmd {
 	@Opt { aliases=["r"]; help="Name or location of the repository to install to (defaults to 'default')" }
 	Repository repo
 
-	@Opt { aliases=["c"]; help="Query for Fantom core pods also" } 
+	@Opt { aliases=["c"]; help="Query and install Fantom core pods" } 
 	Bool core
 	
 	@Opt { aliases=["u"]; help="Username for remote fanr authentication" }
@@ -56,19 +56,22 @@ class InstallCmd : FpmCmd {
 	}
 
 	override Int run() {
-		log.info("FPM installing ${pod}")
-
-		resolver := Resolver(fpmConfig.repositories { remove(repo) })
+		// because the InstallCmd is so varied, lets have individual titles 
+//		log.info("FPM installing ${pod}"))
+		
+		resolver := Resolver(fpmConfig.repositories)
 		resolver.maxPods	= 1
 		resolver.corePods	= core
 		resolver.log		= log
 		
-		file := FileUtils.toFile(pod)
+		file := FileUtils.toFile(pod).normalize
 		if (file.exists) {
 			
 			// install a single pod
 			if (file.ext == "pod") {
-				SinglePodRepository(file).podFile.installTo(repo)
+				podFile := SinglePodRepository(file).podFile
+				log.info("FPM installing ${podFile.depend} to ${repo.name}")
+				podFile.installTo(repo)
 				return 0
 			}
 			
@@ -83,62 +86,80 @@ class InstallCmd : FpmCmd {
 				}
 
 				// update
-				pods := resolver.satisfyBuild(buildPod).findAll { it.repository.isRemote }
-				pods.each |p| {
-					log.info("Downloading ${p.depend} from ${p.repository.name} (${p.repository.url})")
-					p.installTo(repo)
+				log.info("FPM updating dependencies for ${buildPod.podName} ...")
+				podFiles := resolver.satisfyBuild(buildPod).findAll { it.repository.isRemote }
+				podFiles.each |podFile| {
+					log.info("Installing ${podFile.depend} to ${repo.name} (from ${podFile.repository.name})")
+					podFile.installTo(repo)
 				}
+				if (podFiles.isEmpty)
+					log.info("No remote dependencies found.")
+				else
+					log.info("Done.")
 				return 0
 			}
-			
 			
 			// install a directory of pods
 			if (file.isDir) {
-				pods := file.listFiles(Regex.glob("*.pod"))
-				pods.each |pod| {
-					SinglePodRepository(pod).podFile.installTo(repo)
+				log.info("FPM installing pod files from ${file.osPath}")
+				files	 := file.listFiles(Regex.glob("*.pod"))
+				podFiles := (PodFile[]) files.map { SinglePodRepository(it).podFile }
+				if (!core) podFiles = podFiles.exclude { it.isCore }
+				podFiles.each |podFile| {
+					log.info("Installing ${podFile.depend} to ${repo.name}")
+					podFile.installTo(repo)
 				}
-				if (pods.isEmpty)
-					log.warn("No pods found in: $file.normalize.osPath")
+				if (podFiles.isEmpty)
+					log.warn("No pods found in: $file.osPath")
 				return 0
 			}
 
-			throw Err("Only pods (or a directory of pods) may be installed")
+			throw Err("Only pods (or a directory of pods) may be installed: ${file.osPath}")
 		}
+		
+		target := parseTarget(pod)
 		
 		// if the dest repo is remote... 
 		//    ...query the local repos and publish to the remote
-		if (repo.isRemote) {
+		if (repo.isRemote && target != null) {
 			resolver.localOnly
-			pods := resolver.resolve(parseTarget(pod))
-			if (pods.isEmpty)
-				throw Err("Could not find pod: ${pod}")
+			podFiles := resolver.resolve(target)
+			if (podFiles.isEmpty)
+				throw Err("Could not find pod: ${target}")
 
-			pods.first.installTo(repo)
+			podFile := podFiles.first
+			log.info("FPM uploading ${podFile.depend} to ${repo.name} (${repo.url})")
+			podFile.installTo(repo)
 			return 0
 		}
 
-		// if the dest repo is local... (which it must be)
+		// if the dest repo is local... (which it now must be)
 		//    ...query the remote repos and publish to the local
-		if (repo.isLocal) {
-			newPod := resolver.resolve(parseTarget(pod)).first
+		if (repo.isLocal && target != null) {
+			newPod := resolver.resolve(target).first
 			if (newPod == null)
-				throw Err("Could not find pod: ${newPod}")
+				throw Err("Could not find pod: ${target}")
 
-			log.info("Downloading ${newPod.depend} from ${newPod.repository.name} (${newPod.repository.url})")
-			newPod.installTo(repo)
-
-			// update
-			pods := resolver.satisfyPod(parseTarget(pod)).findAll { it.repository.isRemote }
-			pods.each |p| {
-				log.info("Downloading ${p.depend} from ${p.repository.name} (${p.repository.url})")
-				p.installTo(repo)
+			if (newPod.repository != repo) {
+				log.info("FPM installing ${newPod.depend} to ${repo.name} (from ${newPod.repository.name})")
+				newPod.installTo(repo)
 			}
-			
+
+			// update & install dependencies
+			log.info("Updating dependencies for ${target} ...")
+			podFiles := resolver.satisfyPod(target).findAll { it.repository.isRemote }
+			podFiles.each |podFile| {
+				log.info("Installing ${podFile.depend} to ${repo.name} (from ${podFile.repository.name})")
+				podFile.installTo(repo)
+			}
+			if (podFiles.isEmpty)
+				log.info("No remote dependencies found.")
+			else
+				log.info("Done.")
 			return 0
 		}
 		
-		return 0
+		throw Err("Unknown target: $pod")
 	}
 	
 	private static Depend? parseTarget(Str arg) {

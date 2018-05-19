@@ -33,6 +33,11 @@ const class PodFile {
 		this.repository	= repository
 	}
 	
+	** Returns 'true' if this is a core Fantom pod.
+	Bool isCore() {
+		CorePods.instance.isCorePod(name)
+	}
+	
 	** The backing file for this pod.
 	** If the pod has a remote location, this will download it to a local / memory representation.
 	File file() {

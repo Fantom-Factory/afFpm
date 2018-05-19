@@ -18,13 +18,3 @@ class FpmCmd {
 		return 64	/* command line usage error */
 	}
 }
-
-
-class PodManager {
-	
-	const FpmConfig fpmConfig
-	
-	new make(FpmConfig fpmConfig) {
-		this.fpmConfig = fpmConfig
-	}
-}
