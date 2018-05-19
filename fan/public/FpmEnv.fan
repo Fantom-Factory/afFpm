@@ -48,6 +48,7 @@ abstract const class FpmEnv : Env {
 				it.log	= this.log
 			}
 			podSatisfier.satisfyDependencies
+			resolver.cleanUp
 			
 			this.targetPod		= podSatisfier.targetPod
 			this.resolvedPods	= podSatisfier.resolvedPods
