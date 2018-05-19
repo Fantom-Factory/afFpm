@@ -57,9 +57,10 @@ internal const class FpmEnvDefault : FpmEnv {
 			mainMethod = Env.cur.mainMethod 
 			if (mainMethod != null) {
 	
-				// FIXME made a HUGE assumption here that the build script is the one in the current directory
+				// made a HUGE assumption here that the build script is the one in the current directory
+				// not much I can do about it though
 				if (mainMethod.qname == "build::BuildPod.main") {
-					buildPod := BuildPod("build.fan")		
+					buildPod := BuildPod("build.fan")
 					if (buildPod.errMsg == null) {
 						return TargetPod(buildPod)
 					}
@@ -77,7 +78,7 @@ internal const class FpmEnvDefault : FpmEnv {
 		if (arg == null || arg.endsWith(".fan"))
 			return null
 
-		// TODO check for version e.g. afIoc@3.0
+		// FIXME ?? check for version e.g. afIoc@3.0
 		dependStr := (Str?) null
 		if (arg.all { isAlphaNum })
 			dependStr = arg
