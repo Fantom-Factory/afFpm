@@ -34,7 +34,7 @@ internal const class RemoteFanrRepository : Repository {
 		if (!corePods && this.corePods.isCorePod(depend.name))
 			return PodFile#.emptyList
 
-		log?.info("Querying ${name} for ${depend}" + ((minVer == null) ? "" : " ( > $minVer)"))
+		log?.debug("Querying ${name} for ${depend}" + ((minVer == null) ? "" : " ( > $minVer)"))
 		specs := repo.query(depend.toStr, maxPods)
 		files  := specs
 			.findAll |PodSpec spec->Bool| {

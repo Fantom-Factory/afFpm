@@ -43,6 +43,7 @@ Explain How to:
  - copy dependencies to a directory
  - install a directory of pods (say you have a new skyspark download, and you want to use all the new pods)
  - install dependencies for a fantom script
+ - copy a pod from one repo to another / for move do a manual delete
  
 !! FPM F4 - cache the resolved pods - only re-resolve if the dependencies change !! 
  

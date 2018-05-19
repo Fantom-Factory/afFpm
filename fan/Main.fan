@@ -31,6 +31,9 @@ internal class Main {
 
 		cmd := (FpmCmd) cmdType.make([Field.makeSetFunc(ctorData)])
 
+		if (cmd.debug)
+			cmd.log.level = LogLevel.debug
+		
 		return cmd.run	
 	}
 

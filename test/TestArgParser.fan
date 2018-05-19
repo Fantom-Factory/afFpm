@@ -1,29 +1,6 @@
 
 internal class TestArgParser : Test {
 	
-//	Void testTarget() {
-//		// TODO target
-//		cmd := null as FpmArgs
-//
-//		cmd = parse("cmd".split)
-//		verifyEq(cmd.target, null)
-//		
-//		cmd = parse("cmd ioc.pod".split)
-//		verifyEq(cmd.target, `ioc.pod`.toFile.normalize.uri)
-//		
-//		cmd = parse("cmd C:/ioc.pod".split)
-//		verifyEq(cmd.target, `/ioc.pod`.toFile.normalize.uri)
-//		
-//		cmd = parse("cmd dir/".split)
-//		verifyEq(cmd.target, `dir/`.toFile.normalize.uri)
-//		
-//		cmd = parse("cmd C:/dir/".split)
-//		verifyEq(cmd.target, `/dir/`.toFile.normalize.uri)
-//		
-//		cmd = parse("cmd afIoc".split)
-//		verifyEq(cmd.target, `/dir/`)
-//	}
-	
 	Void testArgs() {
 		cmd := null as FpmArgs
 
