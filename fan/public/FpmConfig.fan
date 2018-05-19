@@ -77,7 +77,12 @@ const class FpmConfig {
 		workFile = workFile.findAll { it.exists }
 
 		fpmProps := Str:Str[:] { it.ordered = true }
-		workFile.eachr { fpmProps.setAll(it.readProps) }
+		workFile.eachr {
+			newProps := it.readProps
+			if (newProps["configCmd"] == "clearExisting")
+				fpmProps.clear
+			fpmProps.setAll(it.readProps)
+		}
 
 		return makeInternal(baseDir, homeDir, envPaths, fpmProps, workFile.reverse)
 	}
@@ -95,16 +100,23 @@ const class FpmConfig {
 		this.homeDir = homeDir
 		
 		strInterpol := |Str? str->Str?| {
-			str == null ? null :
-			str.replace("\$fanHome", homeDir.osPath).replace("\${fanHome}", homeDir.osPath)
+			if (str == null)
+				return null
+			if ((this.homeDir as File) != null)
+				str = str.replace("\$fanHome", homeDir.osPath).replace("\${fanHome}", homeDir.osPath)
+			if ((this.workDirs as File[]) != null)
+				str = str.replace("\$workDir", workDirs.first.osPath).replace("\${workDir}", workDirs.first.osPath)
+			if ((this.tempDir as File) != null)
+				str = str.replace("\$tempDir", tempDir.osPath).replace("\${tempDir}", tempDir.osPath)
+			return str
 		}
-		
+
 		workDirs := strInterpol(fpmProps["workDirs"])
 		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + (envPaths ?: "")
 		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + homeDir.osPath.toStr
 		this.workDirs = workDirs.split(File.pathSep.chars.first).exclude { it.isEmpty }.map { toAbsDir(it) }.unique
 		
-		tempDir := fpmProps["tempDir"]
+		tempDir := strInterpol(fpmProps["tempDir"])
 		if (tempDir == null)
 			tempDir = this.workDirs.first.plus(`temp/`, false).osPath.toStr
 		this.tempDir = toAbsDir(tempDir)

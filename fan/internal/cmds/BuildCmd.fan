@@ -36,7 +36,7 @@ class BuildCmd : FpmCmd {
 
 		buildPod := BuildPod(target)
 
-//		// TODO if a build pod is not found, lets just run the build.fan
+//		// FIXME if a build pod is not found, lets just run the build.fan
 //		if (buildPod.errCode == "notBuildPod")
 //			return RunCmd() {
 //				if (it.args == null)

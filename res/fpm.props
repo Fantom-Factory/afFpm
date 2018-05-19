@@ -4,12 +4,19 @@
 #
 # Config files are looked for in the following locations:
 #
-#  - <currentDir>  /fpm.props
+#  - <currentDir>/fpm.props
 #  - %FAN_PATH_ENV%/etc/afFpm/fpm.props
-#  - %FAN_HOME%    /etc/afFpm/fpm.props
+#  - %FAN_HOME%/etc/afFpm/fpm.props
 #
-# Note that config files are *additive* allowing project based files to give
-# more specific config. 
+# Config files are *additive* with values from later config files overwriting
+# existing values. This allows system wide config to be stored in the fantom 
+# installation / work directories, and project based config to be stored in the
+# project / current directory.
+#
+# If this is not desired then a config file may obliterate all existing values
+# defined before it by uncommenting the line below:
+#
+# configCmd			= clearExisting
 
 
 
@@ -25,9 +32,11 @@
 # Paths should be absolute and defined in your local OS format. Note that 
 # multiple directories may be specified, separated by 'sys::File.pathSep'.
 #
+# May contain the interpolation values: ${fanHome}
+#
 # See 'util::PathEnv' for more details.
 #
-# workDirs				= C:\\Repositories\\Fantom
+# workDirs			= C:\\Repositories\\Fantom; ${fanHome}/workDir
 
 
 
@@ -36,7 +45,9 @@
 # Fantom's temporary directory. The path must be absolute. 
 # If not specified, defaults to: ${workDir}/temp
 #
-# tempDir				= C:\\Repositories\\Fantom\\temp
+# May contain the interpolation values: ${fanHome}, ${workDir}
+#
+# tempDir			= C:\\Repositories\\Fantom\\temp
 
 
 
@@ -47,10 +58,16 @@
 #
 # Repositories are named with the syntax:
 #
-#  dirRepo.<name> = <path>
+#   dirRepo.<name>	= <path>
 #
-# Note there should always be a repository named 'default'. If not defined it 
-# defaults to a dirRepo at ${fanHome}/lib/fan/
+# Exclude repositories already defined by re-defining with an empty value:
+#
+#   dirRepo.other	= 
+#
+# Note there is always a repository named 'default'. If not defined it defaults
+# to a dirRepo at ${fanHome}/lib/fan/
+#
+# May contain the interpolation values: ${fanHome}, ${workDir}, ${tempDir}
 #
 # dirRepo.default	= ${fanHome}/lib/fan/
 dirRepo.lib			= lib/
@@ -65,7 +82,14 @@ dirRepo.libfan		= lib/fan/
 #
 # Repositories are named with the syntax:
 #
-#  fanrRepo.<name> = <path | url> 
+#   fanrRepo.<name>	= <path | url> 
+#
+# Exclude repositories already defined by re-defining with an empty value:
+#
+#   fanrRepo.other	= 
+#
+# Note there is always a repository named 'default'. If not defined it defaults
+# to a dirRepo at ${fanHome}/lib/fan/
 #
 # fanrRepo.default	= C:\\Repositories\\Fantom\\fpmRepo-default\\
 # fanrRepo.status302= http://repo.status302.com/fanr/
