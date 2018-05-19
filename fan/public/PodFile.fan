@@ -12,9 +12,10 @@ const class PodFile {
 	const Depend[]	dependsOn
 
 	** Absolute URL of where this pod is located.
-	const Uri		url
+	const Uri		location
 	
-	// FIXME PodFile.url vs  PodFile.location
+	// TODO maybe have a canonical FPM URL like `fpm://default/afIoc/3.0.6`
+//	const Uri		url
 
 	** This pod's name and version expressed as a dependency.
 	const Depend	depend
@@ -24,11 +25,11 @@ const class PodFile {
 	
 	** Internal ctor
 	@NoDoc	// reserve make() for serialisation - if / when it happens!
-	new makeFields(Str name, Version version, Depend[] dependsOn, Uri url, Repository repository) {
+	new makeFields(Str name, Version version, Depend[] dependsOn, Uri location, Repository repository) {
 		this.name		= name
 		this.version	= version
 		this.dependsOn	= dependsOn
-		this.url		= url
+		this.location	= location
 		this.depend		= Depend("$name $version")
 		this.repository	= repository
 	}
@@ -59,9 +60,9 @@ const class PodFile {
 		depend.name == this.name && depend.match(this.version)
 	}
 	
-	@NoDoc override Str toStr() 			{ "$name $version - $url" }
-	@NoDoc override Int hash() 				{ url.hash }
-	@NoDoc override Bool equals(Obj? that)	{ (that as PodFile)?.url == url }
+	@NoDoc override Str toStr() 			{ "$name $version - $location" }
+	@NoDoc override Int hash() 				{ location.hash }
+	@NoDoc override Bool equals(Obj? that)	{ (that as PodFile)?.location == location }
 	
 	@NoDoc
 	override Int compare(Obj obj) {

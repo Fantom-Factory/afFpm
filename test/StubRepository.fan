@@ -8,7 +8,7 @@ const class StubRepository : Repository {
 	override const Uri	url		:= `stubrepo`
 	override const Bool	isLocal	:= true
 	
-	override File download		(PodFile podFile)	{ Buf().toFile(podFile.url) }
+	override File download		(PodFile podFile)	{ Buf().toFile(podFile.location) }
 	override Void upload		(PodFile podFile)	{ throw UnsupportedErr() }
 	override Void delete		(PodFile podFile)	{ throw UnsupportedErr() }
 	
