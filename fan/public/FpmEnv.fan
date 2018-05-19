@@ -40,19 +40,16 @@ abstract const class FpmEnv : Env {
 
 		this.fpmConfig	= fpmConfig
 
-		resolver := Resolver(fpmConfig.repositories).localOnly
+		resolver := Resolver(fpmConfig.repositories).localOnly { it.log	= this.log }
 		
 		try {
-			targetPod	 := findTarget
-			podSatisfier := Satisfier(targetPod, resolver) {
-				it.log	= this.log
-			}
-			podSatisfier.satisfyDependencies
+			targetPod	:= findTarget
+			satisfied	:= resolver.satisfy(targetPod)
 			resolver.cleanUp
 			
-			this.targetPod		= podSatisfier.targetPod
-			this.resolvedPods	= podSatisfier.resolvedPods
-			this.unresolvedPods	= podSatisfier.unresolvedPods
+			this.targetPod		= satisfied.targetPod
+			this.resolvedPods	= satisfied.resolvedPods
+			this.unresolvedPods	= satisfied.unresolvedPods
 
 		} catch (UnknownPodErr err) {
 			// todo auto-download / install the pod dependency!??

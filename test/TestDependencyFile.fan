@@ -2,7 +2,7 @@
 internal class TestDependencyFile : Test {
 	
 	StubRepository? 	repository
-	Satisfier?			satisfier
+	Satisfied?			satisfied
 
 	override Void setup() {
 		repository = StubRepository()
@@ -119,7 +119,7 @@ internal class TestDependencyFile : Test {
 		addDep("xml 1.0.70", "sys 1.0")
 		satisfyDependencies("afApp 0.2.0.225")
 
-		Utils.dumpEnv(satisfier.targetPod, satisfier.resolvedPods.vals, null) { echo(it) }
+		Utils.dumpEnv(satisfied.targetPod, satisfied.resolvedPods.vals, null) { echo(it) }
 		
 		// TODO check logs for these test numbers:
 
@@ -138,9 +138,10 @@ internal class TestDependencyFile : Test {
 		repository.add(dependency, dependents)
 	}
 	
-	private Void satisfyDependencies(Str pod) {		
-		target := Depend(pod)
-		satisfier = Satisfier(TargetPod(target), Resolver([repository]))
-		satisfier.satisfyDependencies
+	private Void satisfyDependencies(Str pod) { 
+		satisfied = Resolver([repository]) {
+			it.resolveTimeout1 = 5sec
+			it.resolveTimeout2 = 10sec
+		}.satisfyPod(Depend(pod))
 	}
 }

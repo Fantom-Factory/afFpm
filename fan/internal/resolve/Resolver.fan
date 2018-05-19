@@ -1,10 +1,15 @@
 
-internal class Resolver {
+@NoDoc	// for F4 FPM 
+class Resolver {
+			Int					maxPods			:= 5
+			Bool				corePods		:= true
+			Log					log				:= FpmEnv#.pod.log
 	
-			Int					maxPods		:= 5
-			Bool				corePods	:= true
-			Log					log			:= FpmEnv#.pod.log
-	
+			// let F4 FPM explicitly set these
+			Bool				writeTraceFile	:= false
+			Duration			resolveTimeout1	:= 5sec
+			Duration			resolveTimeout2	:= 10sec
+
 	private Repository[]		repositories
 	private Depend:PodFile[]	cash		:= Depend:PodFile[][:]
 	private	Bool 				isLocal
@@ -14,6 +19,17 @@ internal class Resolver {
 		remotes := repositories.findAll { it.isRemote }
 		// make sure remotes are last so we make good use of the minVer option
 		this.repositories = locals.addAll(remotes)
+		
+		if (Env.cur.vars["FPM_TRACE"] == "true")
+			writeTraceFile = true
+		
+		timeout1 := Duration(Env.cur.vars.get("FPM_RESOLVE_TIMEOUT_1", ""), false)
+		if (timeout1 != null)
+			this.resolveTimeout1 = timeout1
+		
+		timeout2 := Duration(Env.cur.vars.get("FPM_RESOLVE_TIMEOUT_2", ""), false)
+		if (timeout2 != null)
+			this.resolveTimeout2 = timeout2
 	}
 	
 	This localOnly() {
@@ -31,12 +47,27 @@ internal class Resolver {
 		return pods
 	}
 
-	PodFile[] satisfyPod(Depend depend) {
+	Satisfied satisfyPod(Depend depend) {
 		satisfy(TargetPod(depend))
 	}
 	
-	PodFile[] satisfyBuild(BuildPod buildPod) {
+	internal Satisfied satisfyBuild(BuildPod buildPod) {
 		satisfy(TargetPod(buildPod))
+	}
+	
+	Satisfied satisfy(TargetPod target) {
+		satisfier := Satisfier(target, this) {
+			it.log				= this.log
+			it.writeTraceFile	= this.writeTraceFile
+			it.resolveTimeout1	= this.resolveTimeout1
+			it.resolveTimeout2	= this.resolveTimeout2
+		}
+		satisfier.satisfyDependencies
+		return Satisfied {
+			it.targetPod		= satisfier.targetPod
+			it.resolvedPods 	= satisfier.resolvedPods
+			it.unresolvedPods	= satisfier.unresolvedPods
+		}
 	}
 	
 	PodFile[] resolve(Depend dependency) {
@@ -62,12 +93,6 @@ internal class Resolver {
 		repositories.each { it.cleanUp }
 	}
 
-	private PodFile[] satisfy(TargetPod target) {
-		satisfier := Satisfier(target, this) { it.log = this.log }
-		satisfier.satisfyDependencies
-		return satisfier.resolvedPods.vals
-	}
-	
 	private PodFile[] doResolve(Depend dependency) {
 		podVers := PodFile[,]
 		minVer  := null as Version
@@ -102,3 +127,13 @@ internal class Resolver {
 		]
 	}
 }
+
+@NoDoc	// for F4 FPM 
+class Satisfied {
+	Depend				targetPod
+	Str:PodFile			resolvedPods	:= Str:PodFile[:]
+	Str:UnresolvedPod	unresolvedPods	:= Str:UnresolvedPod[:]
+	
+	new make(|This| f) { f(this) }
+}
+
