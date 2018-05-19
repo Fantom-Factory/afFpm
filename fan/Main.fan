@@ -53,6 +53,10 @@ internal class Main {
 		if (fpmRepo != null)
 			return fpmRepo
 		
+		repoUrl := Uri(repo, false)
+		if (repoUrl?.scheme == "http" || repoUrl?.scheme == "https")
+			return RemoteFanrRepository("unnamed", repoUrl)
+		
 		dir := toDir(repo)
 		if (dir != null)
 			return LocalDirRepository("dir", dir)

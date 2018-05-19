@@ -15,7 +15,8 @@ internal class Satisfier {
 		this.targetPod	= target.pod
 		this.resolver	= resolver
 		
-		// check the build dependencies exist
+		// first things first, check the immediate build dependencies exist
+		// todo does this not happen during satisfyDeps?
 		target.dependencies?.each {
 			if (resolver.resolve(it).isEmpty)
 				throw UnknownPodErr("Could not resolve dependent pod: ${it}")
