@@ -9,7 +9,8 @@ internal const class StubPodRepository : Repository {
 	override Void		delete		(PodFile podFile)		{ throw UnsupportedErr() }
 	override PodFile[]	resolve		(Depend d, Str:Obj? o)	{ throw UnsupportedErr() }
 	override PodFile[]	resolveAll	()						{ throw UnsupportedErr() }
-	
+	override Void		cleanUp		()						{ }
+
 	private new make() { }
 	
 	static const StubPodRepository instance	:= StubPodRepository()

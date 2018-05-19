@@ -45,6 +45,10 @@ internal const class LocalDirRepository : Repository {
 		
 		return [podFile]
 	}
+	
+	override Void cleanUp() {
+		fileCacheRef.cleanUp
+	}
 
 	private PodFile? getOrMake(File file) {
 		fileCache.getOrAdd(file) |->PodFile?| {

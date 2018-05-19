@@ -18,6 +18,8 @@ const class StubRepository : Repository {
 		pods.findAll { it.fits(depend) }
 	}
 	
+	override Void cleanUp() { }
+	
 	Void add(Str dependency, Str? dependents) {
 		pod 		:= Depend(dependency.replace("@", " "))
 		dependsOn	:= dependents == null ? Depend#.emptyList : dependents.split(',').exclude { it.isEmpty }.map { Depend(it, true) }

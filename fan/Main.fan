@@ -12,6 +12,7 @@ internal class Main {
 		if ("\\? -? -h -help --help".split.contains(cmdStr))
 			cmdStr = "help"
 		
+		// FIXME update cmd
 		if (cmdStr == "update")
 			cmdStr = "install"
 

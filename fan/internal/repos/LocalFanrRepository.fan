@@ -47,6 +47,11 @@ internal const class LocalFanrRepository : Repository {
 		}.exclude { it == null }.map |PodName pod->PodFile| { getOrMake(pod.file) }
 	}
 	
+	override Void cleanUp() {
+		fileCacheRef.cleanUp
+		nameCacheRef.cleanUp
+	}
+
 	private PodFile? getOrMake(File file) {
 		fileCache.getOrAdd(file) |->PodFile?| {
 			metaProps		:= readMetaProps(file)
