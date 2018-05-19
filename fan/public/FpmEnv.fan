@@ -84,13 +84,9 @@ abstract const class FpmEnv : Env {
 		
 		// ---- dump info to logs ----
 		
-		if (!targetPod.name.startsWith("afFpm"))
-			// if there's something wrong, then make sure the user sees the dump
-			if (error != null || unresolvedPods.size > 0)
-				log.info(dump)
-			 else
-				if (log.isDebug)
-					log.debug(dump)
+		// if there's something wrong, then make sure the user sees the dump
+		if (error != null || unresolvedPods.size > 0)
+			log.info(dump)
 
 		if (unresolvedPods.size > 0) {
 			log.warn(Utils.dumpUnresolved(unresolvedPods.vals))
