@@ -87,7 +87,12 @@ class InstallCmd : FpmCmd {
 
 				// update
 				log.info("FPM updating dependencies for ${buildPod.podName} ...")
-				podFiles := resolver.satisfyBuild(buildPod).findAll { it.repository.isRemote }
+				satisfied := resolver.satisfyBuild(buildPod)
+				if (satisfied.resolvedPods.isEmpty && satisfied.unresolvedPods.size > 0) {
+					log.warn(Utils.dumpUnresolved(satisfied.unresolvedPods.vals))
+					return 9
+				}
+				podFiles := satisfied.resolvedPods.findAll { it.repository.isRemote }
 				podFiles.each |podFile| {
 					log.info("Installing ${podFile.depend} to ${repo.name} (from ${podFile.repository.name})")
 					podFile.installTo(repo)
@@ -147,7 +152,12 @@ class InstallCmd : FpmCmd {
 
 			// update & install dependencies
 			log.info("Updating dependencies for ${target} ...")
-			podFiles := resolver.satisfyPod(target).findAll { it.repository.isRemote }
+			satisfied := resolver.satisfyPod(target)
+			if (satisfied.resolvedPods.isEmpty && satisfied.unresolvedPods.size > 0) {
+				log.warn(Utils.dumpUnresolved(satisfied.unresolvedPods.vals))
+				return 9
+			}
+			podFiles := satisfied.resolvedPods.findAll { it.repository.isRemote }
 			podFiles.each |podFile| {
 				log.info("Installing ${podFile.depend} to ${repo.name} (from ${podFile.repository.name})")
 				podFile.installTo(repo)
