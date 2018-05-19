@@ -108,7 +108,7 @@ internal class Utils {
 	
 	static Str dumpEnv(Depend targetPod, PodFile[] resolvedPods, FpmConfig? fpmConfig) {
 		str	:= "\n\n"
-		str += "FPM Environment:\n"
+		str += "FPM (${FpmEnv#.pod.version}) Environment:\n"
 		str += "\n"
 		str += "    Target Pod : ${targetPod}\n"
 		str += fpmConfig?.dump ?: ""

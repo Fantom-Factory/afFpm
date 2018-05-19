@@ -35,7 +35,11 @@ class HelpCmd : FpmCmd {
 	}
 
 	private Void logAvailableCmds() {
-		log.info("FPM known commands:")
+		title := "Fantom Pod Manager (FPM) v${typeof.pod.version}"
+		log.info(title)
+		log.info("".padl(title.size, '-'))
+		log.info("")
+		log.info("Known commands:")
 //		logCmdSynopsis(SetupCmd#)
 		logCmdSynopsis(HelpCmd#)
 		log.info("")

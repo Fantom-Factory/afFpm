@@ -229,22 +229,22 @@ const class FpmConfig {
 	** 
 	** pre>
 	** FPM Environment:
-	** 
 	**    Target Pod : afIoc 3.0+
-	**      Home Dir : C:\Apps\fantom-1.0.70
+	**      Base Dir : C:\
+	**  Fan Home Dir : C:\Apps\fantom-1.0.70
 	**     Work Dirs : C:\Repositories\Fantom
 	**                 C:\Apps\fantom-1.0.70
 	**      Temp Dir : C:\Repositories\Fantom\temp
 	**  Config Files : C:\Apps\fantom-1.0.70\etc\afFpm\config.props
 	** 
 	**     Dir Repos :
-	**          acme = C:\Projects\acmeApp\lib
+	**       fanHome = C:\Apps\fantom-1.0.70/lib/fan/
+	**       workDir = C:\Repositories\Fantom
 	** 
 	**    Fanr Repos :
-	**       fanHome = C:\Apps\fantom-1.0.70/lib/fan/
 	**       default = C:\Repositories\Fantom\repo-default
+	**        eggbox = http://eggbox.fantomfactory.org/fanr/
 	**       release = C:\Repositories\Fantom\repo-release
-	** fantomFactory = http://eggbox.fantomfactory.org/fanr/
 	**       repo302 = http://repo.status302.com/fanr/
 	** <pre
 	Str dump() {
