@@ -54,4 +54,6 @@ internal const class RemoteFanrRepository : Repository {
 		// should only be called on local repos
 		throw UnsupportedErr("fanr does not support pod deletion")
 	}
+
+	override Void cleanUp() { }
 }

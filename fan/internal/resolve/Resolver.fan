@@ -38,12 +38,6 @@ internal class Resolver {
 	PodFile[] satisfyBuild(BuildPod buildPod) {
 		satisfy(TargetPod(buildPod))
 	}
-
-	private PodFile[] satisfy(TargetPod target) {
-		satisfier := Satisfier(target, this) { it.log = this.log }
-		satisfier.satisfyDependencies
-		return satisfier.resolvedPods.vals
-	}
 	
 	PodFile[] resolve(Depend dependency) {
 		isLocal		// this saves ~40 ms and ~70 vs ~700 invocations on cwApp
@@ -62,6 +56,16 @@ internal class Resolver {
 				// naa, lets do the full resolve hog
 				return doResolve(dependency)
 			}
+	}
+	
+	Void cleanUp() {
+		repositories.each { it.cleanUp }
+	}
+
+	private PodFile[] satisfy(TargetPod target) {
+		satisfier := Satisfier(target, this) { it.log = this.log }
+		satisfier.satisfyDependencies
+		return satisfier.resolvedPods.vals
 	}
 	
 	private PodFile[] doResolve(Depend dependency) {

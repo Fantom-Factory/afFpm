@@ -40,6 +40,7 @@ class HelpCmd : FpmCmd {
 		log.info("".padl(title.size, '-'))
 		log.info("")
 		log.info("Known commands:")
+		// FIXME setup cmd
 //		logCmdSynopsis(SetupCmd#)
 		logCmdSynopsis(HelpCmd#)
 		log.info("")

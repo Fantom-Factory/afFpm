@@ -23,7 +23,8 @@ internal const class SinglePodRepository : Repository {
 	override Void		delete		(PodFile podFile)		{ file.delete }
 	override PodFile[]	resolveAll	()						{ [podFile] }
 	override PodFile[]	resolve		(Depend d, Str:Obj? o)	{ podFile.fits(d) ? podFile : PodFile#.emptyList }
-	
+	override Void 		cleanUp		()						{ }
+		
 	private Str:Str readMetaProps(File file) {
 		if (file.exists.not)
 			throw IOErr("File not found: ${file.normalize.osPath}")
