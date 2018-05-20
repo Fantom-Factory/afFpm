@@ -30,7 +30,7 @@ class QueryCmd : FpmCmd {
 	override Int run() {
 		log.info("FPM querying for ${target}")
 
-		repos	:= repo == null ? fpmConfig.repositories : [repo]
+		repos	:= repo == null ? fpmConfig.repositories.unique : [repo]
 		if (offline)
 			repos = repos.findAll { it.isLocal }
 		

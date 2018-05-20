@@ -251,10 +251,12 @@ const class FpmConfig {
 	}
 	
 	** Returns a list of all repositories.
+	** Note that some repositories may point to the same directory / URL.
 	Repository[] repositories() {
 		repos1 :=  dirRepos.keys.map { repository(it) }
 		repos2 := fanrRepos.keys.map { repository(it) }
-		return repos1.addAll(repos2).unique		// default and fanHome may be the same
+		// note that default, workDir, and fanHome may be the same
+		return repos1.addAll(repos2)
 	}
 
 	** Dumps debug output to a string. The string will look similar to:
