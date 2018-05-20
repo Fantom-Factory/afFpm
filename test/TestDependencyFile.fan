@@ -119,7 +119,7 @@ internal class TestDependencyFile : Test {
 		addDep("xml 1.0.70", "sys 1.0")
 		satisfyDependencies("afApp 0.2.0.225")
 
-		Utils.dumpEnv(satisfied.targetPod, satisfied.resolvedPods.vals, null) { echo(it) }
+		FpmEnv.dumpEnv(satisfied.targetPod, satisfied.resolvedPods.vals, null) { echo(it) }
 		
 		// TODO check logs for these test numbers:
 
