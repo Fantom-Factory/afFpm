@@ -1,4 +1,9 @@
 
+** This is where the real stuff happens!
+** The implementation is a bit naive and has room for improvement - but seems work well.
+** 
+** Note also, that this is a very small part of FPM! The Environment, Repositories, and Cmds all 
+** play a huge part and deflect my time away from this little class / problem.
 internal class Satisfier {
 			Log					log				:= typeof.pod.log
 			Bool				writeTraceFile	:= false
@@ -10,8 +15,7 @@ internal class Satisfier {
 			Str:UnresolvedPod	unresolvedPods	:= Str:UnresolvedPod[:]
 	
 	private	Resolver			resolver
-	private PodNode[]			initNodes		:= PodNode[,]
-	private Str:PodNode			allNodes		:= Str:PodNode[:] { it.ordered = true }
+	private Str:PodNode			podNodes		:= Str:PodNode[:] { it.ordered = true }
 	private	Duration			startTime		:= Duration.now
 
 	new make(TargetPod target, Resolver	resolver, |This|? f := null) {
@@ -19,45 +23,51 @@ internal class Satisfier {
 		this.targetPod	= target.pod
 		this.resolver	= resolver
 		
-		// first things first, check the immediate build dependencies exist
-		// todo does this not happen during satisfyDeps?
-		target.dependencies?.each {
-			if (resolver.resolve(it).isEmpty)
-				throw UnknownPodErr("Could not resolve dependent pod: ${it}")
+		initNode := PodNode {
+			it.name		= target.pod.name
+			it.initNode = true
 		}
 		
-		podNode := addInitPod(target.pod)
-		
-		if (target.dependencies != null)
-			podNode.addPodVersions([target.podFile])
+		if (target.dependencies == null) {
+			podVers := resolver.resolve(targetPod)
+			if (podVers.isEmpty)
+				throw UnknownPodErr("Could not resolve target: $targetPod")
 			
-		podNode.pickLatestVersion
+			initNode.addPodVersions(podVers)
+			// resolve should have returned the exact version, but just in case...
+			initNode.pickLatestVersion
+			
+		} else {
+			// we can't resolve buildPods 'cos the pod ain't built yet!
+			// so set the given dependencies explicitly
+			initNode.addPodVersions([target.podFile])
+		}
 		
-		if (podNode.isEmpty)
-			throw UnknownPodErr("Could not resolve target: ${podNode.name}")
+		// to save us the hassle of resolving and de-ciphering the UnresolvedPod results 
+		// just make sure we have the direct dependencies first
+		initNode.podVersions.first.dependsOn.each {
+			resolveNode(it, true)
+		}
+		
+		podNodes[initNode.name] = initNode
 	}
 	
 	This satisfyDependencies() {
 		// todo have some sort of trace / verbose flag where we show *everything*!
 		
-		// turn off debug when we're analysing ourself!
-		oldLogLevel := log.level
-		if (targetPod.name.startsWith("afFpm"))
-			log.level = LogLevel.info
-		
 		log.debug("Resolving pods for $targetPod")
 
-		allNodes.vals.each { expandNode(it, Depend[,]) }
+		podNodes.vals.each { expandNode(it, Depend[,]) }
 
 		// there's an opportunity for podPerms to overflow here! (Scary @ 9,223,372,036,854,775,807!) 
 		// but there's no Err, the number just wraps round to zero
-		podPerms  := (Int) allNodes.vals.reduce(1) |Int tot, node| { tot * node.size }
-		totalVers := (Int) allNodes.vals.reduce(0) |Int tot, node| { tot + node.size }
-		log.debug("Found ${totalVers.toLocale} versions of ${allNodes.size.toLocale} different pod" + s(allNodes.size))
+		podPerms  := (Int) podNodes.vals.reduce(1) |Int tot, node| { tot * node.size }
+		totalVers := (Int) podNodes.vals.reduce(0) |Int tot, node| { tot + node.size }
+		log.debug("Found ${totalVers.toLocale} versions of ${podNodes.size.toLocale} different pod" + s(podNodes.size))
 		
 		// reduce PodVersions into groups
 		// this can reduce the problem space from 610,397,977,600 dependency permutations to just 138,240!		
-		nos := (PodGroup[][]) allNodes.vals.map { it.reduceProblemSpace }.exclude { it->isEmpty }
+		nos := (PodGroup[][]) podNodes.vals.map { it.reduceProblemSpace }.exclude { it->isEmpty }
 
 		grpPerms	:= (Int) nos.reduce(1) |Int tot, vers| { tot * vers.size }
 		podPermsStr	:= podPerms.toLocale
@@ -187,24 +197,20 @@ internal class Satisfier {
 		}
 		
 		resolvedPods.remove(targetPod.name)
-		
-		log.level = oldLogLevel
 		return this
 	}
 	
 	private Void doWriteTraceFile() {
 		file	:= `fpm-trace-deps.txt`.toFile
 		out  	:= file.out
-		allPods := (PodFile[]) allNodes.vals.map { it.podVersions }.flatten.sort
+		allPods := (PodFile[]) podNodes.vals.map { it.podVersions }.flatten.sort
 
 		out.printLine("// Trace dependency file for $targetPod - ${DateTime.now.toLocale}")
 		out.printLine
 		allPods.each |pod| {
 			out.printLine("addDep(${pod.depend.toStr.toCode}, " + pod.dependsOn.join(", ").toCode + ")")
 		}
-		
-		initPods := (PodFile[]) initNodes.map { it.podVersions }.flatten.sort
-		out.printLine("satisfyDependencies(" + initPods.join(", ") { it.depend.toStr }.toCode + ")")
+		out.printLine("satisfyDependencies(${targetPod})")
 
 		out.flush.close
 		log.debug("Wrote dependency trace file: $file.normalize.osPath")
@@ -229,7 +235,7 @@ internal class Satisfier {
 	}
 
 	private PodFile[] availablePodVersions(Str podName) {
-		allNodes[podName].podVersions
+		podNodes[podName].podVersions
 	}
 
 	// see https://en.wikipedia.org/wiki/AC-3_algorithm
@@ -259,23 +265,21 @@ internal class Satisfier {
 			if (stack.contains(podVersion.depend).not) {
 				stack.add(podVersion.depend)			
 				podVersion.dependsOn.each |depend| {
-					innerNode := resolveNode(depend)
+					innerNode := resolveNode(depend, false)
 					expandNode(innerNode, stack)
 				}
 			}
 		}
 	}
 
-	internal PodNode addInitPod(Depend pod) {
-		podNode := resolveNode(pod)
-		initNodes.add(podNode)
-		return podNode
-	}
+	private PodNode resolveNode(Depend pod, Bool checked) {
+		vers := resolver.resolve(pod)
+		if (checked && vers.isEmpty)
+			throw UnknownPodErr("Could not resolve pod: ${pod}")
 
-	private PodNode resolveNode(Depend dependency) {
-		allNodes.getOrAdd(dependency.name) {
-			PodNode { it.name = dependency.name }
-		}.addPodVersions(resolver.resolve(dependency))
+		return podNodes.getOrAdd(pod.name) {
+			PodNode { it.name = pod.name }
+		}.addPodVersions(vers)
 	}
 	
 	private static Str s(Int size) {
@@ -295,6 +299,7 @@ internal class Satisfier {
 @Serializable
 internal class PodNode {
 	const 	Str			name
+	const	Bool		initNode
 			PodFile[]?	podVersions { private set }
 
 	new make(|This|in) { in(this) }
