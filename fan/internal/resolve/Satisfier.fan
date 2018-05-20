@@ -10,6 +10,7 @@ internal class Satisfier {
 			Duration			resolveTimeout1	:= 5sec
 			Duration			resolveTimeout2	:= 10sec
 
+			Bool				building
 			Depend				targetPod
 			Str:PodFile			resolvedPods	:= Str:PodFile[:]
 			Str:UnresolvedPod	unresolvedPods	:= Str:UnresolvedPod[:]
@@ -44,6 +45,8 @@ internal class Satisfier {
 			// we can't resolve buildPods 'cos the pod ain't built yet!
 			// so set the given dependencies explicitly
 			initNode.addPodVersions([target.podFile])
+			
+			building = true
 		}
 		
 		// to save us the hassle of resolving and de-ciphering the UnresolvedPod results 
@@ -97,14 +100,15 @@ internal class Satisfier {
 		// brute force - try every permutation of pod versions and see which ones work
 		count := 0
 		while (fin.not) {
-			// note I deleted the badPodGroups optimisation - it worked, but it added extra SECONDS to calculate! 
+			// note I deleted the badPodGroups optimisation - it worked, but it added extra SECONDS to calculate!
+			// actually - double check, I think with ~400 cached groups, it saved 1 second!
 
 			podMap.clear
 			cur.each |v, i| { grp := nos[i][v]; podMap[grp.name] = grp }
 			res := reduceDomain(podMap)
 
 			if (res != null) {			
-				// just take the first err
+				// just take the first err as it should be the most relevant with the most number of latest versions 
 				if (unsatisfied.isEmpty) {
 					badPods := logErr(res)
 					if (badPods != null)
@@ -193,7 +197,8 @@ internal class Satisfier {
 			unsatisfied.each { unresolvedPods[it.name] = it }
 		}
 		
-		resolvedPods.remove(targetPod.name)
+		if (building)
+			resolvedPods.remove(targetPod.name)
 		return this
 	}
 	
