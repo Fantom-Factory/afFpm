@@ -38,8 +38,9 @@ class Resolver {
 		return this
 	}
 	
-	Str:PodFile resolveAll() {
-		pods := Str:PodFile[:]
+	Str:PodFile resolveAll(Bool dirReposOnly) {
+		pods		 := Str:PodFile[:]
+		repositories := dirReposOnly ? repositories.findAll { it.isDirRepo } : repositories
 		repositories.map { it.resolveAll }.flatten.each |PodFile pod| {
 			if (!pods.containsKey(pod.name) || pods[pod.name].version <= pod.version)
 				pods[pod.name] = pod

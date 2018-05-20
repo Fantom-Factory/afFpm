@@ -1,9 +1,10 @@
 
 internal const class StubPodRepository : Repository {
-	override const Str		name 	:= "Stub Repository"
-	override const Uri		url		:= `stub:repo`
-	override const Bool		isLocal	:= true
-	
+	override const Str		name	 	:= "Stub Repository"
+	override const Uri		url			:= `stub:repo`
+	override const Bool		isLocal		:= true
+	override const Bool		isFanrRepo	:= false
+
 	override Void		upload		(PodFile podFile)		{ throw UnsupportedErr() }
 	override File		download	(PodFile podFile)		{ throw UnsupportedErr() }
 	override Void		delete		(PodFile podFile)		{ throw UnsupportedErr() }

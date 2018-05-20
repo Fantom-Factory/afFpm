@@ -1,10 +1,11 @@
 
 internal const class SinglePodRepository : Repository {
-	override const Str			name
-	override const Uri			url
-	override const Bool			isLocal	:= true
-			 const PodFile		podFile
-	private	 const File			file
+	override const Str		name
+	override const Uri		url
+	override const Bool		isLocal		:= true
+	override const Bool		isFanrRepo	:= false
+			 const PodFile	podFile
+	private	 const File		file
 	
 	new make(File file) {
 		this.name		= file.name

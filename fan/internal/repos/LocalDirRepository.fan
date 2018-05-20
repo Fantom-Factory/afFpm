@@ -3,6 +3,7 @@ internal const class LocalDirRepository : Repository {
 	override const Str		name
 	override const Uri		url
 	override const Bool		isLocal			:= true
+	override const Bool		isFanrRepo		:= false
 	private  const LocalRef	fileCacheRef	:= LocalRef(#fileCache.qname) |->Obj?| { File:PodFile?[:] }
 	private  const File		dir
 	private  File:PodFile?	fileCache()		{ fileCacheRef.val }
