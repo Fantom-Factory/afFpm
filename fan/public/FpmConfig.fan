@@ -155,10 +155,6 @@ const class FpmConfig {
 			repos[name] = url
 			return repos
 		}
-		
-		// if not defined, add "fanHome" as a new directory repo
-		if (!dirRepos.containsKey("fanHome"))
-			dirRepos["fanHome"] = homeDir + `lib/fan/`
 
 		// add workDirs to dirRepos (note the last dir is always fanHome, so ignore that one)
 		if (this.workDirs.size > 1)
@@ -169,6 +165,11 @@ const class FpmConfig {
 				if (!dirRepos.containsKey("workDir[$i]"))
 					dirRepos["workDir[$i]"] = dir + `lib/fan/`
 			}
+		
+		// if not defined, add "fanHome" as a new directory repo
+		// add fanHome last as these pods are _least_ important when resolving environment runtime pods
+		if (!dirRepos.containsKey("fanHome"))
+			dirRepos["fanHome"] = homeDir + `lib/fan/`
 		
 		// if "default" is not defined, set it to fanHome so FPM becomes a drop in replacement for fanr
 		// this allows people to update their fanHome env by default
@@ -250,8 +251,8 @@ const class FpmConfig {
 	**  Config Files : C:\Apps\fantom-1.0.70\etc\afFpm\config.props
 	** 
 	**     Dir Repos :
-	**       fanHome = C:\Apps\fantom-1.0.70/lib/fan/
 	**       workDir = C:\Repositories\Fantom
+	**       fanHome = C:\Apps\fantom-1.0.70/lib/fan/
 	** 
 	**    Fanr Repos :
 	**       default = C:\Repositories\Fantom\repo-default

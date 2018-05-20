@@ -7,6 +7,7 @@ internal const class RemoteFanrRepository : Repository {
 	override const Str		name
 	override const Uri		url
 	override const Bool		isLocal		:= false
+	override const Bool		isFanrRepo	:= true
 
 	new make(Str name, Uri url, Str? username := null, Str? password := null) {
 		this.name	= name

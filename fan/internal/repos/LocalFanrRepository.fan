@@ -5,6 +5,7 @@ internal const class LocalFanrRepository : Repository {
 	override const Str		name
 	override const Uri		url
 	override const Bool		isLocal			:= true
+	override const Bool		isFanrRepo		:= true
 	private  const LocalRef	fileCacheRef	:= LocalRef(#fileCache.qname) |->Obj?| { File:PodFile?[:] }
 	private  const LocalRef	nameCacheRef	:= LocalRef(#nameCache.qname) |->Obj?| { Str:PodName[][:] }
 	private  const File		dir

@@ -15,11 +15,24 @@ abstract const class FpmEnv : Env {
 	** The pod this environment is targeted to.
 	const Depend			targetPod
 
-	** A map of dependent pods that have been resolved specifically for the 'targetPod'. 
+	** Dependent pods that have been resolved specifically for 'targetPod'. 
+	** Either this or 'unresolvedPods' will be empty.
 	const Str:PodFile		resolvedPods
 	
-	** A list of unsatisfied pods for this targeted environment.
+	** Dependent pods for which FPM could not reach a consensus on which version to use.
+	** Either this or 'resolvedPods' will be empty.
 	const Str:UnresolvedPod	unresolvedPods
+
+	** Pods used in this environment.
+	** This is a combination of pods from directory repositories, overridden by any resolved pods.
+	** 
+	** If the target could not be resolved, then this defaults to the latest version of all known
+	** local pods.
+	** 
+	** By acknowledging pods from fanHome and workDirs, this environment works in a more expected 
+	** manner whereby pods not explicitly referenced can still be discovered at runtime (e.g. icons)
+	** and index meta inspected.
+	const Str:PodFile		environmentPods
 
 	@NoDoc
 	static new make() {
@@ -50,7 +63,8 @@ abstract const class FpmEnv : Env {
 			this.targetPod		= satisfied.targetPod
 			this.resolvedPods	= satisfied.resolvedPods
 			this.unresolvedPods	= satisfied.unresolvedPods
-
+			this.environmentPods= resolver.resolveAll(true).setAll(satisfied.resolvedPods)
+			
 		} catch (UnknownPodErr err) {
 			// todo auto-download / install the pod dependency!??
 			// beware, also thrown by BuildPod on malformed dependency str
@@ -60,6 +74,7 @@ abstract const class FpmEnv : Env {
 			error = err
 
 		} finally {
+			this.environmentPods= this.environmentPods	!= null ? this.environmentPods	: [:]
 			this.unresolvedPods	= this.unresolvedPods	!= null ? this.unresolvedPods	: [:]
 			this.resolvedPods	= this.resolvedPods		!= null ? this.resolvedPods		: [:]
 			this.targetPod		= this.targetPod		!= null ? this.targetPod		: Depend("??? 0")
@@ -70,14 +85,14 @@ abstract const class FpmEnv : Env {
 			if (!loggedLatest) {
 				loggedLatest = true
 				log.info("FPM: Could not target pod - defaulting to latest pod versions")
-				this.resolvedPods = resolver.resolveAll
+				this.environmentPods = resolver.resolveAll(false).setAll(resolvedPods)
 			}
 
 		if (Env.cur.vars["FPM_ALL_PODS"]?.toBool(false) ?: false)
 			if (!loggedLatest) {
 				loggedLatest = true
 				log.info("FPM: Found env var: FPM_ALL_PODS = true; making all pods available")
-				this.resolvedPods = resolver.resolveAll
+				this.environmentPods = resolver.resolveAll(false).setAll(resolvedPods)
 			}
 		
 		// ---- dump info to logs ----
@@ -91,7 +106,7 @@ abstract const class FpmEnv : Env {
 			if (!loggedLatest) {
 				loggedLatest = true
 				log.warn("Defaulting to latest pod versions")
-				this.resolvedPods = resolver.resolveAll
+				this.environmentPods = resolver.resolveAll(false).setAll(resolvedPods)
 			}
 		}
 
@@ -113,12 +128,12 @@ abstract const class FpmEnv : Env {
 	
 	** Return the list of pod names for all the pods currently installed in this environment.
 	override Str[] findAllPodNames() {
-		resolvedPods.keys 
+		environmentPods.keys 
 	}
 
 	** Resolve the pod file for the given pod name.
 	override File? findPodFile(Str podName) {
-		resolvedPods[podName]?.file
+		environmentPods[podName]?.file
 	}
 
 	** Find all the files in the environment which match a relative path such as 'etc/foo/config.props'. 

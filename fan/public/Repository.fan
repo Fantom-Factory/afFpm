@@ -9,6 +9,8 @@ const mixin Repository {
 	abstract Void		delete		(PodFile podFile)
 	abstract Bool		isLocal		()
 			 Bool		isRemote	() { !isLocal }
+	abstract Bool		isFanrRepo	()
+		 	 Bool		isDirRepo	() { !isFanrRepo }
 	abstract Void 		cleanUp		()
 	
 	abstract PodFile[]	resolveAll	()
