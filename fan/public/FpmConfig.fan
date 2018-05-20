@@ -61,7 +61,26 @@ const class FpmConfig {
 	@NoDoc
 	static new makeFromDirs(File baseDir, File homeDir, Str? envPaths) {
 		// FIXME fpm2.props
-		configFilename := Env.cur.vars.get("FPM_CONFIG_FILENAME", "fpm2.props").toUri
+		configFilename := `fpm.props`
+		
+		// grab the config filename from an env var, but only if the version matches
+		// this is useful for testing and development
+		t1 := Env.cur.vars["FPM_CONFIG_FILENAME"]
+		if (t1 != null) {
+			t2 := Uri(t1, false)
+			if (t2 != null) {
+				t3 := t2.path
+				if (t3.getSafe(0) == FpmEnv#.pod.version.toStr) {
+					t4 := t3.getSafe(1)
+					if (t4 != null) {
+						t5 := Uri(t4, false)
+						if (t5 != null)
+							configFilename = t5
+					}
+				}
+			}
+		}
+		
 		baseDir = baseDir.normalize
 		fpmFile := (File?) baseDir.plus(configFilename).normalize
 		while (fpmFile != null && !fpmFile.exists)
