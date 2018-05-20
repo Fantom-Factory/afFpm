@@ -69,7 +69,7 @@ class InstallCmd : FpmCmd {
 			
 			// install a single pod
 			if (file.ext == "pod") {
-				podFile := SinglePodRepository(file).podFile
+				podFile := PodFile(file)
 				log.info("FPM installing ${podFile.depend} to ${repo.name}")
 				podFile.installTo(repo)
 				return 0
@@ -108,7 +108,7 @@ class InstallCmd : FpmCmd {
 			if (file.isDir) {
 				log.info("FPM installing pod files from ${file.osPath}")
 				files	 := file.listFiles(Regex.glob("*.pod"))
-				podFiles := (PodFile[]) files.map { SinglePodRepository(it).podFile }
+				podFiles := (PodFile[]) files.map { PodFile(it) }
 				if (!core) podFiles = podFiles.exclude { it.isCore }
 				podFiles.each |podFile| {
 					log.info("Installing ${podFile.depend} to ${repo.name}")

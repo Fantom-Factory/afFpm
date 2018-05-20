@@ -60,7 +60,6 @@ const class FpmConfig {
 
 	@NoDoc
 	static new makeFromDirs(File baseDir, File homeDir, Str? envPaths) {
-		// FIXME fpm2.props
 		configFilename := `fpm.props`
 		
 		// grab the config filename from an env var, but only if the version matches
