@@ -3,6 +3,7 @@ internal class TestDependencyFile : Test {
 	
 	StubRepository? 	repository
 	Satisfied?			satisfied
+	Depend[]?			results
 
 	override Void setup() {
 		repository = StubRepository()
@@ -117,6 +118,11 @@ internal class TestDependencyFile : Test {
 		addDep("webmod 1.0.70", "sys 1.0, inet 1.0, web 1.0, util 1.0")
 		addDep("wisp 1.0.70", "sys 1.0, util 1.0, concurrent 1.0, inet 1.0, web 1.0")
 		addDep("xml 1.0.70", "sys 1.0")
+		
+		addDep("afIoc 3.1.0", "sys 1.0.68-1.0, concurrent 1.0.68-1.0, afBeanUtils 1.1.0-1.1")
+		addDep("afIoc 3.1.2", "sys 1.0.68-1.0, concurrent 1.0.68-1.0, afBeanUtils 1.0.8-1.0")
+		addDep("afBeanUtils 1.1.2", "sys 1.0")
+
 		satisfyDependencies("afApp 0.2.0.225")
 
 		FpmEnv.dumpEnv(satisfied.targetPod, satisfied.resolvedPods.vals, null) { echo(it) }
@@ -132,6 +138,36 @@ internal class TestDependencyFile : Test {
 		// [afFpmV2]           ...Done
 		// [afFpmV2] Cached 1218 bad dependency groups
 		// [afFpmV2] Found 8 solutions in 3sec
+		
+		actual 	 := satisfied.resolvedPods.vals.map { Depend("$it.name $it.version") }
+		verifyPod("afApp 0.2.0.225")
+		verifyPod("afBedSheet 1.5.11")
+		verifyPod("afBounce 1.1.9")
+		verifyPod("afBson 1.1.0")
+		verifyPod("afButter 1.2.9")
+		verifyPod("afColdFeet 1.4.0")
+		verifyPod("afConcurrent 1.0.20")
+		verifyPod("afDuvet 1.1.8")
+		verifyPod("afEfan 1.5.2")
+		verifyPod("afEfanXtra 1.2.0")
+		verifyPod("afFancordion 1.1.5")
+		verifyPod("afFancordionBootstrap 1.0.2")
+		verifyPod("afFormBean 1.2.2")
+		verifyPod("afGoogleAnalytics 0.1.9")
+		verifyPod("afHtmlParser 0.1.2")
+		verifyPod("afIoc 3.0.7")
+		verifyPod("afIocConfig 1.1.1")
+		verifyPod("afJobby 0.0.1")
+		verifyPod("afMongo 1.1.7")
+		verifyPod("afMorphia 1.2.2")
+		verifyPod("afPdf 0.0.1")
+		verifyPod("afPegger 0.1.0")
+		verifyPod("afPillow 1.1.5")
+		verifyPod("afPlastic 1.1.2")
+		verifyPod("afSizzle 1.0.4")
+		verifyPod("afSleepSafe 1.0.3")
+		verifyPod("afSlim 1.2.0")
+		verifyPod("graphics 1.0.70.14")
 	}
 
 	private Void addDep(Str dependency, Str? dependents := null) {
@@ -143,5 +179,10 @@ internal class TestDependencyFile : Test {
 			it.resolveTimeout1 = 5sec
 			it.resolveTimeout2 = 10sec
 		}.satisfyPod(Depend(pod))
+		results = satisfied.resolvedPods.vals.map { Depend("$it.name $it.version") }
+	}
+	
+	private Void verifyPod(Str pod) {
+		verify(results.contains(Depend(pod)), "Result does not contain: $pod")
 	}
 }
