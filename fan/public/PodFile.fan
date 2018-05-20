@@ -34,6 +34,11 @@ const class PodFile {
 		this.repository	= repository
 	}
 	
+	** Creates a 'PodFile' from a file.  
+	static new fromFile(File file) {
+		SinglePodRepository(file).podFile
+	}
+	
 	** Returns 'true' if this is a core Fantom pod.
 	Bool isCore() {
 		CorePods.instance.isCorePod(name)

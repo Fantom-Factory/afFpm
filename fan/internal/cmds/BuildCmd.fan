@@ -73,7 +73,7 @@ class BuildCmd : FpmCmd {
 				}
 			}
 			
-			podFile := SinglePodRepository(file).podFile
+			podFile := PodFile(file)
 			
 			log.info("")
 			log.info("Installing Pod:")
