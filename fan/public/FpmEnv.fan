@@ -43,11 +43,11 @@ abstract const class FpmEnv : Env {
 	new makeManual(FpmConfig fpmConfig, File[] f4PodFiles, |This|? in := null) : super.make(Env.cur) {
 		in?.call(this)	// let F4 set its own logger
 
-		title := "Fantom Pod Manager ${typeof.pod.version}"
 		if (log.isDebug) {
+			title := "Fantom Pod Manager (FPM) v${typeof.pod.version}"
 			log.debug("")
 			log.debug("${title}")
-			log.debug("".padl(title.size, '='))		
+			log.debug("".padl(title.size, '-'))		
 			log.debug("")
 		}
 
@@ -95,11 +95,20 @@ abstract const class FpmEnv : Env {
 				this.environmentPods = resolver.resolveAll(false).setAll(resolvedPods)
 			}
 		
-		// ---- dump info to logs ----
-		
+		// ---- dump stuff to logs ----
+
+		dumped := false
+
 		// if there's something wrong, then make sure the user sees the dump
-		if (error != null || unresolvedPods.size > 0)
-			log.info(dump)
+		if (error != null || unresolvedPods.size > 0) {
+			log.warn(dump)
+			dumped = true
+		}
+
+		if (!dumped && log.isDebug) {
+			log.debug(dump)
+			dumped = true
+		}
 
 		if (unresolvedPods.size > 0) {
 			log.warn(Utils.dumpUnresolved(unresolvedPods.vals))
@@ -113,7 +122,7 @@ abstract const class FpmEnv : Env {
 		if (error != null) {
 			log.err  (error.toStr)
 			log.debug(error.traceToStr)
-		}
+		}		
 	}
 
 	@NoDoc
@@ -156,7 +165,29 @@ abstract const class FpmEnv : Env {
 
 	** Dumps the FPM environment to a string. This includes the FPM Config and a list of resolved pods.
 	Str dump() {
-		Utils.dumpEnv(targetPod, resolvedPods.vals, fpmConfig)
+		dumpEnv(targetPod, resolvedPods.vals, fpmConfig)
+	}
+	
+	@NoDoc	// used by F4 FPM
+	static Str dumpEnv(Depend targetPod, PodFile[] resolvedPods, FpmConfig? fpmConfig) {
+		str	:= "\n\n"
+		str += "FPM (${FpmEnv#.pod.version}) Environment:\n"
+		str += "\n"
+		str += "    Target Pod : ${targetPod}\n"
+		str += fpmConfig?.dump ?: ""
+		str += "\n"
+		str += "Resolved ${resolvedPods.size} pod" + (resolvedPods.size == 1 ? "" : "s") + (resolvedPods.size == 0 ? "" : ":") + "\n"
+		
+		maxNom := resolvedPods.reduce(0) |Int size, pod| { size.max(pod.name.size) } as Int
+		maxVer := resolvedPods.reduce(0) |Int size, pod| { size.max(pod.version.toStr.size) }
+		resolvedPods.sort.each |podFile| {
+			str += podFile.name.justr(maxNom + 2) + " " + podFile.version.toStr.justl(maxVer) + " - " + podFile.file.osPath + "\n"
+		}
+		str += "\n"
+		
+		// unsatisfied constraints and errors should be logged separately after this dump 
+
+		return str
 	}
 }
 

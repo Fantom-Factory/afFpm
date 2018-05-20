@@ -1,4 +1,3 @@
-using fanr
 
 ** FpmConfig is gathered from a hierarchy of 'fpm.props' files. These files are looked for in the following locations:
 ** 
