@@ -15,8 +15,8 @@ class Resolver {
 	private	Bool 				isLocal
 
 	new make(Repository[] repositories) {
-		locals  := repositories.findAll { it.isLocal }
-		remotes := repositories.findAll { it.isRemote }
+		locals  := repositories.findAll { it.isLocal  }.unique	// default may == fanHome may == workDir 
+		remotes := repositories.findAll { it.isRemote }.unique
 		// make sure remotes are last so we make good use of the minVer option
 		this.repositories = locals.addAll(remotes)
 		
