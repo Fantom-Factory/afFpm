@@ -96,29 +96,51 @@ internal class Satisfier {
 		solutions	:= [Str:PodFile][,]
 		podMap 		:= Str:PodGroup[:] 
 		unsatisfied	:= UnresolvedPod[,]
+		badGroups	:= Int?[][,]
 
 		// brute force - try every permutation of pod versions and see which ones work
 		count := 0
 		while (fin.not) {
+			count++
+
 			// note I deleted the badPodGroups optimisation - it worked, but it added extra SECONDS to calculate!
 			// actually - double check, I think with ~400 cached groups, it saved 1 second!
 
-			podMap.clear
-			cur.each |v, i| { grp := nos[i][v]; podMap[grp.name] = grp }
-			res := reduceDomain(podMap)
+			badIdx := badGroups.findIndex |badGrp->Bool| {
+				cur.all |v, i->Bool| { val := badGrp[i]; return val == null || val == v }
+			}
+			if (badIdx == null) {
 
-			if (res != null) {			
-				// just take the first err as it should be the most relevant with the most number of latest versions 
-				if (unsatisfied.isEmpty) {
-					badPods := logErr(res)
-					if (badPods != null)
-						unsatisfied = badPods					
+				podMap.clear
+				cur.each |v, i| { grp := nos[i][v]; podMap[grp.name] = grp }
+				res := reduceDomain(podMap)
+	
+				if (res != null) {
+					
+					// limit bad groups - cos they become counter effective
+					if (badGroups.size < 500) {
+						depGrps := groupBy(res) |PodConstraint con->Str| { con.dependsOn.name }
+						depGrps.each |PodConstraint[] naa| {
+							names  := naa.map { it.pod.name }.add(naa.first.dependsOn.name)
+							badGrp := cur.map |v, i->Int?| {
+								names.contains(nos[i][v].name) ? v : null
+							}
+							badGroups.add(badGrp)
+						}
+					}
+	
+					// just take the first err as it should be the most relevant with the most number of latest versions 
+					if (unsatisfied.isEmpty) {
+						badPods := logErr(res)
+						if (badPods != null)
+							unsatisfied = badPods					
+					}
+	
+				} else {					
+					solutions.add(
+						podMap.map { it.latest }
+					)
 				}
-
-			} else {					
-				solutions.add(
-					podMap.map { it.latest }
-				)
 			}
 
 			// permutate through all versions of pods
@@ -161,11 +183,11 @@ internal class Satisfier {
 					log.err("Could not find solution within ${resolveTimeout2.toLocale}. Returning early.\n${stats}\nTo increase timeout set environment variable FPM_RESOLVE_TIMEOUT_2 to a valid Fantom duration, e.g. 10sec")
 				}
 			}
-			count++
 		}
 
 		solveTime := Duration.now - startTime
 		log.debug("          ...Done")
+		log.debug("Cached ${badGroups.size} " + (badGroups.size >= 500 ? "(MAX)" : "") + "bad dependency group" + s(badGroups.size))
 		log.debug("Found ${solutions.size} solution${s(solutions.size)} in ${solveTime.toLocale}")
 		
 

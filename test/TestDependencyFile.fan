@@ -118,11 +118,16 @@ internal class TestDependencyFile : Test {
 		addDep("webmod 1.0.70", "sys 1.0, inet 1.0, web 1.0, util 1.0")
 		addDep("wisp 1.0.70", "sys 1.0, util 1.0, concurrent 1.0, inet 1.0, web 1.0")
 		addDep("xml 1.0.70", "sys 1.0")
-		
+
+		// these don't make any difference as they're never used
 		addDep("afIoc 3.1.0", "sys 1.0.68-1.0, concurrent 1.0.68-1.0, afBeanUtils 1.1.0-1.1")
 		addDep("afIoc 3.1.2", "sys 1.0.68-1.0, concurrent 1.0.68-1.0, afBeanUtils 1.0.8-1.0")
 		addDep("afBeanUtils 1.1.2", "sys 1.0")
 
+		// change the dependencies here to increase problem space
+//		addDep("afGoogleAnalytics 0.1.9", "sys 1.0.70-1.0, util 1.0.70-1.0, afIoc 3.0.6-3.0, afIocConfig 1.1.0-1.1, afBedSheet 1.5.10-1.5")
+
+		
 		satisfyDependencies("afApp 0.2.0.225")
 
 		FpmEnv.dumpEnv(satisfied.targetPod, satisfied.resolvedPods.vals, null) { echo(it) }
