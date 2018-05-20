@@ -130,11 +130,10 @@ class Resolver {
 }
 
 @NoDoc	// for F4 FPM 
-class Satisfied {
-	Depend				targetPod
-	Str:PodFile			resolvedPods	:= Str:PodFile[:]
-	Str:UnresolvedPod	unresolvedPods	:= Str:UnresolvedPod[:]
+const class Satisfied {
+	const Depend			targetPod
+	const Str:PodFile		resolvedPods
+	const Str:UnresolvedPod	unresolvedPods
 	
 	new make(|This| f) { f(this) }
 }
-
