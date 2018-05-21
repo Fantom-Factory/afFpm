@@ -31,10 +31,11 @@ internal const class FpmEnvDefault : FpmEnv {
 		cmdArgs	:= fpmArgs ?: fanArgs
 		
 		// a fail safe / get out jail card for pin pointing the targeted environment 
-		idx := cmdArgs.index("-fpmPod")
+		idx := cmdArgs.index("-fpmTarget")
 		if (idx != null) {
 			podDepend := findPodDepend(cmdArgs.getSafe(idx + 1))
-			return TargetPod(podDepend)
+			if (podDepend != null)
+				return TargetPod(podDepend)
 		}
 
 		// FPM_TARGET - use it if we got it

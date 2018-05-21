@@ -187,7 +187,7 @@ internal class Satisfier {
 
 		solveTime := Duration.now - startTime
 		log.debug("          ...Done")
-		log.debug("Cached ${badGroups.size} " + (badGroups.size >= 500 ? "(MAX)" : "") + "bad dependency group" + s(badGroups.size))
+		log.debug("Cached ${badGroups.size} " + (badGroups.size >= 500 ? "(MAX) " : "") + "bad dependency group" + s(badGroups.size))
 		log.debug("Found ${solutions.size} solution${s(solutions.size)} in ${solveTime.toLocale}")
 		
 
@@ -221,6 +221,7 @@ internal class Satisfier {
 		
 		if (building)
 			resolvedPods.remove(targetPod.name)
+			
 		return this
 	}
 	

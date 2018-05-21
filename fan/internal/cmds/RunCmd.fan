@@ -27,10 +27,29 @@ class RunCmd : FpmCmd {
 
 	new make(|This| f) : super(f) { }
 	
-	override Int run() {		
+	override Int run() {
 		if (pod == null) {
 			log.warn("Run what!?")
 			return invalidArgs
+		}
+
+		// allow for explicit targets -> afFpm afGame@2.0
+		targetNotSet := target == null
+		dep := parseTarget(pod)
+		if (dep != null) {
+			if (targetNotSet)
+				target = dep
+			pod = dep.name
+		}
+	
+		// cater for launch pods such as afBedSheet and afReflux
+		if (fpmConfig.launchPods.contains(pod)) {
+			dep = parseTarget(args.getSafe(0))
+			if (dep != null) {
+				if (targetNotSet)
+					target = dep
+				args[0] = dep.name
+			}
 		}
 
 		cmds := Str[pod]
@@ -48,9 +67,8 @@ class RunCmd : FpmCmd {
 		process.mergeErr = false
 		process.env["FAN_ENV"]		= FpmEnv#.qname
 		process.env["FPM_DEBUG"]	= debug.toStr
-		if (target != null)
-			process.env["FPM_TARGET"]	= target.toStr
+		process.env["FPM_TARGET"]	= target?.toStr ?: ""	// always set this, even to an empty string, to clear any existing env vars
 
 		return process.run.join
-	}
+	}	
 }
