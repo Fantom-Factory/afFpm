@@ -23,7 +23,7 @@ internal const class SinglePodRepository : Repository {
 	override File		download	(PodFile podFile)		{ file }
 	override Void		delete		(PodFile podFile)		{ file.delete }
 	override PodFile[]	resolveAll	()						{ [podFile] }
-	override PodFile[]	resolve		(Depend d, Str:Obj? o)	{ podFile.fits(d) ? podFile : PodFile#.emptyList }
+	override PodFile[]	resolve		(Depend d, Str:Obj? o)	{ podFile.fits(d) ? [podFile] : PodFile#.emptyList }
 	override Void 		cleanUp		()						{ }
 		
 	private Str:Str readMetaProps(File file) {

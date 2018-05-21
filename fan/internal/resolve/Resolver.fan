@@ -14,7 +14,9 @@ class Resolver {
 	private Depend:PodFile[]	cash		:= Depend:PodFile[][:]
 	private	Bool 				isLocal
 
-	new make(Repository[] repositories) {
+	new make(Repository[] repositories, File[] f4PodFiles := File#.emptyList) {
+		repositories.addAll(f4PodFiles.map { PodFile(it).repository })
+		
 		locals  := repositories.findAll { it.isLocal  }.unique	// default may == fanHome may == workDir 
 		remotes := repositories.findAll { it.isRemote }.unique
 		// make sure remotes are last so we make good use of the minVer option
