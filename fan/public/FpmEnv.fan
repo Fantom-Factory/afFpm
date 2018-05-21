@@ -53,7 +53,7 @@ abstract const class FpmEnv : Env {
 
 		this.fpmConfig	= fpmConfig
 
-		resolver := Resolver(fpmConfig.repositories).localOnly { it.log	= this.log }
+		resolver := Resolver(fpmConfig.repositories, f4PodFiles).localOnly { it.log	= this.log }
 		
 		try {
 			targetPod	:= findTarget
@@ -84,7 +84,7 @@ abstract const class FpmEnv : Env {
 		if (targetPod.name == "???")
 			if (!loggedLatest) {
 				loggedLatest = true
-				log.info("FPM: Could not target pod - defaulting to latest pod versions")
+				log.warn("FPM: Could not target pod - defaulting to latest pod versions")
 				this.environmentPods = resolver.resolveAll(false).setAll(resolvedPods)
 			}
 

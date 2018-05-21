@@ -8,6 +8,7 @@ internal const class FpmEnvDefault : FpmEnv {
 
 			fpmConfig	:= FpmConfig()
 	
+			// TODO suggest a better way of dealing with F4LaunchEnv pod files!
 			// add F4 pod locations
 			f4PodPaths	:= Env.cur.vars["FAN_ENV_PODS"]?.trimToNull?.split(File.pathSep.chars.first, true) ?: Str#.emptyList
 			f4PodFiles	:= f4PodPaths.map { toFile(it) }
