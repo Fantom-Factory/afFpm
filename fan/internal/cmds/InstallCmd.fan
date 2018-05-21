@@ -20,16 +20,16 @@
 ** 
 ** To download and install a specific pod version to a local repository:
 ** 
-**   C:\> fpm install -r release myPod 2.0.10
+**   C:\> fpm install -r release "myPod 2.0.10"
 ** 
-** To upload and publish a pod to the Fantom-Factory repository:
+** To upload and publish a pod to the eggbox repository:
 ** 
-**   C:\> fpm install -r fantomFactory lib/myGame.pod
+**   C:\> fpm install -r eggbox lib/myPod.pod
 ** 
 @NoDoc	// Fandoc is only saved for public classes
 class InstallCmd : FpmCmd {
 	
-	@Opt { aliases=["r"]; help="Name or location of repository to install to (defaults to 'default')" }
+	@Opt { aliases=["r"]; help="Name or location of repository to install pods to (defaults to 'default')" }
 	Repository repo
 
 	@Opt { aliases=["c"]; help="Query and install Fantom core pods" } 
@@ -103,7 +103,7 @@ class InstallCmd : FpmCmd {
 					podFile.installTo(repo)
 				}
 				if (podFiles.isEmpty)
-					log.info("No remote dependencies found.")
+					log.info("No remote dependency updates found.")
 				else
 					log.info("Done.")
 				return 0

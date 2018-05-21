@@ -11,10 +11,6 @@ internal class Main {
 
 		if ("\\? -? -h -help --help".split.contains(cmdStr))
 			cmdStr = "help"
-		
-		// FIXME update cmd
-		if (cmdStr == "update")
-			cmdStr = "install"
 
 		cmdType := Main#.pod.type("${cmdStr.lower.capitalize}Cmd", false)
 		if (cmdType == null)
