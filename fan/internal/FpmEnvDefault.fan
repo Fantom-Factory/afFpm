@@ -79,21 +79,18 @@ internal const class FpmEnvDefault : FpmEnv {
 		if (arg == null || arg.endsWith(".fan"))
 			return null
 
-		// FIXME ?? check for version e.g. afIoc@3.0
-		dependStr := (Str?) null
-		if (arg.all { isAlphaNum })
-			dependStr = arg
+		if (arg.contains("::"))
+			arg = arg[0..<arg.index("::")]
 
-		if (dependStr == null && arg.all { isAlphaNum || equals(':') || equals('.') } && arg.contains("::"))
-			dependStr = arg[0..<arg.index("::")]
-
-		// double check valid pod names
-		if (dependStr == null || dependStr.all { isAlphaNum }.not)
-			return null
+		arg = arg.replace("@", " ")
 		
-		dependStr += " 0+"
+		if (!arg.contains(" "))
+			arg += " 0+"
 
-		return Depend(dependStr, true)
+		if (arg.all { isAlphaNum || equals(' ') || equals('.') || equals('-') || equals('+') })
+			return Depend(arg, false)
+		
+		return null
 	}
 
 	static File toFile(Str filePath) {

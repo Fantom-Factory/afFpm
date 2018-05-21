@@ -3,15 +3,15 @@ Overview
 Fantom Pod Manager (FPM) provides a targeted environment for building, testing, and running Fantom applications.
 
 It provides tools to:
- - query repositories for pod versions
- - install / uninstall pod versions
- - update dependencies for applications
+ - query repositories for pods
+ - install / delete pods to / from repositories
+ - update dependencies for pods and Fantom projects
 
-It is one of those boring system libraries you quickly find you can't do without!
+It is one of those boring system libraries you can't do without!
 
-A typical Fantom installation only allows one version of any given pod. This works fine if you're just developing and running the one application. But if you're developing multiple applications, each requiring different versions of the same pod; then you either need multiple Fantom environments, one for each application, ... or you need FPM.
+A typical Fantom installation only allows one version of any given pod. This works fine when developing or running just one application. But when developing multiple projects, each requiring different versions of the same pod; then you either need multiple Fantom environments (one for each application) ... or you need FPM.
 
-FPM maintains a local [fanr file repository]`docFanr::FileRepos` of Fantom pods, where it keeps multiple versions of the same pod. When a Fantom application is built, test, or run via FPM; then from that repository, FPM cherry picks just the pod versions you need.
+FPM maintains a local [fanr file repository]`docFanr::FileRepos` of Fantom pods, where it can keep multiple versions of the same pod. When a Fantom application is built, test, or run via FPM; then from that repository, FPM cherry picks just the pod versions you need.
 
 
 
@@ -27,39 +27,31 @@ Fantom Pod Manager 0.0.8
 
 Setting up FPM...
 
-  Creating: C:\Apps\fantom-1.0.68\bin\fpm.bat
+Creating: C:\Apps\fantom-1.0.70\bin\fpm.bat
 
-  Creating: C:\Apps\fantom-1.0.68\etc\afFpm\fpm.props
-
-  Publishing pods from C:\Apps\fantom-1.0.68\lib\fan into repo 'default'...
-    Publishing afBedSheet 1.5.0 to default
-    Publishing afBeanUtils 1.0.8 to default
-    Publishing afIoc 3.0.0 to default
-    ...
-
-Current Configuration
-      Home Dir : C:\Apps\fantom-1.0.68
-     Work Dirs : C:\Apps\fantom-1.0.68
-      Pod Dirs : (none)
-      Temp Dir : C:\Apps\fantom-1.0.68\temp
-  Config Files : C:\Apps\fantom-1.0.68\etc\afFpm\fpm.props
-
-    File Repos :
-       default = C:\Apps\fantom-1.0.68\fpmRepo-default
-
-    Fanr Repos :
- fantomFactory = http://eggbox.fantomfactory.org/fanr/
-     status302 = http://repo.status302.com/fanr/
-        fantom = http://fantom.org/fanr/
+Creating: C:\Apps\fantom-1.0.70\etc\afFpm\fpm.props
 
 FPM setup complete.
+
+Current Configuration:
+      Base Dir : C:\
+  Fan Home Dir : C:\Apps\fantom-1.0.70
+     Work Dirs : C:\Apps\fantom-1.0.70
+      Temp Dir : C:\Apps\fantom-1.0.70\temp
+  Config Files : C:\Apps\fantom-1.0.70\etc\afFpm\fpm.props
+
+     Dir Repos :
+       workDir = C:\Apps\fantom-1.0.70
+       fanHome = C:\Apps\fantom-1.0.70
+
+    Fanr Repos :
+       default = C:\Apps\fantom-1.0.70\lib\fan
+        eggbox = http://eggbox.fantomfactory.org/fanr/
 
 Have fun! :)
 <pre
 
-The 'setup' command creates an 'fpm.bat' file, an 'fpm.props' file, and publishes any non-core pods to a local repository.
-
-You can now use 'fpm' from the command line to download, install, and run Fantom apps:
+The 'setup' command creates an 'fpm.bat' file and a default 'fpm.props' file. You can now use 'fpm' from the command line to download, install, and run Fantom apps:
 
 To install a library:
 
@@ -73,7 +65,7 @@ To update dependencies for an app:
 
   C:\> fpm update myApp
 
-The 'update' command in particular is very helpful. If no pod or app is given, it looks for a 'build.fan' in the current directory and parses that for dependencies.
+The 'update' command in particular is very helpful. If no pod or app is given, it looks for a 'build.fan' in the current directory and parses it for dependencies.
 
 If you've just cloned a code repository from BitBucket or GitHub, then a quick 'fpm update' from the project directory is all you need to download all the required dependencies!
 
@@ -85,10 +77,11 @@ FPM needs to know where it can find different pod versions. This is the *FPM Env
 
 Pods may be found in:
 
- - **Pod Directories** - arbitrary directories that contain pods. By default the relative paths 'lib/' and 'lib/fan/' are used, which are relative to the current working directory
- - **File Repositories** - named local fanr repositories, like 'C:/Apps/fantom-1.0.68/fpmRepo-default/'
- - **Work Directories** - includes the Fantom home directory. Also taken from the 'FAN_ENV_PATH' environment variable
- - **Fanr Repositories** - named remote fanr repositories, like 'http://eggbox.fantomfactory.org/fanr'
+ - **Directory Repositories** - arbitrary directories that contain pods. Work directories and the Fantom Home directories are added to this list.
+
+   By default the relative paths 'lib/' and 'lib/fan/' are used, which are relative to the current working directory.
+
+ - **Fanr Repositories** - named local or remote fanr repositories.
 
 To see how the FPM environment is configured on your system, type 'fpm' on it's own:
 
@@ -99,9 +92,9 @@ Fantom Pod Manager
 ==================
 
 FPM Environment:
-      Home Dir : C:\Apps\fantom-1.0.68
+      Home Dir : C:\Apps\fantom-1.0.70
      Work Dirs : C:\Repositories\Fantom
-                 C:\Apps\fantom-1.0.68
+                 C:\Apps\fantom-1.0.70
       Pod Dirs : (none)
               ...
               ...
@@ -114,9 +107,9 @@ FPM Config
 **********
 FPM gathers config for its environment from a series of 'fpm.props' files. These files are looked for in the following locations:
 
- - './fpm.props'
- - '<WORK_DIR>/etc/afFpm/fpm.props'
  - '<FAN_HOME>/etc/afFpm/fpm.props'
+ - '<WORK_DIR>/etc/afFpm/fpm.props'
+ - '<currentDir>/fpm.props'
 
 Note that the config files are additive but the values are not. If all 3 files exist, then all 3 files are merged together, with config values from a more specific file *replacing* (or overriding) values found in less specific one.
 
@@ -156,7 +149,7 @@ FANDOC: afFpm::InstallCmd
 
 uninstall
 =========
-FANDOC: afFpm::UninstallCmd
+FANDOC: afFpm::DeleteCmd
 
 update
 ======
@@ -170,11 +163,13 @@ FANDOC: afFpm::HelpCmd
 
 Javascript Environments
 ***********************
-FPM lets you easily run Fantom applications and tests in a Javascript environment; which for quick tests, may be easier that sparking up a web server and browser. Use the '-js' option available in the 'run' and 'test' commands:
+FPM lets you run Fantom applications and tests in a Javascript environment; which for quick tests, is easier than sparking up a web server and browser! Use the '-js' option available in the 'run' and 'test' commands:
 
   C:\> fpm run -js myPod
 
   C:\> fpm test -js myPod
+
+Note the Javascript environment requires NodeJS to be installed on your system.
 
 
 
@@ -204,7 +199,7 @@ Continually setting up environment variables can be tiresome. That is why FPM co
 
 Debugging
 *********
-Providing a targeted environment is a tricky business and sometimes doesn't herald the results you expect - especially if you have a couple of 'fpm.props' files and / or multiple local repositories. To combat this, you can turn FPM debugging for any command by using the 'debug' or '-d' option:
+Providing a targeted environment is a tricky business and sometimes doesn't herald the results you expect - especially if you have a couple of 'fpm.props' files and / or multiple local repositories. To combat this, you can turn on FPM debugging for any command by using the 'debug' or '-d' option:
 
   C:\> fpm build -debug
 

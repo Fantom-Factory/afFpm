@@ -13,36 +13,34 @@
 ** 
 ** Examples:
 **   C:\> fpm build
-**   C:\> fpm build compileTask -repo release
+**   C:\> fpm build compileTask -r release
 ** 
 @NoDoc	// Fandoc is only saved for public classes
 class BuildCmd : FpmCmd {
 	
 	@Opt { aliases=["r"]; help="Name or location of the repository to install built pods to (defaults to 'default')" }
-	Repository? repo
+	Repository repo
 
 	@Arg { help="The build tasks to execute (defaults to 'compile')" }
-	Str[]?	tasks	:= ["compile"]
+	Str[]	tasks	:= ["compile"]
 
-	new make(|This| f) : super(f) { }
+	new make(|This| f) : super(f) {
+		if (repo == null) repo = fpmConfig.repository("default")
+	}
 
+	** Note this is VERY similar to the RUN command - but with 'build.fan' as the default pod
 	override Int run() {
-		fanFile	:= Env.cur.os == "win32" ? `bin/fan.bat` : `bin/fan`
-		fanCmd	:= (Env.cur.homeDir + fanFile).normalize.osPath
-		cmds	:= tasks
 		target	:= "build.fan"
-		cmds.insert(0, target)
-		cmds.insert(0, fanCmd)
+		cmds	:= [target].addAll(tasks)
 
 		buildPod := BuildPod(target)
 
-//		// FIXME if a build pod is not found, lets just run the build.fan
-//		if (buildPod.errCode == "notBuildPod")
-//			return RunCmd() {
-//				if (it.args == null)
-//					it.args = Str[,]
-//				it.args.add("build.fan")
-//			}.run
+		// if a build pod is not found, lets just run the build.fan
+		if (buildPod.errCode == "notBuildPod")
+			return RunCmd() {
+				it.pod = "build.fan"
+				it.args = tasks
+			}.run
 
 		if (buildPod.errMsg != null) {
 			log.warn("Could not compile script - ${buildPod.errMsg}")
@@ -51,7 +49,7 @@ class BuildCmd : FpmCmd {
 
 		log.info("FPM building ${buildPod}")
 
-		process := Process2(cmds)
+		process := ProcessFactory.fanProcess(cmds)
 		process.mergeErr = false
 		process.env["FAN_ENV"]		= FpmEnv#.qname
 		process.env["FPM_DEBUG"]	= debug.toStr
@@ -60,28 +58,26 @@ class BuildCmd : FpmCmd {
 		if (retVal != 0)
 			return retVal
 
-		if (repo != null) {
-			file := buildPod.outPodDir.plusSlash.plusName(buildPod.podName  + ".pod").toFile.normalize
-			
-			if (file.exists.not) {
-				// there could be an env mis-match, so try again
-				file = (fpmConfig.workDirs.first + `lib/fan/` + `${buildPod.podName}.pod`).normalize
-
-				if (file.exists.not) {				
-					log.warn("Pod file does not exist: ${file.osPath}")
-					return 1
-				}
-			}
-			
-			podFile := PodFile(file)
-			
-			log.info("")
-			log.info("Installing Pod:")
-			podFile.installTo(repo)
-
-			log.info("  Deleting ${file.normalize.osPath}")
-			podFile.delete
+		file := buildPod.outPodDir.plusSlash.plusName(buildPod.podName  + ".pod").toFile.normalize
+		
+		if (file.exists.not) {
+			// there could be an env mis-match, so try again
+			file = (fpmConfig.workDirs.first + `lib/fan/` + `${buildPod.podName}.pod`).normalize
 		}
+
+		if (file.exists.not) {				
+			log.warn("Pod file does not exist: ${file.osPath}")
+			return 1
+		}
+		
+		podFile := PodFile(file)
+		
+		log.info("")
+		log.info("Installing ${podFile.depend} to ${repo.name} (${repo.url})")
+		podFile.installTo(repo)
+
+		log.info("  Deleting ${file.normalize.osPath}")
+		podFile.delete
 
 		return 0
 	}

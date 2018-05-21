@@ -9,6 +9,12 @@ internal class Main {
 		if (cmdStr == null)
 			cmdStr = "dump"
 
+//		while (cmdStr.startsWith("-"))
+//			-r repo
+//			-u username
+//			-p password
+//			-t target
+		
 		if ("\\? -? -h -help --help".split.contains(cmdStr))
 			cmdStr = "help"
 
