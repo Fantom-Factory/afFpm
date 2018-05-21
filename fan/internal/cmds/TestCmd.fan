@@ -29,8 +29,17 @@ class TestCmd : FpmCmd {
 	
 	override Int run() {
 		if (pod == null) {
-			log.warn("Run what!?")
+			log.warn("Test what!?")
 			return invalidArgs
+		}
+
+		// allow for explicit targets -> afFpm afGame@2.0
+		targetNotSet := target == null
+		dep := parseTarget(pod)
+		if (dep != null) {
+			if (targetNotSet)
+				target = dep
+			pod = dep.name
 		}
 
 		cmds := Str[pod]
@@ -48,8 +57,7 @@ class TestCmd : FpmCmd {
 		process.mergeErr = false
 		process.env["FAN_ENV"]		= FpmEnv#.qname
 		process.env["FPM_DEBUG"]	= debug.toStr
-		if (target != null)
-			process.env["FPM_TARGET"]	= target.toStr
+		process.env["FPM_TARGET"]	= target?.toStr ?: ""	// always set this, even to an empty string, to clear any existing env vars
 
 		return process.run.join
 	}

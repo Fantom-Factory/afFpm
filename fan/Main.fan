@@ -38,7 +38,7 @@ internal class Main {
 		return cmd.run	
 	}
 
-	private static Depend? parseTarget(Field field, Str arg) {
+	private static Depend parseTarget(Field field, Str arg) {
 		dep := arg.replace("@", " ")
 		if (!dep.contains(" "))
 			dep += " 0+"

@@ -58,7 +58,7 @@ FPM_TRACE = true
 FPM_RESOLVE_TIMEOUT_1 = 5sec
 FPM_RESOLVE_TIMEOUT_2 = 10sec
 FPM_CONFIG_FILENAME	= 0.2.0/fpm2.props
- 
+ -fpmTarget
  
 FPM: Building cwApp 0.2.0.225
 =============================

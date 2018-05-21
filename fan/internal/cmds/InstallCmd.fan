@@ -59,6 +59,11 @@ class InstallCmd : FpmCmd {
 		// because the InstallCmd is so varied, lets have individual titles 
 //		log.info("FPM installing ${pod}"))
 		
+		if (pod == null) {
+			log.warn("Install what!?")
+			return invalidArgs
+		}
+		
 		resolver := Resolver(fpmConfig.repositories)
 		resolver.maxPods	= 1
 		resolver.corePods	= core
@@ -170,12 +175,5 @@ class InstallCmd : FpmCmd {
 		}
 		
 		throw Err("Unknown target: $pod")
-	}
-	
-	private static Depend? parseTarget(Str arg) {
-		dep := arg.replace("@", " ")
-		if (!dep.contains(" "))
-			dep += " 0+"
-		return Depend(dep, true)
 	}
 }
