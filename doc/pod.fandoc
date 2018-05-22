@@ -158,6 +158,8 @@ Note that the config files are additive but the values are not. If all 3 files e
 
 '<WORK_DIR>' may be specified with the 'FPM_ENV_PATH' environment variable. This means that **ALL** the config for FPM may live *outside* of the Fantom installation. The only FPM file that needs to live in the Fantom installation is the 'afFpm.pod' file itself.
 
+Have a read of your 'fpm.props' file, it contains lots of useful comments and instructions!
+
 **Note:** To get the most out of FPM, you should edit 'fpm.props' and add a local fanr repository for 'default':
 
   fanrRepo.default	= ${fanHome}repo-default

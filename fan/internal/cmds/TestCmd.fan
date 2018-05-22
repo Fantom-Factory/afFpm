@@ -46,14 +46,14 @@ class TestCmd : FpmCmd {
 		if (args != null)
 			cmds.addAll(args)
 
-		if (javascript)
-			throw UnsupportedErr("-js")
-			// FIXME run javascript
-//			cmds.insert(0, "compilerJs::NodeRunner blah blah blah")
+		if (javascript) {
+			cmds.insert(0, "-test")
+			cmds.insert(0, "compilerJs::NodeRunner")
+		}
 
 		log.info("FPM testing " + cmds.join(" "))
 		
-		process := ProcessFactory.fantProcess(cmds)
+		process := javascript ? ProcessFactory.fanProcess(cmds) : ProcessFactory.fantProcess(cmds)
 		process.mergeErr = false
 		process.env["FAN_ENV"]		= FpmEnv#.qname
 		process.env["FPM_DEBUG"]	= debug.toStr

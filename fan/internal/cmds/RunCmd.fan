@@ -41,7 +41,7 @@ class RunCmd : FpmCmd {
 				target = dep
 			pod = dep.name
 		}
-	
+		
 		// cater for launch pods such as afBedSheet and afReflux
 		if (fpmConfig.launchPods.contains(pod)) {
 			dep = parseTarget(args.getSafe(0))
@@ -56,10 +56,10 @@ class RunCmd : FpmCmd {
 		if (args != null)
 			cmds.addAll(args)
 
-		if (javascript)
-			throw UnsupportedErr("-js")
-			// FIXME run javascript
-//			cmds.insert(0, "compilerJs::NodeRunner blah blah blah")
+		if (javascript) {
+			cmds.insert(0, "-run")
+			cmds.insert(0, "compilerJs::NodeRunner")
+		}
 
 		log.info("FPM running " + cmds.join(" "))
 
@@ -67,7 +67,7 @@ class RunCmd : FpmCmd {
 		process.mergeErr = false
 		process.env["FAN_ENV"]		= FpmEnv#.qname
 		process.env["FPM_DEBUG"]	= debug.toStr
-		process.env["FPM_TARGET"]	= target?.toStr ?: ""	// always set this, even to an empty string, to clear any existing env vars
+		process.env["FPM_TARGET"]	= target?.toStr ?: pod	// always set this, to clear any existing env vars. Use 'pod' as fall back to pass the .fan scripts in 
 
 		return process.run.join
 	}	

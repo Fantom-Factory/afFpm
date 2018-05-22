@@ -127,8 +127,8 @@ class InstallCmd : FpmCmd {
 			
 			// install a directory of pods
 			if (file.isDir) {
-				log.info("FPM installing pod files from ${file.osPath}")
-				files	 := file.listFiles(Regex.glob("*.pod"))
+				files := file.listFiles(Regex.glob("*.pod"))
+				log.info("FPM installing ${file.size} pod files from ${file.osPath}")
 				podFiles := (PodFile[]) files.map { PodFile(it) }
 				if (!core) podFiles = podFiles.exclude { it.isCore }
 				podFiles.each |podFile| {
