@@ -13,6 +13,8 @@ internal const class RemoteFanrRepository : Repository {
 		this.name	= name
 		this.url	= url
 		this.repo	= Repo.makeForUri(url, username, password)
+		
+		// TODO Online repos to switch themselves off if they find an error - to save 1000s of errs!
 	}
 
 	override Void upload(PodFile podFile) {

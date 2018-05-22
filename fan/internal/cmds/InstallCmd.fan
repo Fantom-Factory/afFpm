@@ -35,12 +35,15 @@ class InstallCmd : FpmCmd {
 	@Opt { aliases=["c"]; help="Query and install Fantom core pods" } 
 	Bool core
 	
+	@Opt { aliases=["o"]; help="If specified, then only local repositories will be queried" }
+	Bool offline
+	
 	@Opt { aliases=["u"]; help="Username for remote fanr authentication" }
 	Str? username
 	
 	@Opt { aliases=["p"]; help="Password for remote fanr authentication" }
 	Str? password
-	
+
 	@Arg { help="location or query for pod" }
 	Str? pod
 
@@ -68,6 +71,9 @@ class InstallCmd : FpmCmd {
 		resolver.maxPods	= 1
 		resolver.corePods	= core
 		resolver.log		= log
+		
+		if (offline)
+			resolver.localOnly
 		
 		file := FileUtils.toFile(pod).normalize
 		if (file.exists) {
@@ -97,15 +103,25 @@ class InstallCmd : FpmCmd {
 					log.warn(Utils.dumpUnresolved(satisfied.unresolvedPods.vals))
 					return 9
 				}
-				podFiles := satisfied.resolvedPods.findAll { it.repository.isRemote }
-				podFiles.each |podFile| {
-					log.info("Installing ${podFile.depend} to ${repo.name} (from ${podFile.repository.name})")
-					podFile.installTo(repo)
+				
+				if (repo.isDirRepo) {
+					satisfied.resolvedPods.each {
+						it.installTo(repo)						
+					}
+					log.info("Copied ${satisfied.resolvedPods.size} pods to ${repo.url.toFile.normalize.osPath}")
+
+				} else {
+					podFiles := satisfied.resolvedPods.findAll { it.repository.isRemote }
+					podFiles.each |podFile| {
+						log.info("Installing ${podFile.depend} to ${repo.name} (from ${podFile.repository.name})")
+						podFile.installTo(repo)
+					}
+					if (podFiles.isEmpty)
+						log.info("No remote dependency updates found.")
+					else
+						log.info("Done.")
 				}
-				if (podFiles.isEmpty)
-					log.info("No remote dependency updates found.")
-				else
-					log.info("Done.")
+
 				return 0
 			}
 			

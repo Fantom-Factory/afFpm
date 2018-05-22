@@ -21,53 +21,96 @@ Install FPM via 'fanr', then run the setup command:
 
 pre>
 C:\> fan afFpm setup
-
-Fantom Pod Manager 0.0.8
-========================
-
-Setting up FPM...
-
-Creating: C:\Apps\fantom-1.0.70\bin\fpm.bat
-
-Creating: C:\Apps\fantom-1.0.70\etc\afFpm\fpm.props
-
-FPM setup complete.
-
-Current Configuration:
-      Base Dir : C:\
-  Fan Home Dir : C:\Apps\fantom-1.0.70
-     Work Dirs : C:\Apps\fantom-1.0.70
-      Temp Dir : C:\Apps\fantom-1.0.70\temp
-  Config Files : C:\Apps\fantom-1.0.70\etc\afFpm\fpm.props
-
-     Dir Repos :
-       workDir = C:\Apps\fantom-1.0.70
-       fanHome = C:\Apps\fantom-1.0.70
-
-    Fanr Repos :
-       default = C:\Apps\fantom-1.0.70\lib\fan
-        eggbox = http://eggbox.fantomfactory.org/fanr/
-
-Have fun! :)
 <pre
 
 The 'setup' command creates an 'fpm.bat' file and a default 'fpm.props' file. You can now use 'fpm' from the command line to download, install, and run Fantom apps:
 
-To install a library:
+To install a library and all its dependencies:
 
   C:\> fpm install afIoc
 
-To run an app:
+To run an application:
 
   C:\> fpm run myApp
 
-To update dependencies for an app:
+To update dependencies:
 
   C:\> fpm update myApp
 
 The 'update' command in particular is very helpful. If no pod or app is given, it looks for a 'build.fan' in the current directory and parses it for dependencies.
 
 If you've just cloned a code repository from BitBucket or GitHub, then a quick 'fpm update' from the project directory is all you need to download all the required dependencies!
+
+
+
+FPM How To...
+*************
+These assume you have a remote fanr repository configured in 'fpm.props'. Note that [Eggbox]`http://eggbox.fantomfactory.org/` is configured by default.
+
+Note that in any command below, 'update' may be used as an alias for 'install'.
+
+
+
+...download a new library
+=========================
+Use the 'install' command:
+
+  C:\> fpm install podName
+
+If the pod doesn't exist locally, it will be downloaded along with any (transient) dependencies it needs.
+
+
+
+...update a library
+===================
+Use the 'install' command:
+
+  C:\> fpm install podName
+
+If a newer version exists online, it will be downloaded along with any (transient) dependencies it needs.
+
+
+
+...update dependencies for a library
+====================================
+Use the 'install' command with a specific version:
+
+  C:\> fpm install podName@2.0.0
+
+If newer dependencies exists online, they will be downloaded.
+
+
+
+...update dependencies for a project
+====================================
+Use the 'install' command, on its own or specify a build file:
+
+  C:\> fpm install
+  C:\> fpm install build.fan
+
+The build file will be parsed for project dependencies, which are queried and downloaded should newer versions exist online.
+
+
+
+...copy dependencies in to a directory
+======================================
+Use the 'install' command, specifying the directory as the target repository:
+
+  C:\> fpm install podName -r /lib/fan/
+
+'podName.pod' and all its dependencies will be copied into the target directory.
+
+
+
+...install a directory of library files
+=======================================
+Use the 'install' command, specifying the directory the source:
+
+  C:\> fpm install /lib/fan/
+
+All the pods found in '/lib/fan/' will be installed for future use.
+
+This is handy for absorbing a new installation of SkySpark to develop against.
 
 
 
@@ -115,6 +158,10 @@ Note that the config files are additive but the values are not. If all 3 files e
 
 '<WORK_DIR>' may be specified with the 'FPM_ENV_PATH' environment variable. This means that **ALL** the config for FPM may live *outside* of the Fantom installation. The only FPM file that needs to live in the Fantom installation is the 'afFpm.pod' file itself.
 
+**Note:** To get the most out of FPM, you should edit 'fpm.props' and add a local fanr repository for 'default':
+
+  fanrRepo.default	= ${fanHome}repo-default
+
 
 
 FPM Commands
@@ -122,6 +169,10 @@ FPM Commands
 To build, test, or run a fantom application (or script), FPM needs to know which pod or application it should provide dependencies for. This is known as the *target pod*.
 
 It is possible to use environment variables to set this up (See [Behind the scenes]`#behindTheScenes`), but it is far easier to launch your application using 'fpm' itself. See 'build', 'test', and 'run' commands for details. Note these commands spawn extra processes that launch your Fantom build / program / test.
+
+So there are two types of commands:
+ - those that execute Fantom code: 'build', 'test', 'run'
+ - those that manage repositories: 'query', 'install', 'delete'
 
 setup
 =====
@@ -147,17 +198,9 @@ install
 =======
 FANDOC: afFpm::InstallCmd
 
-uninstall
+delete
 =========
 FANDOC: afFpm::DeleteCmd
-
-update
-======
-FANDOC: afFpm::UpdateCmd
-
-help
-====
-FANDOC: afFpm::HelpCmd
 
 
 
@@ -208,52 +251,54 @@ Then when invoked, FPM dumps a full trace of the resolved environment. The resol
 pre>
 C:\Projects>fpm run -d flux
 
-FPM: Running flux
-=================
-
-Running flux
-[debug] [afFpm] Fantom Pod Manager 0.0.8
-[debug] [afFpm] ========================
+FPM running flux
+[debug] [afFpm]
+[debug] [afFpm] Fantom Pod Manager (FPM) v0.2.0
+[debug] [afFpm] -------------------------------
+[debug] [afFpm]
 [debug] [afFpm] Resolving pods for flux 0+
-[debug] [afFpm] Found 16 versions of 6 different pods
-[debug] [afFpm] Calculated  10 dependency pod permutation
+[debug] [afFpm] Found 6 versions of 6 different pods
+[debug] [afFpm] Calculated   1 dependency pod permutation
 [debug] [afFpm] Collapsed to 1 dependency group permutation
-[debug] [afFpm] Stated problem space in 126ms
+[debug] [afFpm] Stated problem space in 35ms
 [debug] [afFpm] Solving...
 [debug] [afFpm]           ...Done
 [debug] [afFpm] Cached 0 bad dependency groups
-[debug] [afFpm] Found 1 solution in 9ms
+[debug] [afFpm] Found 1 solution in 3ms
 [debug] [afFpm]
 
-FPM Environment:
+FPM (0.2.0) Environment:
 
-   Target Pod : flux 0+
-      Home Dir : C:\Apps\fantom-1.0.68
-     Work Dirs : C:\Repositories\Fantom
-                 C:\Apps\fantom-1.0.68
-      Pod Dirs : (none)
-      Temp Dir : C:\Repositories\Fantom\temp
-  Config Files : C:\Repositories\Fantom\etc\afFpm\fpm.props
+    Target Pod : flux 0+
+      Base Dir : C:\
+  Fan Home Dir : C:\Apps\fantom-1.0.70
+     Work Dirs : C:\Repositories-Fantom\workDir
+                 C:\Apps\fantom-1.0.70
+      Temp Dir : C:\Repositories-Fantom\workDir\temp
+  Config Files : C:\Repositories-Fantom\workDir\etc\afFpm\fpm.props
 
-    File Repos :
-       default = C:\Repositories\Fantom\repo-default
-       release = C:\Repositories\Fantom\repo-release
+     Dir Repos :
+       workDir = C:\Repositories-Fantom\workDir\lib\fan
+       fanHome = C:\Apps\fantom-1.0.70\lib\fan
 
     Fanr Repos :
- fantomFactory = http://eggbox.fantomfactory.org/fanr/
-     status302 = http://repo.status302.com/fanr/
-        fantom = http://fantom.org/fanr/
+       default = file:/C:/Repositories-Fantom/repo-default/
+        eggbox = http://eggbox.fantomfactory.org/fanr/
 
 Resolved 6 pods:
-    compiler 1.0.67 - C:\Apps\fantom-1.0.68\lib\fan\compiler.pod
-  concurrent 1.0.68 - C:\Apps\fantom-1.0.68\lib\fan\concurrent.pod
-        flux 1.0.67 - C:\Apps\fantom-1.0.68\lib\fan\flux.pod
-         fwt 1.0.68 - C:\Apps\fantom-1.0.68\lib\fan\fwt.pod
-         gfx 1.0.68 - C:\Apps\fantom-1.0.68\lib\fan\gfx.pod
-         sys 1.0.68 - C:\Apps\fantom-1.0.68\lib\fan\sys.pod
+    compiler 1.0.70 - C:\Apps\fantom-1.0.70\lib\fan\compiler.pod
+  concurrent 1.0.70 - C:\Apps\fantom-1.0.70\lib\fan\concurrent.pod
+        flux 1.0.70 - C:\Apps\fantom-1.0.70\lib\fan\flux.pod
+         fwt 1.0.70 - C:\Apps\fantom-1.0.70\lib\fan\fwt.pod
+         gfx 1.0.70 - C:\Apps\fantom-1.0.70\lib\fan\gfx.pod
+         sys 1.0.70 - C:\Apps\fantom-1.0.70\lib\fan\sys.pod
 <pre
 
-Debug may also be turned on all the time by adding this line to '%FAN_HOME%/etc/sys/log.props':
+Debug may also be enabled by setting the 'FPM_DEBUG' environment variable to 'true':
+
+  C:\> set FPM_DEBUG = true
+
+Debug can also be turned on by adding this line to '%FAN_HOME%/etc/sys/log.props':
 
   afFpm=debug
 
