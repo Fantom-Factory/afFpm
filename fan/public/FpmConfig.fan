@@ -120,12 +120,13 @@ const class FpmConfig {
 		strInterpol := |Str? str->Str?| {
 			if (str == null)
 				return null
+			// don't replace with osPath because it has a trailing slash on nix, but not on windows!
 			if ((this.homeDir as File) != null)
-				str = str.replace("\$fanHome", homeDir.osPath).replace("\${fanHome}", homeDir.osPath)
+				str = str.replace("\$fanHome", homeDir.uri.toStr).replace("\${fanHome}", homeDir.uri.toStr)
 			if ((this.workDirs as File[]) != null)
-				str = str.replace("\$workDir", workDirs.first.osPath).replace("\${workDir}", workDirs.first.osPath)
+				str = str.replace("\$workDir", workDirs.first.uri.toStr).replace("\${workDir}", workDirs.first.uri.toStr)
 			if ((this.tempDir as File) != null)
-				str = str.replace("\$tempDir", tempDir.osPath).replace("\${tempDir}", tempDir.osPath)
+				str = str.replace("\$tempDir", tempDir.uri.toStr).replace("\${tempDir}", tempDir.uri.toStr)
 			return str
 		}
 
