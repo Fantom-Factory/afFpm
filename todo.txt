@@ -1,4 +1,4 @@
-
+.
 config.mode = overwrite / addative
 
 build build.fan
