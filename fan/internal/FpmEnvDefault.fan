@@ -1,4 +1,7 @@
 
+** Originally, this existed so I could create an F4 version.
+** But I guess this *could* now be merged in to FpmEnv.
+** Hmm... but I like the split / separation of concerns!
 internal const class FpmEnvDefault : FpmEnv {
 
 	static new make() {
@@ -26,7 +29,7 @@ internal const class FpmEnvDefault : FpmEnv {
 	
 	private new makeManual(FpmConfig fpmConfig, File[] podFiles, |This|? in := null) : super.makeManual(fpmConfig, podFiles, in) { }
 
-	override TargetPod findTarget() {
+	override TargetPod? findTarget() {
 		fanArgs	:= Env.cur.args
 		fpmArgs	:= Utils.splitQuotedStr(Env.cur.vars["FPM_TARGET"])
 		cmdArgs	:= fpmArgs ?: fanArgs
@@ -50,6 +53,10 @@ internal const class FpmEnvDefault : FpmEnv {
 			if (podDepend != null) {
 				return TargetPod(podDepend)
 			}
+			
+			// scripts don't have pod targets, so default to using the latest pods
+			if (cmdArgs.first.endsWith(".fan"))
+				return null
 		}
 
 		// this is only good for basic 'C:\>fan afEggbox' type cmds

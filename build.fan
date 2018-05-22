@@ -5,7 +5,7 @@ class Build : BuildPod {
 	new make() {
 		podName = "afFpm"
 		summary = "Provides a targeted environment for building, testing, and running Fantom applications"
-		version = Version("0.2.0")
+		version = Version("0.2.2")
 
 		meta = [
 			"pod.dis"			: "FPM (Fantom Pod Manager)",

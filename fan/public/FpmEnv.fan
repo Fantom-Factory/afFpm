@@ -57,13 +57,15 @@ abstract const class FpmEnv : Env {
 		
 		try {
 			targetPod	:= findTarget
-			satisfied	:= resolver.satisfy(targetPod)
-			resolver.cleanUp
-			
-			this.targetPod		= satisfied.targetPod
-			this.resolvedPods	= satisfied.resolvedPods
-			this.unresolvedPods	= satisfied.unresolvedPods
-			this.environmentPods= resolver.resolveAll(true).setAll(satisfied.resolvedPods)
+			if (targetPod != null) {
+				satisfied	:= resolver.satisfy(targetPod)
+				resolver.cleanUp
+				
+				this.targetPod		= satisfied.targetPod
+				this.resolvedPods	= satisfied.resolvedPods
+				this.unresolvedPods	= satisfied.unresolvedPods
+				this.environmentPods= resolver.resolveAll(true).setAll(satisfied.resolvedPods)
+			}
 			
 		} catch (UnknownPodErr err) {
 			// todo auto-download / install the pod dependency!??
@@ -84,7 +86,7 @@ abstract const class FpmEnv : Env {
 		if (targetPod.name == "???")
 			if (!loggedLatest) {
 				loggedLatest = true
-				log.warn("FPM: Could not target pod - defaulting to latest pod versions")
+				log.warn("FPM: Could not target a pod - defaulting to latest pod versions")
 				this.environmentPods = resolver.resolveAll(false).setAll(resolvedPods)
 			}
 
@@ -161,7 +163,7 @@ abstract const class FpmEnv : Env {
 	}
 
 	@NoDoc
-	abstract TargetPod findTarget()
+	abstract TargetPod? findTarget()
 
 	** Dumps the FPM environment to a string. This includes the FPM Config and a list of resolved pods.
 	Str dump() {
