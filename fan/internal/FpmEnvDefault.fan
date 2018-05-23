@@ -6,18 +6,10 @@ internal const class FpmEnvDefault : FpmEnv {
 
 	static new make() {
 		try {
-			if (Env.cur.vars["FPM_DEBUG"]?.trimToNull == "true")
+			if (Env.cur.vars["FPM_DEBUG"]?.lower?.toBool(false) == true)
 				FpmEnv#.pod.log.level = LogLevel.debug
 
-			fpmConfig	:= FpmConfig()
-	
-			// TODO suggest a better way of dealing with F4LaunchEnv pod files!
-			// add F4 pod locations
-			f4PodPaths	:= Env.cur.vars["FAN_ENV_PODS"]?.trimToNull?.split(File.pathSep.chars.first, true) ?: Str#.emptyList
-			f4PodFiles	:= f4PodPaths.map { toFile(it) }
-			fpmEnv 		:= makeManual(fpmConfig, f4PodFiles)
-	
-			return fpmEnv
+			return makeManual(FpmConfig())
 			
 		} catch (Err e) {
 			// this is really just belts and braces for FPM development as
@@ -27,7 +19,7 @@ internal const class FpmEnvDefault : FpmEnv {
 		}
 	}
 	
-	private new makeManual(FpmConfig fpmConfig, File[] podFiles, |This|? in := null) : super.makeManual(fpmConfig, podFiles, in) { }
+	private new makeManual(FpmConfig fpmConfig, |This|? in := null) : super.makeManual(fpmConfig, in) { }
 
 	override TargetPod? findTarget() {
 		fanArgs	:= Env.cur.args
@@ -99,10 +91,5 @@ internal const class FpmEnvDefault : FpmEnv {
 			return Depend(arg, false)
 		
 		return null
-	}
-
-	static File toFile(Str filePath) {
-		file := filePath.startsWith("file:") ? File(filePath.toUri, false) : File.os(filePath)
-		return file.normalize
 	}
 }

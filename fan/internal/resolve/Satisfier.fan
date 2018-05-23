@@ -5,6 +5,7 @@
 ** Note also, that this is a very small part of FPM! The Environment, Repositories, and Cmds all 
 ** play a huge part and deflect my time away from this little class / problem.
 internal class Satisfier {
+	private static const Int	MAX_BAD_GROUPS	:= 500
 			Log					log				:= typeof.pod.log
 			Bool				writeTraceFile	:= false
 			Duration			resolveTimeout1	:= 5sec
@@ -113,12 +114,12 @@ internal class Satisfier {
 
 				podMap.clear
 				cur.each |v, i| { grp := nos[i][v]; podMap[grp.name] = grp }
-				res := reduceDomain(podMap)
+				res := reduceDomain(podMap, unsatisfied.isEmpty || badGroups.size < MAX_BAD_GROUPS)
 	
 				if (res != null) {
 					
-					// limit bad groups - cos they become counter effective
-					if (badGroups.size < 500) {
+					// limit the number of bad groups - cos they become counter effective
+					if (badGroups.size < MAX_BAD_GROUPS) {
 						depGrps := groupBy(res) |PodConstraint con->Str| { con.dependsOn.name }
 						depGrps.each |PodConstraint[] naa| {
 							names  := naa.map { it.pod.name }.add(naa.first.dependsOn.name)
@@ -187,7 +188,7 @@ internal class Satisfier {
 
 		solveTime := Duration.now - startTime
 		log.debug("          ...Done")
-		log.debug("Cached ${badGroups.size} " + (badGroups.size >= 500 ? "(MAX) " : "") + "bad dependency group" + s(badGroups.size))
+		log.debug("Cached ${badGroups.size} " + (badGroups.size >= MAX_BAD_GROUPS ? "(MAX) " : "") + "bad dependency group" + s(badGroups.size))
 		log.debug("Found ${solutions.size} solution${s(solutions.size)} in ${solveTime.toLocale}")
 		
 
@@ -264,7 +265,7 @@ internal class Satisfier {
 	}
 
 	// see https://en.wikipedia.org/wiki/AC-3_algorithm
-	private PodConstraint[]? reduceDomain(Str:PodGroup podGroups) {
+	private PodConstraint[]? reduceDomain(Str:PodGroup podGroups, Bool collect) {
 		podGroups.each { it.reset }
 		worklist := (PodConstraint[]) podGroups.reduce(PodConstraint[,]) |PodConstraint[] cons, grp->PodConstraint[]| { cons.addAll(grp.constraints) }
 		allCons	 := worklist.dup
@@ -277,8 +278,7 @@ internal class Satisfier {
 			if (nod == null || nod.noMatch(con.dependsOn)) {
 				// find out who else conflicted / removed the versions we wanted
 				// collect ALL the errors, so we can report on the solution with the smallest number of errs (if need be)
-
-				unsatisfied = allCons.findAll { it.dependsOn.name == con.dependsOn.name }
+				unsatisfied = collect ? allCons.findAll { it.dependsOn.name == con.dependsOn.name } : PodConstraint#.emptyList
 				worklist.clear
 			}
 		}

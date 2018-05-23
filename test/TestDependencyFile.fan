@@ -125,7 +125,7 @@ internal class TestDependencyFile : Test {
 		addDep("afBeanUtils 1.1.2", "sys 1.0")
 
 		// change the dependencies here to increase problem space
-//		addDep("afGoogleAnalytics 0.1.9", "sys 1.0.70-1.0, util 1.0.70-1.0, afIoc 3.0.6-3.0, afIocConfig 1.1.0-1.1, afBedSheet 1.5.10-1.5")
+		addDep("afGoogleAnalytics 0.1.9", "sys 1.0.70-1.0, util 1.0.70-1.0, afIoc 3.0.6-3.0, afIocConfig 1.1.0-1.1, afBedSheet 1.5.10-1.5")
 
 		
 		satisfyDependencies("afApp 0.2.0.225")

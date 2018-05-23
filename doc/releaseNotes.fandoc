@@ -7,13 +7,13 @@ A re-write of the original code base with directed goals and a dependency resolu
 
 v2.0.0
 ======
- - New: Preview release.
+ - New: First release.
 
 
 
 v0.0
 ****
-The first wave of development that didn't quite make a v1 release.
+Although never officially released for production use, this code base would have been v1.
 
 v0.0.14
 =======
