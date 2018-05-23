@@ -9,8 +9,8 @@ const class StubRepository : Repository {
 	override const Bool	isLocal		:= true
 	override const Bool	isFanrRepo	:= false
 
-	override File download		(PodFile podFile)	{ Buf().toFile(podFile.location) }
 	override Void upload		(PodFile podFile)	{ throw UnsupportedErr() }
+	override File download		(PodFile podFile)	{ Buf().toFile(podFile.location) }
 	override Void delete		(PodFile podFile)	{ throw UnsupportedErr() }
 	
 	override PodFile[]	resolveAll() { pods }

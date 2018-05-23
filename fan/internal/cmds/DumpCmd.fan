@@ -1,5 +1,5 @@
 
-class DumpCmd : FpmCmd {
+internal class DumpCmd : FpmCmd {
 	
 	new make(|This| f) : super(f) { }
 

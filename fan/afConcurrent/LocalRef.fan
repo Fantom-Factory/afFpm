@@ -1,7 +1,8 @@
-using concurrent
+using concurrent::AtomicInt
+using concurrent::Actor
 
 ** Manages an Obj reference stored in 'Actor.locals' with a unique key.
-const class LocalRef {	
+internal const class LocalRef {	
 	static 
 	private const AtomicInt	counter	:= AtomicInt(0)
 	

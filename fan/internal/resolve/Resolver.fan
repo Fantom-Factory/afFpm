@@ -13,16 +13,18 @@ class Resolver {
 	private Repository[]		repositories
 	private Depend:PodFile[]	cash		:= Depend:PodFile[][:]
 	private	Bool 				isLocal
+	private PodFile[]			f4PodFiles
 
-	new make(Repository[] repositories, File[] f4PodFiles := File#.emptyList) {
-		repositories.addAll(f4PodFiles.map { PodFile(it).repository })
-		
+	new make(Repository[] repositories) {
 		locals  := repositories.findAll { it.isLocal  }.unique	// default may == fanHome may == workDir 
 		remotes := repositories.findAll { it.isRemote }.unique
 		// make sure remotes are last so we make good use of the minVer option
 		this.repositories = locals.addAll(remotes)
 		
-		if (Env.cur.vars["FPM_TRACE"] == "true")
+		f4PodPaths		:= Env.cur.vars["FAN_ENV_PODS"]?.trimToNull?.split(File.pathSep.chars.first, true) ?: Str#.emptyList
+		this.f4PodFiles	= f4PodPaths.map { PodFile(FileUtils.toFile(it)) }
+		
+		if (Env.cur.vars["FPM_TRACE"]?.lower?.toBool(false) == true)
 			writeTraceFile = true
 		
 		timeout1 := Duration(Env.cur.vars.get("FPM_RESOLVE_TIMEOUT_1", ""), false)
@@ -70,6 +72,9 @@ class Resolver {
 			it.targetPod		= satisfier.targetPod
 			it.resolvedPods 	= satisfier.resolvedPods
 			it.unresolvedPods	= satisfier.unresolvedPods
+			
+			// ensure F4 pod files trump all other pods
+			f4PodFiles.each { satisfier.resolvedPods[it.name] = it }
 		}
 	}
 	

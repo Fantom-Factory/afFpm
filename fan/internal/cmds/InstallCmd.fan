@@ -61,7 +61,9 @@ class InstallCmd : FpmCmd {
 	override Int run() {
 		// because the InstallCmd is so varied, lets have individual titles 
 //		log.info("FPM installing ${pod}"))
-		
+		if (offline)
+			log.info("<FPM offline mode>")
+
 		if (pod == null) {
 			log.warn("Install what!?")
 			return invalidArgs

@@ -1,0 +1,32 @@
+ 
+[00:46:57 14-May-18] [debug] [afFpm] 
+[00:46:57 14-May-18] [debug] [afFpm] Fantom Pod Manager 0.0.13
+[00:46:57 14-May-18] [debug] [afFpm] =========================
+[00:46:57 14-May-18] [debug] [afFpm] 
+[00:46:58 14-May-18] [debug] [afFpm] Resolving pods for afApp 0.2.0.225
+[00:46:58 14-May-18] [debug] [afFpm] Found 104 versions of 49 different pods
+[00:46:58 14-May-18] [debug] [afFpm] Calculated 550,502,400 dependency pod permutations
+[00:46:58 14-May-18] [debug] [afFpm] Collapsed to    69,120 dependency group permutations
+[00:46:58 14-May-18] [debug] [afFpm] Stated problem space in 750ms
+[00:46:58 14-May-18] [debug] [afFpm] Solving...
+[00:47:07 14-May-18] [debug] [afFpm]           ...Done
+[00:47:07 14-May-18] [debug] [afFpm] Cached 1751 bad dependency groups
+[00:47:07 14-May-18] [debug] [afFpm] Found 8 solutions in 8sec
+[00:47:07 14-May-18] [debug] [afFpm] 
+
+
+
+[23:10:33 14-May-18] [debug] [afFpm]
+[23:10:33 14-May-18] [debug] [afFpm] Fantom Pod Manager 0.2.2
+[23:10:33 14-May-18] [debug] [afFpm] ========================
+[23:10:33 14-May-18] [debug] [afFpm]
+[10:04:05 23-May-18] [debug] [afFpm] Resolving pods for afApp 0.2.0.225
+[10:04:05 23-May-18] [debug] [afFpm] Found 103 versions of 49 different pods
+[10:04:05 23-May-18] [debug] [afFpm] Calculated 481,689,600 dependency pod permutations
+[10:04:05 23-May-18] [debug] [afFpm] Collapsed to    69,120 dependency group permutations
+[10:04:05 23-May-18] [debug] [afFpm] Stated problem space in 68ms
+[10:04:05 23-May-18] [debug] [afFpm] Solving...
+[10:04:06 23-May-18] [debug] [afFpm]           ...Done
+[10:04:06 23-May-18] [debug] [afFpm] Cached 371 bad dependency groups
+[10:04:06 23-May-18] [debug] [afFpm] Found 8 solutions in 589ms
+[23:10:37 14-May-18] [debug] [afFpm]

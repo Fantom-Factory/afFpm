@@ -16,6 +16,7 @@
 ** 
 **   fanrRepo.eggbox = 
 ** 
+** Read the comments in the actual 'fpm.props' file itself for more details.
 const class FpmConfig {
 
 	** The directory used to resolve relative files.

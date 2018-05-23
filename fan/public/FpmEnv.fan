@@ -40,7 +40,7 @@ abstract const class FpmEnv : Env {
 	}
 
 	@NoDoc
-	new makeManual(FpmConfig fpmConfig, File[] f4PodFiles, |This|? in := null) : super.make(Env.cur) {
+	new makeManual(FpmConfig fpmConfig, |This|? in := null) : super.make(Env.cur) {
 		in?.call(this)	// let F4 set its own logger
 
 		if (log.isDebug) {
@@ -53,7 +53,7 @@ abstract const class FpmEnv : Env {
 
 		this.fpmConfig	= fpmConfig
 
-		resolver := Resolver(fpmConfig.repositories, f4PodFiles).localOnly { it.log	= this.log }
+		resolver := Resolver(fpmConfig.repositories).localOnly { it.log	= this.log }
 		
 		try {
 			targetPod	:= findTarget
@@ -90,7 +90,7 @@ abstract const class FpmEnv : Env {
 				this.environmentPods = resolver.resolveAll(false).setAll(resolvedPods)
 			}
 
-		if (Env.cur.vars["FPM_ALL_PODS"]?.toBool(false) ?: false)
+		if (Env.cur.vars["FPM_ALL_PODS"]?.lower?.toBool(false) == true)
 			if (!loggedLatest) {
 				loggedLatest = true
 				log.info("FPM: Found env var: FPM_ALL_PODS = true; making all pods available")

@@ -29,6 +29,8 @@ class QueryCmd : FpmCmd {
 
 	override Int run() {
 		log.info("FPM querying for ${target}")
+		if (offline)
+			log.info("<FPM offline mode>")
 
 		repos	:= repo == null ? fpmConfig.repositories.unique : [repo]
 		if (offline)
