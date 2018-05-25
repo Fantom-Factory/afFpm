@@ -86,7 +86,7 @@ abstract const class FpmEnv : Env {
 		if (targetPod.name == "???")
 			if (!loggedLatest) {
 				loggedLatest = true
-				log.warn("FPM: Could not target a pod - defaulting to latest pod versions")
+				log.warn("FPM: Could not find target - defaulting to latest pod versions")
 				this.environmentPods = resolver.resolveAll(false).setAll(resolvedPods)
 			}
 

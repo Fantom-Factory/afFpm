@@ -16,13 +16,16 @@ class Resolver {
 	private PodFile[]			f4PodFiles
 
 	new make(Repository[] repositories) {
+		f4PodPaths		:= Env.cur.vars["FAN_ENV_PODS"]?.trimToNull?.split(File.pathSep.chars.first, true) ?: Str#.emptyList
+		this.f4PodFiles	= f4PodPaths.map { PodFile(FileUtils.toFile(it)) }
+		
+		// ensure pod files can be resolved 
+		repositories.addAll(f4PodFiles.map { it.repository })
+
 		locals  := repositories.findAll { it.isLocal  }.unique	// default may == fanHome may == workDir 
 		remotes := repositories.findAll { it.isRemote }.unique
 		// make sure remotes are last so we make good use of the minVer option
-		this.repositories = locals.addAll(remotes)
-		
-		f4PodPaths		:= Env.cur.vars["FAN_ENV_PODS"]?.trimToNull?.split(File.pathSep.chars.first, true) ?: Str#.emptyList
-		this.f4PodFiles	= f4PodPaths.map { PodFile(FileUtils.toFile(it)) }
+		this.repositories = locals.addAll(remotes)		
 		
 		if (Env.cur.vars["FPM_TRACE"]?.lower?.toBool(false) == true)
 			writeTraceFile = true
