@@ -134,15 +134,15 @@ internal class TestDependencyFile : Test {
 		
 		// TODO check logs for these test numbers:
 
-		// [afFpmV2] Resolving pods for cwApp 0.2.0.225
-		// [afFpmV2] Found 104 versions of 49 different pods
-		// [afFpmV2] Calculated 550,502,400 dependency pod permutations
-		// [afFpmV2] Collapsed to    69,120 dependency group permutations
-		// [afFpmV2] Stated problem space in 806ms
-		// [afFpmV2] Solving...
-		// [afFpmV2]           ...Done
-		// [afFpmV2] Cached 1218 bad dependency groups
-		// [afFpmV2] Found 8 solutions in 3sec
+		// [afFpm] Resolving pods for cwApp 0.2.0.225
+		// [afFpm] Found 104 versions of 49 different pods
+		// [afFpm] Calculated 550,502,400 dependency pod permutations
+		// [afFpm] Collapsed to    69,120 dependency group permutations
+		// [afFpm] Stated problem space in 806ms
+		// [afFpm] Solving...
+		// [afFpm]           ...Done
+		// [afFpm] Cached 1218 bad dependency groups
+		// [afFpm] Found 8 solutions in 3sec
 		
 		actual 	 := satisfied.resolvedPods.vals.map { Depend("$it.name $it.version") }
 		verifyPod("afApp 0.2.0.225")
@@ -180,7 +180,7 @@ internal class TestDependencyFile : Test {
 	}
 	
 	private Void satisfyDependencies(Str pod) { 
-		satisfied = Resolver([repository]) {
+		satisfied = Resolver(Repository[repository]) {
 			it.resolveTimeout1 = 5sec
 			it.resolveTimeout2 = 10sec
 		}.satisfyPod(Depend(pod))

@@ -19,8 +19,8 @@ class Resolver {
 		f4PodPaths		:= Env.cur.vars["FAN_ENV_PODS"]?.trimToNull?.split(File.pathSep.chars.first, true) ?: Str#.emptyList
 		this.f4PodFiles	= f4PodPaths.map { PodFile(FileUtils.toFile(it)) }
 		
-		// ensure pod files can be resolved 
-		repositories.addAll(f4PodFiles.map { it.repository })
+		// ensure pod files can be resolved
+		repositories = repositories.rw.addAll(f4PodFiles.map { it.repository })
 
 		locals  := repositories.findAll { it.isLocal  }.unique	// default may == fanHome may == workDir 
 		remotes := repositories.findAll { it.isRemote }.unique

@@ -36,7 +36,7 @@
 #
 # See 'util::PathEnv' for more details.
 #
-# workDirs			= C:\\Repositories\\Fantom; ${fanHome}/workDir
+# workDirs			= C:\\Repositories\\Fantom\\; ${fanHome}/workDir/
 
 
 
@@ -47,7 +47,7 @@
 #
 # May contain the interpolation values: ${fanHome}, ${workDir}
 #
-# tempDir			= C:\\Repositories\\Fantom\\temp
+# tempDir			= C:\\Repositories\\Fantom\\temp\\
 
 
 
@@ -70,8 +70,7 @@
 # May contain the interpolation values: ${fanHome}, ${workDir}, ${tempDir}
 #
 # dirRepo.default	= ${fanHome}/lib/fan/
-dirRepo.lib			= lib/
-dirRepo.libfan		= lib/fan/
+# dirRepo.lib			= lib/
 
 
 
@@ -91,10 +90,12 @@ dirRepo.libfan		= lib/fan/
 # Note there is always a repository named 'default'. If not defined it defaults
 # to a dirRepo at ${fanHome}/lib/fan/
 #
+# May contain the interpolation values: ${fanHome}, ${workDir}, ${tempDir}
+#
 # fanrRepo.default	= C:\\Repositories\\Fantom\\fpmRepo-default\\
 # fanrRepo.status302= http://repo.status302.com/fanr/
 # fanrRepo.fantom	= http://fantom.org/fanr/
-fanrRepo.eggbox		= http://eggbox.fantomfactory.org/fanr/
+# fanrRepo.eggbox	= http://eggbox.fantomfactory.org/fanr/
 
 
 
@@ -115,4 +116,14 @@ fanrRepo.eggbox		= http://eggbox.fantomfactory.org/fanr/
 # 
 #   C:\> fpm run afBedSheet myWebApp@1.2
 #
-launchPods				= afBedSheet, afReflux
+# launchPods				= afBedSheet, afReflux
+
+
+
+# ---- Actual Config ----------------------------------------------------------
+
+launchPods			= afBedSheet, afReflux
+dirRepo.default		= ${fanHome}/lib/fan/
+dirRepo.lib			= lib/
+dirRepo.libfan		= lib/fan/
+fanrRepo.eggbox		= http://eggbox.fantomfactory.org/fanr/

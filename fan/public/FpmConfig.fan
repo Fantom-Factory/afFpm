@@ -161,7 +161,7 @@ const class FpmConfig {
 			url  := Uri(path, false)
 
 			if (url?.scheme != "http" && url?.scheme != "https")
-				url = toRelDir(path, baseDir).uri
+				url = toRelDir(strInterpol(path.trim), baseDir).uri
 			else
 				if (url.userInfo != null) {
 					userInfo := url.userInfo.split(':')

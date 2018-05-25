@@ -121,11 +121,24 @@ internal class TestFpmConfig : Test {
 		verifyEq(config.dirRepos["workDir[1]"], `file:/C:/Temp2/lib/fan/`.toFile)
 
 		// if people want it relative to FAN_HOME, add a ${fanHome} str replace macro
-		config = makeFpmConfig(null, ["dirRepo.default":"\${fanHome}/repo", "workDirs":"\${fanHome}/work"])
+		config = makeFpmConfig(null, ["dirRepo.default":"\${fanHome}/repo", "workDirs":"\${fanHome}/work/"])
 		verifyEq(config.dirRepos.size, 3)
 		verifyEq(config.dirRepos["fanHome"], homeDir + `lib/fan/`)
 		verifyEq(config.dirRepos["default"], homeDir + `repo/`)
 		verifyEq(config.dirRepos["workDir"], homeDir + `work/lib/fan/`)
+
+		// again, but without a trailing slash
+		config = makeFpmConfig(null, ["dirRepo.default":"\${fanHome}/repo", "workDirs":"\${fanHome}/work"])
+		verifyEq(config.dirRepos.size, 3)
+		verifyEq(config.dirRepos["default"], homeDir + `repo/`)
+
+		// ${workDir} str replace macro for fanr repos
+		config = makeFpmConfig(null, ["fanrRepo.default":"\${workDir}/repo-def", "workDirs":"\${fanHome}/work/"])
+		verifyEq(config.dirRepos.size, 2)
+		verifyEq(config.dirRepos["fanHome"], homeDir + `lib/fan/`)
+		verifyEq(config.dirRepos["workDir"], homeDir + `work/lib/fan/`)
+		verifyEq(config.fanrRepos.size, 1)
+		verifyEq(config.fanrRepos["default"], (homeDir + `work/repo-def/`).uri)
 	}
 	
 	Void testRawConfigRemovesCreds() {

@@ -144,7 +144,7 @@ internal class TestSatisfaction : Test {
 	
 	private Void satisfyDependencies(Str pods) {
 		dependsOn := pods.split(',').map { Depend(it) }
-		satisfier = Satisfier(TargetPod(Depend("TestPod 1.0"), dependsOn), Resolver([repository]))
+		satisfier = Satisfier(TargetPod(Depend("TestPod 1.0"), dependsOn), Resolver(Repository[repository]))
 		satisfier.satisfyDependencies
 	}
 
