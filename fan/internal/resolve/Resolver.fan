@@ -18,6 +18,11 @@ class Resolver {
 	new make(Repository[] repositories) {
 		f4PodPaths		:= Env.cur.vars["FAN_ENV_PODS"]?.trimToNull?.split(File.pathSep.chars.first, true) ?: Str#.emptyList
 		this.f4PodFiles	= f4PodPaths.map { PodFile(FileUtils.toFile(it)) }
+		if (log.isDebug && f4PodFiles.size > 0) {
+			log.debug("Supplied FAN_ENV_PODS:")
+			f4PodFiles.each { log.debug(" - $it") }
+			log.debug("")
+		}
 		
 		// ensure pod files can be resolved
 		repositories = repositories.rw.addAll(f4PodFiles.map { it.repository })
@@ -71,13 +76,14 @@ class Resolver {
 			it.resolveTimeout2	= this.resolveTimeout2
 		}
 		satisfier.satisfyDependencies
+		
+		// ensure F4 pod files trump all other pods
+		f4PodFiles.each { satisfier.resolvedPods[it.name] = it }
+
 		return Satisfied {
 			it.targetPod		= satisfier.targetPod
 			it.resolvedPods 	= satisfier.resolvedPods
 			it.unresolvedPods	= satisfier.unresolvedPods
-			
-			// ensure F4 pod files trump all other pods
-			f4PodFiles.each { satisfier.resolvedPods[it.name] = it }
 		}
 	}
 	
