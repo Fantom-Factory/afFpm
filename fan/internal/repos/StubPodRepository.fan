@@ -5,7 +5,7 @@ internal const class StubPodRepository : Repository {
 	override const Bool		isLocal		:= true
 	override const Bool		isFanrRepo	:= false
 
-	override Void		upload		(PodFile podFile)		{ throw UnsupportedErr() }
+	override PodFile	upload		(PodFile podFile)		{ throw UnsupportedErr() }
 	override File		download	(PodFile podFile)		{ throw UnsupportedErr() }
 	override Void		delete		(PodFile podFile)		{ throw UnsupportedErr() }
 	override PodFile[]	resolve		(Depend d, Str:Obj? o)	{ throw UnsupportedErr() }

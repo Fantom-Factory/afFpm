@@ -56,7 +56,8 @@ const class PodFile {
 	}
 	
 	** Installs this pod in to the given repository.
-	Void installTo(Repository repository) {
+	** Returns the 'PodFile' representation of the newly installed pod.
+	PodFile installTo(Repository repository) {
 		repository.upload(this)
 	}
 	

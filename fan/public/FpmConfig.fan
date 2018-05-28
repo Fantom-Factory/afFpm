@@ -236,9 +236,9 @@ const class FpmConfig {
 			return LocalDirRepository(repoName, dirRepos[repoName])
 		
 		if (fanrRepos.containsKey(repoName)) {
-			if (username != null)
+			if (username == null)
 				username = _rawConfig["fanrRepo.${repoName}.username"]
-			if (password != null)
+			if (password == null)
 				password = _rawConfig["fanrRepo.${repoName}.password"]
 			url := fanrRepos[repoName]
 			if (url.scheme == null   || url.scheme == "file")

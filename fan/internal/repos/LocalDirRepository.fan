@@ -17,9 +17,10 @@ internal const class LocalDirRepository : Repository {
 			throw IOErr("Not a directory: ${this.dir.osPath}")
 	}
 
-	override Void upload(PodFile podFile) {
+	override PodFile upload(PodFile podFile) {
 		newFile := download(podFile)
 		podFile.file.copyTo(newFile, ["overwrite" : true])
+		return getOrMake(newFile)
 	}
 
 	override File download(PodFile podFile) {

@@ -19,7 +19,7 @@ internal const class SinglePodRepository : Repository {
 		this.podFile	= PodFile(podName, podVersion, podDependsOn, this.url, this)
 	}
 
-	override Void		upload		(PodFile podFile)		{ throw UnsupportedErr() }
+	override PodFile	upload		(PodFile podFile)		{ throw UnsupportedErr() }
 	override File		download	(PodFile podFile)		{ file }
 	override Void		delete		(PodFile podFile)		{ file.delete }
 	override PodFile[]	resolveAll	()						{ [podFile] }

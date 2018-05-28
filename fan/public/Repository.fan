@@ -11,7 +11,8 @@ const mixin Repository {
 	abstract Uri url()
 
 	** Installs the given pod.
-	abstract Void		upload		(PodFile podFile)
+	** Returns the newly installed 'PodFile'.
+	abstract PodFile	upload		(PodFile podFile)
 
 	** Returns a file representation of the given pod.
 	abstract File		download	(PodFile podFile)
