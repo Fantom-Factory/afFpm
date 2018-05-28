@@ -14,9 +14,6 @@ internal const class RemoteFanrRepository : Repository {
 		this.url	= url
 		this.repo	= Repo.makeForUri(url, username, password)
 		
-		echo(url)
-		echo(username)
-		echo(password)
 		// TODO maybe online repos can switch themselves off if they find an error - so we can continue to operate without them
 	}
 
