@@ -1,13 +1,11 @@
-#FPM (Fantom Pod Manager) v0.2.2
+#FPM (Fantom Pod Manager) v2.0.0
 ---
 
 [![Written in: Fantom](http://img.shields.io/badge/written%20in-Fantom-lightgray.svg)](http://fantom-lang.org/)
-[![pod: v0.2.2](http://img.shields.io/badge/pod-v0.2.2-yellow.svg)](http://eggbox.fantomfactory.org/pods/afFpm)
-![Licence: ISC Licence](http://img.shields.io/badge/licence-ISC Licence-blue.svg)
+[![pod: v2.0.0](http://img.shields.io/badge/pod-v2.0.0-yellow.svg)](http://eggbox.fantomfactory.org/pods/afFpm)
+[![Licence: ISC](http://img.shields.io/badge/licence-ISC-blue.svg)](https://choosealicense.com/licenses/isc/)
 
 ## Overview
-
-*FPM (Fantom Pod Manager) is a support library that aids Alien-Factory in the development of other libraries, frameworks and applications. Though you are welcome to use it, you may find features are missing and the documentation incomplete.*
 
 Fantom Pod Manager (FPM) provides a targeted environment for building, testing, and running Fantom applications.
 
@@ -35,7 +33,7 @@ Or install `FPM (Fantom Pod Manager)` with [fanr](http://fantom.org/doc/docFanr/
 
 To use in a [Fantom](http://fantom-lang.org/) project, add a dependency to `build.fan`:
 
-    depends = ["sys 1.0", ..., "afFpm 0.2"]
+    depends = ["sys 1.0", ..., "afFpm 2.0"]
 
 ## Documentation
 
@@ -171,7 +169,7 @@ Have a read of your `fpm.props` file, it contains lots of useful comments and in
 
 **Note:** To get the most out of FPM, you should edit `fpm.props` and add a local fanr repository for `default`:
 
-    fanrRepo.default	= ${fanHome}repo-default
+    fanrRepo.default  = ${fanHome}repo-default
 
 ## FPM Commands
 
@@ -395,4 +393,42 @@ Debug may also be enabled by setting the `FPM_DEBUG` environment variable to `tr
 Debug can also be turned on by adding this line to `%FAN_HOME%/etc/sys/log.props`:
 
     afFpm=debug
+
+### Environment Variables
+
+A list of environment variables used by FPM:
+
+`FAN_ENV_PODS` - a list of pod files (their OS path locations) that should always be resolved and trump all other versions. This var is provided by F4 when launching Runtimes.
+
+`FPM_ALL_PODS` - set to `true` to force the environement to resolve (the latest versions of) all known pods, after resolving the target.
+
+`FPM_CONFIG_FILENAME` - filename of the config files to look for, should be prefixed with the FPM version. Used for developing new versions of FPM, whilst still using an older one.
+
+`FPM_DEBUG` - set to `true` to enable FPM debugging. It's often easier to set this than alter the logging config.
+
+`FPM_RESOLVE_TIMEOUT_1` - if resolving takes longer than this, and at least one solution has been found, then resolving stops and a potentially sub-optimal solution is returned. Defaults to `5sec`.
+
+`FPM_RESOLVE_TIMEOUT_2` - if resolving takes longer than this, then resolving stops and reports no solution could be found. Defaults to `10sec`.
+
+`FPM_TARGET` - the target pod to resolve an environment for.
+
+`FPM_TRACE` - set to `true` to have the resolver save a file detailing the problem space that can subsequently be used in testing / debugging. The file defaults to `fpm-trace-deps.txt` in the current directory.
+
+Examples:
+
+    FPM_ALL_PODS          = true
+    FPM_CONFIG_FILENAME   = 0.2.0/fpm2.props
+    FPM_DEBUG             = true
+    FPM_RESOLVE_TIMEOUT_1 = 5sec
+    FPM_RESOLVE_TIMEOUT_2 = 10sec
+    FPM_TARGET            = afIoc@3.0.6
+    FPM_TRACE             = true
+
+Note an cmd line argument of `-fpmTarget` can be used to set the target pod in place of the `FPM_TARGET` environment variable.
+
+## F4 IDE Plugin
+
+What use is a pod manager if you can't use it in your favourite IDE?
+
+See the [Alien-Factory F4 Features](https://bitbucket.org/AlienFactory/f4-features) to install an FPM plugin for F4, enabling F4 to resolve pods from FPM repositories.
 

@@ -338,3 +338,10 @@ Examples:
 
 Note an cmd line argument of '-fpmTarget' can be used to set the target pod in place of the 'FPM_TARGET' environment variable.
 
+
+F4 IDE Plugin
+*************
+What use is a pod manager if you can't use it in your favourite IDE?
+
+See the [Alien-Factory F4 Features]`https://bitbucket.org/AlienFactory/f4-features` to install an FPM plugin for F4, enabling F4 to resolve pods from FPM repositories.
+
