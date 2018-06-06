@@ -47,6 +47,21 @@ const mixin Repository {
 	**  - 'log      (Log)'     - query results will be logged to this.
 	abstract PodFile[]	resolve		(Depend depend, Str:Obj? options)
 	
+	
+	** Creates a local directory repository for the given directory. 
+	static new makeDirRepo(File dir) {
+		LocalDirRepository(dir.osPath, dir)
+	}
+
+	** Creates a fanr repository (local or remote) for the given URL. 
+	static new makeFanrRepo(Uri url, Str? username := null, Str? password := null) {
+		if (url.scheme == null   || url.scheme == "file")
+			return LocalFanrRepository(url.toStr, url.toFile)
+		if (url.scheme == "http" || url.scheme == "https")
+			return RemoteFanrRepository(url.toStr, url, username, password)
+		throw ArgErr("Unknown scheme '${url.scheme}' in $url")
+	}
+	
 	@NoDoc override Str toStr() 			{ "$name - $url" }
 	@NoDoc override Int hash() 				{ url.hash }
 	@NoDoc override Bool equals(Obj? that)	{ (that as Repository)?.url == url }
