@@ -5,6 +5,10 @@ v2.0
 ****
 A re-write of the original code base with directed goals and a dependency resolution algorithm that's x12 faster!
 
+v2.0.2
+======
+ - Chg: All relative paths in 'fpm.props' are now resolved against the current dir, not 'FAN_HOME'.
+
 v2.0.0
 ======
  - New: First release.
