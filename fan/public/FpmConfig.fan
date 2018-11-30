@@ -85,11 +85,11 @@ const class FpmConfig {
 		while (fpmFile != null && !fpmFile.exists)
 			fpmFile = fpmFile.parent.parent?.plus(configFilename)
 
-		// this is a little bit chicken and egg - we use the workDir to find config.props to find the workDir! 
+		// this is a little bit chicken and egg - we use the workDir to find fpm.props to find the workDir! 
 		workDirs := "" as Str
 		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + (envPaths ?: "")
 		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + homeDir.osPath
-		workFile := workDirs.split(File.pathSep.chars.first).exclude { it.isEmpty }.map { toAbsDir(it) + `etc/afFpm/` + configFilename }.unique as File[]
+		workFile := workDirs.split(File.pathSep.chars.first).exclude { it.isEmpty }.map { toRelDir(it, baseDir) + `etc/afFpm/` + configFilename }.unique as File[]
 		if (fpmFile != null)
 			workFile.insert(0, fpmFile)
 
@@ -97,7 +97,11 @@ const class FpmConfig {
 
 		fpmProps := Str:Str[:] { it.ordered = true }
 		workFile.eachr {
-			newProps := it.readProps
+			newProps := null as Str:Str
+			try	newProps = it.readProps
+			catch (Err err)
+				FpmConfig#.pod.log.warn("Could not read ${it.normalize.osPath} ($err)")
+			
 			if (newProps["configCmd"] == "clearExisting")
 				fpmProps.clear
 			fpmProps.setAll(it.readProps)
@@ -134,12 +138,12 @@ const class FpmConfig {
 		workDirs := strInterpol(fpmProps["workDirs"])
 		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + (envPaths ?: "")
 		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + homeDir.osPath.toStr
-		this.workDirs = workDirs.split(File.pathSep.chars.first).exclude { it.isEmpty }.map { toAbsDir(it) }.unique
+		this.workDirs = workDirs.split(File.pathSep.chars.first).exclude { it.isEmpty }.map { toRelDir(it, baseDir) }.unique
 		
 		tempDir := strInterpol(fpmProps["tempDir"])
 		if (tempDir == null)
 			tempDir = this.workDirs.first.plus(`temp/`, false).osPath.toStr
-		this.tempDir = toAbsDir(tempDir)
+		this.tempDir = toRelDir(tempDir, baseDir)
 
 		dirRepos := (Str:File) fpmProps.findAll |path, name| {
 			name.startsWith("dirRepo.")
@@ -321,10 +325,6 @@ const class FpmConfig {
 				str += "".justr(14) + "   ${it.osPath}${exists}\n"
 			}
 		return str
-	}
-	
-	private static File toAbsDir(Str dirPath) {
-		FileUtils.toAbsDir(dirPath)
 	}
 	
 	private static File toRelDir(Str dirPath, File baseDir) {
