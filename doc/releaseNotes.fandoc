@@ -8,6 +8,7 @@ A re-write of the original code base with directed goals and a dependency resolu
 v2.0.2
 ======
  - Chg: All relative paths in 'fpm.props' are now resolved against the current dir, not 'FAN_HOME'.
+ - Chg: The FPM config property 'configCmd = clearExisting' now clears ALL prior config, letting you reset exactly what you need.
 
 v2.0.0
 ======

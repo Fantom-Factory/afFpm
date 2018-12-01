@@ -64,7 +64,7 @@ const class FpmConfig {
 		
 		// grab the config filename from an env var, but only if the version matches
 		// this is useful for testing and development
-		t1 := Env.cur.vars["FPM_CONFIG_FILENAME"]
+		t1 := Env.cur.vars["FPM_CONFIG_FILENAME"]	// = fpm.props/2.0.1
 		if (t1 != null) {
 			t2 := Uri(t1, false)
 			if (t2 != null) {
@@ -96,18 +96,24 @@ const class FpmConfig {
 		workFile = workFile.findAll { it.exists }
 
 		fpmProps := Str:Str[:] { it.ordered = true }
+		wokFiles := File[,]
 		workFile.eachr {
 			newProps := null as Str:Str
 			try	newProps = it.readProps
 			catch (Err err)
 				FpmConfig#.pod.log.warn("Could not read ${it.normalize.osPath} ($err)")
 			
-			if (newProps["configCmd"] == "clearExisting")
+			if (newProps["configCmd"] == "clearExisting") {
+				// clearExisting should clear EVERYTHING! Let the new config define exactly what it needs
+				wokFiles.clear
 				fpmProps.clear
+				envPaths = null
+			}
+			wokFiles.add(it)
 			fpmProps.setAll(it.readProps)
 		}
 
-		return makeInternal(baseDir, homeDir, envPaths, fpmProps, workFile.reverse)
+		return makeInternal(baseDir, homeDir, envPaths, fpmProps, wokFiles)
 	}
 
 	@NoDoc
