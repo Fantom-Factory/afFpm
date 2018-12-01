@@ -324,7 +324,8 @@ const class FpmConfig {
 		if (files.isEmpty)
 			return "(none)\n"
 
-		str := "${files.first.osPath}\n"
+		ext := files.first.exists ? "" : " (does not exist)"
+		str := "${files.first.osPath}${ext}\n"
 		if (files.size > 1)
 			files[1..-1].each {
 				exists := it.exists ? "" : " (does not exist)"
