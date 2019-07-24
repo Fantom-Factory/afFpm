@@ -236,7 +236,7 @@ internal class Satisfier {
 		allPods.each |pod| {
 			out.printLine("addDep(${pod.depend.toStr.toCode}, " + pod.dependsOn.join(", ").toCode + ")")
 		}
-		out.printLine("satisfyDependencies(${targetPod})")
+		out.printLine("satisfyDependencies(${targetPod.toStr.toCode})")
 
 		out.flush.close
 		log.debug("Wrote dependency trace file: $file.normalize.osPath")
@@ -252,12 +252,14 @@ internal class Satisfier {
 			}
 		}.vals
 
-		// todo dodgy pod constraints!?
-		dodgy := unresolvedPods.any { it.isDodgy }
-		if (log.isDebug && !dodgy)
-			log.debug("\n-----\n" + Utils.dumpUnresolved(unresolvedPods))
-		
-		return dodgy ? null : unresolvedPods
+		return unresolvedPods
+
+//		// todo dodgy pod constraints!?
+//		dodgy := unresolvedPods.all { it.isDodgy }
+//		if (log.isDebug && dodgy)
+//			log.debug("\n---- Dodgy Constraint ----\n" + Utils.dumpUnresolved(unresolvedPods))
+//		
+//		return dodgy ? null : unresolvedPods
 	}
 
 	private PodFile[] availablePodVersions(Str podName) {
