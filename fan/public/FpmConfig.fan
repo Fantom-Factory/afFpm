@@ -45,6 +45,9 @@ const class FpmConfig {
 	** The config files used to generate this class.
 	const File[]	configFiles
 
+	** The macros applied to repository paths.
+	const Str:Str	macros
+
 	** The raw FPM config gleaned from the 'configFiles'.
 	** Does not include fanr credentials.
 	const Str:Str	rawConfig
@@ -103,14 +106,22 @@ const class FpmConfig {
 			catch (Err err)
 				FpmConfig#.pod.log.warn("Could not read ${it.normalize.osPath} ($err)")
 			
-			if (newProps["configCmd"] == "clearExisting") {
+			if (newProps["clear.all"] != null || newProps["configCmd"] == "clearExisting") {
 				// clearExisting should clear EVERYTHING! Let the new config define exactly what it needs
 				wokFiles.clear
 				fpmProps.clear
 				envPaths = null
 			}
+			
+			newProps.each |val, key| {
+				if (key.startsWith("clear.") && key != "clear.all") {
+					rem := key["clear.".size..-1]
+					fpmProps = fpmProps.exclude |v, k| { k.startsWith(rem + ".")  }
+				}
+			}
+
 			wokFiles.add(it)
-			fpmProps.setAll(it.readProps)
+			fpmProps.setAll(newProps)
 		}
 
 		return makeInternal(baseDir, homeDir, envPaths, fpmProps, wokFiles)
@@ -128,16 +139,19 @@ const class FpmConfig {
 
 		this.homeDir = homeDir
 		
+		macros := Str:Str[:] { it.ordered = true }
+		// don't replace with osPath because it has a trailing slash on nix, but not on windows!
+		if ((this.homeDir  as File  ) != null)	macros["fanHome"] = homeDir.uri.toStr
+		if ((this.tempDir  as File  ) != null)	macros["tempDir"] = tempDir.uri.toStr
+		if ((this.workDirs as File[]) != null)	macros["workDir"] = workDirs.first.uri.toStr
+		fpmProps.each |value, name| {
+			if (name.startsWith("macro."))
+				macros[name["macro.".size..-1]] = value
+		}
+		
 		strInterpol := |Str? str->Str?| {
-			if (str == null)
-				return null
-			// don't replace with osPath because it has a trailing slash on nix, but not on windows!
-			if ((this.homeDir as File) != null)
-				str = str.replace("\$fanHome", homeDir.uri.toStr).replace("\${fanHome}", homeDir.uri.toStr)
-			if ((this.workDirs as File[]) != null)
-				str = str.replace("\$workDir", workDirs.first.uri.toStr).replace("\${workDir}", workDirs.first.uri.toStr)
-			if ((this.tempDir as File) != null)
-				str = str.replace("\$tempDir", tempDir.uri.toStr).replace("\${tempDir}", tempDir.uri.toStr)
+			if (str == null) return null
+			macros.each |val, key| { str = str.replace("\$${key}", val).replace("\${${key}}", val) }
 			return str
 		}
 
@@ -236,6 +250,7 @@ const class FpmConfig {
 		this.configFiles	= configFiles ?: File[,]
 		this.rawConfig		= rawConfig
 		this._rawConfig		= fpmProps
+		this.macros			= macros
 	}
 
 	** Returns a 'Repository' instance for the named repository. 
@@ -300,21 +315,28 @@ const class FpmConfig {
 		str += "      Temp Dir : " + dumpList([tempDir])
 		str += "  Config Files : " + dumpList(configFiles)
 
-		if (dirRepos.size > 0) str += "\n"
+		str += "\n"
 		str += "     Dir Repos : " + (dirRepos.isEmpty ? "(none)" : "") + "\n"
-		maxDir := dirRepos.keys.reduce(14) |Int size, repoName| { size.max(repoName.size) } as Int
-		dirRepos.each |repoFile, repoName| {
-			exists := repoFile.exists ? "" : " (does not exist)"
-			str += repoName.justr(maxDir) + " = " + repoFile.osPath + exists + "\n"
+		max := dirRepos.keys.reduce(14) |Int size, name| { size.max(name.size) } as Int
+		dirRepos.each |file, name| {
+			exists := file.exists ? "" : " (does not exist)"
+			str += name.justr(max) + " = ${file.osPath}${exists}\n"
 		}
 
-		if (fanrRepos.size > 0) str += "\n"
+		str += "\n"
 		str += "    Fanr Repos : " + (fanrRepos.isEmpty ? "(none)" : "") + "\n"
-		maxDir = fanrRepos.keys.reduce(14) |Int size, repoName| { size.max(repoName.size) } as Int
-		fanrRepos.each |repoUrl, repoName| {
+		max = fanrRepos.keys.reduce(14) |Int size, name| { size.max(name.size) } as Int
+		fanrRepos.each |repoUrl, name| {
 			usr	:= repoUrl.userInfo == null ? "" : repoUrl.userInfo + "@"
 			url	:= repoUrl.toStr.replace(usr, "")
-			str += repoName.justr(maxDir) + " = " + url + "\n"
+			str += name.justr(max) + " = " + url + "\n"
+		}
+
+		str += "\n"
+		str += "        Macros : " + (macros.isEmpty ? "(none)" : "") + "\n"
+		max = macros.keys.reduce(14) |Int size, name| { size.max(name.size) } as Int
+		macros.each |value, name| {
+			str += name.justr(max) + " = ${value}\n"
 		}
 
 		return str

@@ -16,7 +16,12 @@
 # If this is not desired then a config file may obliterate all existing values
 # defined before it by uncommenting the line below:
 #
-# configCmd			= clearExisting
+# clear.all			=
+#
+# Partial config may be cleared by specifying a prefix:
+#
+# clear.fanrRepo	= 
+# clear.dirRepo		= 
 
 
 
@@ -67,7 +72,8 @@
 # Note there is always a repository named 'default'. If not defined it defaults
 # to a dirRepo at ${fanHome}/lib/fan/
 #
-# May contain the interpolation values: ${fanHome}, ${workDir}, ${tempDir}
+# May contain the default macros ${fanHome}, ${workDir}, ${tempDir} as well as 
+# other user defined macros.
 #
 # dirRepo.default	= ${fanHome}/lib/fan/
 # dirRepo.lib			= lib/
@@ -90,7 +96,8 @@
 # Note there is always a repository named 'default'. If not defined it defaults
 # to a dirRepo at ${fanHome}/lib/fan/
 #
-# May contain the interpolation values: ${fanHome}, ${workDir}, ${tempDir}
+# May contain the default macros ${fanHome}, ${workDir}, ${tempDir} as well as 
+# other user defined macros.
 #
 # fanrRepo.default	= C:\\Repositories\\Fantom\\fpmRepo-default\\
 # fanrRepo.status302= http://repo.status302.com/fanr/
@@ -117,6 +124,21 @@
 #   C:\> fpm run afBedSheet myWebApp@1.2
 #
 # launchPods				= afBedSheet, afReflux
+
+
+
+# ---- Macros -----------------------------------------------------------------
+#
+# Macros are basic substitutions that are made in file paths. Use them to 
+# define machine specific absolute file or web paths used by project config.
+#
+# Macros themselves may NOT contain macros.
+# 
+# # define macros like this:
+# macro.fantom-1.0.70		= C:\\Apps\\fantom-1.0.70
+#
+# # use macros like this:
+# dirRepo.fantom-1.0.70		= ${fantom-1.0.70}\\lib\\fan\\
 
 
 
