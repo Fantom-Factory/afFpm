@@ -59,7 +59,7 @@ internal class PodGroup {
 		return _constraints
 	}
 
-	private Version[] versions() {
+	Version[] versions() {
 		matched.keys.map { it.version  }
 	}
 	

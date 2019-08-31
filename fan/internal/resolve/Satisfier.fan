@@ -23,6 +23,8 @@ internal class Satisfier {
 	private	Duration			startTime		:= Duration.now
 	private	Resolver			resolver
 
+	// TODO cache closures as variables reduce class instantiation overhead  
+	
 	new make(TargetPod target, Resolver	resolver, |This|? f := null) {
 		f?.call(this)
 		this.targetPod	= target.pod
@@ -130,9 +132,12 @@ internal class Satisfier {
 						}
 					}
 	
+					// this will dump out ALL the bad dependencies
+//					Utils.dumpUnresolved(logErr(res, podMap)) {echo(it) }
+					
 					// just take the first err as it should be the most relevant with the most number of latest versions 
 					if (unsatisfied.isEmpty) {
-						badPods := logErr(res)
+						badPods := logErr(res, podMap)
 						if (badPods != null)
 							unsatisfied = badPods					
 					}
@@ -242,12 +247,12 @@ internal class Satisfier {
 		log.debug("Wrote dependency trace file: $file.normalize.osPath")
 	}
 	
-	private UnresolvedPod[]? logErr(PodConstraint[] unsat) {
+	private UnresolvedPod[]? logErr(PodConstraint[] unsat, Str:PodGroup podGroups) {
 		conGrps := groupBy(unsat) |PodConstraint con->Str| { con.dependsOn.name }
 		unresolvedPods := (UnresolvedPod[]) conGrps.map |PodConstraint[] cons, Str name->UnresolvedPod| {
 			UnresolvedPod {
 				it.name			= name
-				it.available	= availablePodVersions(name).map { it.version }
+				it.available	= podGroups[name]->versions
 				it.committee	= cons.sort
 			}
 		}.vals
@@ -262,9 +267,9 @@ internal class Satisfier {
 //		return dodgy ? null : unresolvedPods
 	}
 
-	private PodFile[] availablePodVersions(Str podName) {
-		podNodes[podName].podVersions
-	}
+//	private PodFile[] allAvailablePodVersions(Str podName) {
+//		podNodes[podName].podVersions
+//	}
 
 	// see https://en.wikipedia.org/wiki/AC-3_algorithm
 	private PodConstraint[]? reduceDomain(Str:PodGroup podGroups, Bool collect) {
@@ -284,6 +289,7 @@ internal class Satisfier {
 				worklist.clear
 			}
 		}
+
 		return unsatisfied
 	}
 	

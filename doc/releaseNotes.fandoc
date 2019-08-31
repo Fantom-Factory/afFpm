@@ -5,7 +5,9 @@ v2.0
 ****
 A re-write of the original code base with directed goals and a dependency resolution algorithm that's x12 faster!
 
-
+v2.0.6
+======
+ - Bug: Unresolved Pod list could show too many unsatisfied pod versions.
 
 v2.0.4
 ======
