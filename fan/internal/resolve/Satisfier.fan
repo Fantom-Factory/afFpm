@@ -74,9 +74,13 @@ internal class Satisfier {
 		// remove all pods that don't explicitly fit the defined dependencies
 		// this can delete a *lot* of pods and leaves the satisfier to just clean up the transitive dependencies
 		// this also removes user expletives such as "Where did that #@?$&# dependency come from!?"  
+		numPodsB4 := (Int) podNodes.vals.reduce(0) |Int tot, pod| { tot + pod.size  }
 		targetDependsOn.each |coreDepend| {
 			podNodes[coreDepend.name].reduceCore(coreDepend)
 		}
+		numPodsA5 := (Int) podNodes.vals.reduce(0) |Int tot, pod| { tot + pod.size  }
+		if (numPodsB4 != numPodsA5)
+			log.debug("Removed ${numPodsB4 - numPodsA5} pods that were outside of the explicit dependencies")
 
 		// there's an opportunity for podPerms to overflow here! (Scary @ 9,223,372,036,854,775,807!) 
 		// but there's no Err, the number just wraps round to zero
