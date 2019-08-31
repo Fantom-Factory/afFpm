@@ -13,6 +13,7 @@ internal class Satisfier {
 
 			Bool				building
 			Depend				targetPod
+			Depend[]			targetDependsOn
 			Str:PodFile			resolvedPods	:= Str:PodFile[:]
 			Str:UnresolvedPod	unresolvedPods	:= Str:UnresolvedPod[:]
 	
@@ -59,6 +60,8 @@ internal class Satisfier {
 		}
 		
 		podNodes[initNode.name] = initNode
+		
+		targetDependsOn = initNode.podVersions.first.dependsOn
 	}
 	
 	This satisfyDependencies() {
@@ -67,6 +70,13 @@ internal class Satisfier {
 		log.debug("Resolving pods for $targetPod")
 
 		podNodes.vals.each { expandNode(it, Depend[,]) }
+		
+		// remove all pods that don't explicitly fit the defined dependencies
+		// this can delete a *lot* of pods and leaves the satisfier to just clean up the transitive dependencies
+		// this also removes user expletives such as "Where did that #@?$&# dependency come from!?"  
+		targetDependsOn.each |coreDepend| {
+			podNodes[coreDepend.name].reduceCore(coreDepend)
+		}
 
 		// there's an opportunity for podPerms to overflow here! (Scary @ 9,223,372,036,854,775,807!) 
 		// but there's no Err, the number just wraps round to zero
@@ -365,6 +375,12 @@ internal class PodNode {
 		}
 		podVersions.sortr
 		return this
+	}
+	
+	Void reduceCore(Depend deps) {
+		podVersions = podVersions.findAll {
+			deps.match(it.depend.version)
+		}
 	}
 	
 	PodGroup[] reduceProblemSpace() {
