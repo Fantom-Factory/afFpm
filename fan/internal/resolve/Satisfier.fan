@@ -183,7 +183,7 @@ internal class Satisfier {
 			resolveTime := Duration.now - startTime
 			if (resolveTime > resolveTimeout1 && solutions.size > 0) {
 				per   := 100f * count / grpPerms
-				left  := resolveTime / 100 * (100 - per)
+				left  := (resolveTime * 100f / per) - resolveTime
 				if (left > 1sec) {	// give it a 1sec grace to finish
 					stats := "Churned through ${per.toLocale}% of problem space in ${resolveTime.toLocale}; ${left.toLocale} left"
 					fin = true
@@ -192,7 +192,7 @@ internal class Satisfier {
 			}
 			if (resolveTime > resolveTimeout2) {
 				per   := 100f * count / grpPerms
-				left  := resolveTime / 100 * (100 - per)
+				left  := (resolveTime * 100f / per) - resolveTime
 				if (left > 1sec) {	// give it a 1sec grace to finish
 					stats := "Churned through ${per.toLocale}% of problem space in ${resolveTime.toLocale}; ${left.toLocale} left"
 					fin = true
