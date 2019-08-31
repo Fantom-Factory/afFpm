@@ -24,8 +24,6 @@ internal class Satisfier {
 	private	Duration			startTime		:= Duration.now
 	private	Resolver			resolver
 
-	// TODO cache closures as variables reduce class instantiation overhead  
-	
 	new make(TargetPod target, Resolver	resolver, |This|? f := null) {
 		f?.call(this)
 		this.targetPod	= target.pod
@@ -115,6 +113,9 @@ internal class Satisfier {
 		unsatisfied	:= UnresolvedPod[,]
 		badGroups	:= Int?[][,]
 
+		pgrp := null as PodGroup
+		resetFn := |Int v, Int i| { pgrp = nos[i][v]; podMap[pgrp.name] = pgrp }
+
 		// brute force - try every permutation of pod versions and see which ones work
 		count := 0
 		while (fin.not) {
@@ -129,7 +130,7 @@ internal class Satisfier {
 			if (badIdx == null) {
 
 				podMap.clear
-				cur.each |v, i| { grp := nos[i][v]; podMap[grp.name] = grp }
+				cur.each(resetFn)
 				res := reduceDomain(podMap, unsatisfied.isEmpty || badGroups.size < MAX_BAD_GROUPS)
 	
 				if (res != null) {
@@ -286,9 +287,10 @@ internal class Satisfier {
 //	}
 
 	// see https://en.wikipedia.org/wiki/AC-3_algorithm
-	private PodConstraint[]? reduceDomain(Str:PodGroup podGroups, Bool collect) {
-		podGroups.each { it.reset }
-		worklist := (PodConstraint[]) podGroups.reduce(PodConstraint[,]) |PodConstraint[] cons, grp->PodConstraint[]| { cons.addAll(grp.constraints) }
+	private static PodConstraint[]? reduceDomain(Str:PodGroup podGroups, Bool collect) {
+		podVals := podGroups.vals
+		for (i := 0; i < podGroups.size; ++i) { podVals[i].reset }
+		worklist := (PodConstraint[]) podGroups.reduce(PodConstraint[,], cacheFn)
 		allCons	 := worklist.dup
 		unsatisfied	:= null as PodConstraint[] 
 
@@ -306,6 +308,7 @@ internal class Satisfier {
 
 		return unsatisfied
 	}
+	private static const |PodConstraint[] cons, PodGroup grp->PodConstraint[]| cacheFn := |PodConstraint[] cons, PodGroup grp->PodConstraint[]| { cons.addAll(grp.constraints) }
 	
 	private Void expandNode(PodNode node, Depend[] stack) {
 		node.podVersions?.each |podVersion| {
