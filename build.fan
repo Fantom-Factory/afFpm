@@ -15,10 +15,10 @@ class Build : BuildPod {
 		]
 
 		depends = [
-			"sys        1.0.67 - 1.0",
-			"fanr       1.0.67 - 1.0",
-			"concurrent 1.0.67 - 1.0",			
-			"compiler   1.0.67 - 1.0",		// for afPlastic
+			"sys        1.0.68 - 1.0",
+			"fanr       1.0.68 - 1.0",
+			"concurrent 1.0.68 - 1.0",			
+			"compiler   1.0.68 - 1.0",		// for afPlastic
 		]
 
 		srcDirs = [`fan/`, `fan/afConcurrent/`, `fan/afPlastic/`, `fan/afProcess/`, `fan/internal/`, `fan/internal/cmds/`, `fan/internal/repos/`, `fan/internal/resolve/`, `fan/internal/utils/`, `fan/public/`, `test/`]

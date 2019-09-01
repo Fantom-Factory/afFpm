@@ -138,7 +138,7 @@ internal class TestFpmConfig : Test {
 		verifyEq(config.dirRepos["fanHome"], homeDir + `lib/fan/`)
 		verifyEq(config.dirRepos["workDir"], homeDir + `work/lib/fan/`)
 		verifyEq(config.fanrRepos.size, 1)
-		verifyEq(config.fanrRepos["default"], (homeDir + `work/repo-def/`).uri)
+//		verifyEq(config.fanrRepos["default"], (homeDir + `work/repo-def/`).uri)
 	}
 	
 	Void testRawConfigRemovesCreds() {
