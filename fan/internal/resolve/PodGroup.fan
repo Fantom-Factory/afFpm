@@ -7,45 +7,46 @@ internal class PodGroup {
 		  PodConstraint[]?	_constraints
 	
 	private PodFile[]		pods
-	private Depend:Bool		matched
+	private Depend:Bool?	matched
 	
 	new make(PodFile pod) {
 		this.name 			=  pod.name
 		this.dependsOn		=  pod.dependsOn
 		this.dependsOnHash	= dependsOn.dup.sort.join(" ")
-		this.matched		= Depend:Bool[pod.depend:false]
+		this.matched		= Depend:Bool?[pod.depend:null]
 		this.pods			= PodFile[pod]
 	}
 	
 	Void add(PodFile pod) {
-		matched[pod.depend] = false
+		matched[pod.depend] = null
 		pods.add(pod)
 	}
 
 	Void reset() {
-		matched.each |val, key| { matched[key] = false }
+		// each() is *much* faster than map()
+		matched.each(resetFn)
+	}
+	private |Bool?, Depend| resetFn := |Bool? val, Depend key| { matched[key] = null }
+
+	Bool matches(Depend dependsOn) {
+		anyMatch := false
+		matched.each |val, key| {
+			// if we already know it doesn't match, don't bother re-match()-ing
+			if (val != null) return
+			match := dependsOn.match(key.version)
+			if (match)
+				anyMatch = true
+			else
+				matched[key] = false
+		}
+		return anyMatch
 	}
 
-	Bool noMatch(Depend dependsOn) {
-		fail := true
-		// pods.all() will *not* iterate through all the keys if false is returned
-		matched.each |val, key| {
-			if (val == true)
-				return
-			out := dependsOn.match(key.version).not
-			if (out)
-				matched[key] = true
-			else
-				fail = false
-		}
-		return fail
-	}
-	
 	PodFile latest() {
-		depend := matched.exclude { it }.keys.max
+		depend := matched.findAll { it != false }.keys.max
 		return pods.find { it.depend == depend } 
 	}
-	
+
 	PodConstraint[] constraints() {
 		if (_constraints == null) {
 			pod := pods.first

@@ -294,11 +294,11 @@ internal class Satisfier {
 		allCons	 := worklist.dup
 		unsatisfied	:= null as PodConstraint[] 
 
-		while (worklist.isEmpty.not) {
+		while (worklist.size > 0) {
 			con := worklist.pop
 			nod := podGroups[con.dependsOn.name]
 
-			if (nod == null || nod.noMatch(con.dependsOn)) {
+			if (nod == null || !nod.matches(con.dependsOn)) {
 				// find out who else conflicted / removed the versions we wanted
 				// collect ALL the errors, so we can report on the solution with the smallest number of errs (if need be)
 				unsatisfied = collect ? allCons.findAll { it.dependsOn.name == con.dependsOn.name } : PodConstraint#.emptyList

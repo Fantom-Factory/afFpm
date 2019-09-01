@@ -9,6 +9,7 @@ v2.0.6
 ======
  - New: Added 'numPods' option to 'InstallCmd'.
  - Chg: Removed obvious non-dependencies at the start of the pod resolving algorithm.
+ - Chg: Optimised resolving code so it runs faster.
  - Bug: Unresolved Pod list could show too many unsatisfied pod versions.
  - Bug: Corrected resolve time estimates.
 
