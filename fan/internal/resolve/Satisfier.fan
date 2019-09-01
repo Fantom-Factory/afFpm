@@ -267,7 +267,7 @@ internal class Satisfier {
 		unresolvedPods := (UnresolvedPod[]) conGrps.map |PodConstraint[] cons, Str name->UnresolvedPod| {
 			UnresolvedPod {
 				it.name			= name
-				it.available	= podGroups[name]->versions
+				it.available	= podGroups[name]?.versions ?: Version#.emptyList
 				it.committee	= cons.sort
 			}
 		}.vals
