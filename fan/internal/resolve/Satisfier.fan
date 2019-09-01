@@ -112,29 +112,43 @@ internal class Satisfier {
 		podMap 		:= Str:PodGroup[:] 
 		unsatisfied	:= UnresolvedPod[,]
 		badGroups	:= Int?[][,]
+		allBadPods	:= UnresolvedPod[][,]
 
-		pgrp := null as PodGroup
-		resetFn := |Int v, Int i| { pgrp = nos[i][v]; podMap[pgrp.name] = pgrp }
+		// fn caches
+		pgrp 		:= null as PodGroup
+		resetFn 	:= |Int v, Int i| { pgrp = nos[i][v]; podMap[pgrp.name] = pgrp }
+		badIdxFn	:= |Int?[] badGrp -> Bool| {
+			all := true
+			i   := 0
+			while (all && i < cur.size) {
+				v   := cur[i]
+				val := badGrp[i++]
+				all = val == null || v == val
+			}
+			return all
+			// this is what the above does
+//			cur.all |v, i->Bool| { val := badGrp[i]; return val == null || val == v }
+		}
 
 		// brute force - try every permutation of pod versions and see which ones work
-		count := 0
+		count 	:= 0
+		collect := true
 		while (fin.not) {
 			count++
 
 			// note I deleted the badPodGroups optimisation - it worked, but it added extra SECONDS to calculate!
 			// actually - double check, I think with ~400 cached groups, it saved 1 second!
-
-			badIdx := badGroups.findIndex |badGrp->Bool| {
-				cur.all |v, i->Bool| { val := badGrp[i]; return val == null || val == v }
-			}
+			// Confusingly - this also reduced a 19 sec problem to 3 secs!
+			badIdx := badGroups.findIndex(badIdxFn)
 			if (badIdx == null) {
 
 				podMap.clear
 				cur.each(resetFn)
-				res := reduceDomain(podMap, unsatisfied.isEmpty || badGroups.size < MAX_BAD_GROUPS)
+				collect = unsatisfied.isEmpty || badGroups.size < MAX_BAD_GROUPS
+				res 	:= reduceDomain(podMap, collect)
 	
 				if (res != null) {
-					
+
 					// limit the number of bad groups - cos they become counter effective
 					if (badGroups.size < MAX_BAD_GROUPS) {
 						depGrps := groupBy(res) |PodConstraint con->Str| { con.dependsOn.name }
@@ -148,13 +162,14 @@ internal class Satisfier {
 					}
 	
 					// this will dump out ALL the bad dependencies
-//					Utils.dumpUnresolved(logErr(res, podMap)) {echo(it) }
+					if (log.isDebug)
+						allBadPods.add(logErr(res, podMap)).unique
 					
 					// just take the first err as it should be the most relevant with the most number of latest versions 
 					if (unsatisfied.isEmpty) {
 						badPods := logErr(res, podMap)
 						if (badPods != null)
-							unsatisfied = badPods					
+							unsatisfied = badPods
 					}
 	
 				} else {					
@@ -211,6 +226,12 @@ internal class Satisfier {
 		log.debug("Cached ${badGroups.size} " + (badGroups.size >= MAX_BAD_GROUPS ? "(MAX) " : "") + "bad dependency group" + s(badGroups.size))
 		log.debug("Found ${solutions.size} solution${s(solutions.size)} in ${solveTime.toLocale}")
 		
+		
+		if (solutions.size == 0 && log.isDebug) {
+			allBadPods.each {
+				log.debug( Utils.dumpUnresolved(it) )
+			}
+		}
 
 		// find the best solution -> the one with the greatest number of higher pod versions
 		if (solutions.size > 0) {
