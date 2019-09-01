@@ -44,6 +44,9 @@ class InstallCmd : FpmCmd {
 	@Opt { aliases=["p"]; help="Password for remote fanr authentication" }
 	Str? password
 
+	@Opt { aliases=["n"]; help="The max number of pod versions remote repositories should return (defaults to 5)" }
+	Int? numPods
+
 	@Arg { help="location or query for pod" }
 	Str? pod
 
@@ -70,7 +73,7 @@ class InstallCmd : FpmCmd {
 		}
 		
 		resolver := Resolver(fpmConfig.repositories)
-		resolver.maxPods	= 1
+		resolver.maxPods	= numPods ?: 5
 		resolver.corePods	= core
 		resolver.log		= log
 		
