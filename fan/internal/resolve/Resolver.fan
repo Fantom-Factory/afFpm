@@ -121,8 +121,10 @@ class Resolver {
 				existing := podVers.find { it.fits(pod.depend) }
 				if (existing == null) {
 					podVers.add(pod)
-					if (minVer == null || pod.version > minVer)
-						minVer = pod.version
+
+					// I commented this out because we should pull back ALL versions
+//					if (minVer == null || pod.version > minVer)
+//						minVer = pod.version
 				}
 				else {
 					// replace remote pods with local versions
