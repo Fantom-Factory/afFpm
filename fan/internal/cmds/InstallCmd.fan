@@ -109,22 +109,16 @@ class InstallCmd : FpmCmd {
 					return 9
 				}
 				
-				if (repo.isDirRepo) {
-					satisfied.resolvedPods.each {
-						it.installTo(repo)						
-					}
-					log.info("Copied ${satisfied.resolvedPods.size} pods to ${repo.url.toFile.normalize.osPath}")
-
-				} else {
-					podFiles := satisfied.resolvedPods.findAll { it.repository.isRemote }
+				// isRemote() also removes all the local core pods that we wouldn't otherwise want to copy over
+				podFiles := satisfied.resolvedPods.findAll { it.repository.isRemote }
+				if (podFiles.isEmpty)
+					log.info("No remote dependency updates found.")
+				else {
 					podFiles.each |podFile| {
 						log.info("Installing ${podFile.depend} to ${repo.name} (from ${podFile.repository.name})")
 						podFile.installTo(repo)
 					}
-					if (podFiles.isEmpty)
-						log.info("No remote dependency updates found.")
-					else
-						log.info("Done.")
+					log.info("Installed ${podFiles.size} pods to ${repo.url.toFile.normalize.osPath}")
 				}
 
 				return 0
@@ -183,6 +177,7 @@ class InstallCmd : FpmCmd {
 				log.warn(Utils.dumpUnresolved(satisfied.unresolvedPods.vals))
 				return 9
 			}
+			// isRemote() also removes all the local core pods that we wouldn't otherwise want to copy over
 			podFiles := satisfied.resolvedPods.findAll { it.repository.isRemote }
 			podFiles.each |podFile| {
 				log.info("Installing ${podFile.depend} to ${repo.name} (from ${podFile.repository.name})")
@@ -190,8 +185,6 @@ class InstallCmd : FpmCmd {
 			}
 			if (podFiles.isEmpty)
 				log.info("No remote dependencies found.")
-			else
-				log.info("Done.")
 			return 0
 		}
 		

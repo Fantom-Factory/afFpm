@@ -24,7 +24,8 @@ internal const class RemoteFanrRepository : Repository {
 	
 	override File download(PodFile podFile) {
 		spec := repo.find(podFile.name, podFile.version, true)
-		return repo.read(spec).readAllBuf.toFile(`fanr://${name}/${podFile.depend}`)
+		buff := repo.read(spec).readAllBuf
+		return buff.toFile(`fanr://${name}/${podFile.depend}`)
 	}
 	
 	override Void delete(PodFile podFile) { throw UnsupportedErr() }
