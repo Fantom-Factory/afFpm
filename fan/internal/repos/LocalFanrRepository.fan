@@ -40,13 +40,13 @@ internal const class LocalFanrRepository : Repository {
 			podDir := dir.plus(depend.name.toUri.plusSlash, true)
 			return podDir.listFiles(podRegex).map |file->PodName?| { PodName(file) }.exclude { it == null }
 		}
-		return podNames.findAll { it.fits(depend) }.map { getOrMake(it.file) }
+		return podNames.findAll { it.fits(depend) }.map { getOrMake(it.file) }.sort
 	}
 
 	override PodFile[] resolveAll() {
 		dir.listDirs.map |repoDir->PodName?| {
 			repoDir.listFiles(podRegex).map { PodName(it) }.exclude { it == null }.sort.last
-		}.exclude { it == null }.map |PodName pod->PodFile| { getOrMake(pod.file) }
+		}.exclude { it == null }.map |PodName pod->PodFile| { getOrMake(pod.file) }.sort
 	}
 	
 	override Void cleanUp() {

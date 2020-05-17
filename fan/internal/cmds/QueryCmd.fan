@@ -32,7 +32,7 @@ class QueryCmd : FpmCmd {
 		if (offline)
 			log.info("<FPM offline mode>")
 
-		repos	:= repo == null ? fpmConfig.repositories.unique : [repo]
+		repos	:= (Repository[]) (repo == null ? fpmConfig.repositories.unique : [repo])
 		if (offline)
 			repos = repos.findAll { it.isLocal }
 		

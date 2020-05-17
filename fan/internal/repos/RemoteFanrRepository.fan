@@ -52,7 +52,7 @@ internal const class RemoteFanrRepository : Repository {
 		if (files.size > 0)
 			log?.info(" - found ${depend.name} " + files.join(", ") { it.version.toStr })
 
-		return files
+		return files.sort
 	}
 	
 	override PodFile[] resolveAll() {

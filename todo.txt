@@ -1,0 +1,39 @@
+For v2.1 :
+
+Use some nice short names:
+
+	PodVer
+	PodInfo
+	PodFile
+	
+Don't use heirarchy, use .toPodInfo() instead, otherwise you'll be tempted to downcast. I've determined that this is essentially caching, and re-using old info. Best to always get the latest.
+
+----
+
+FPM - can not update dependencies for proj no in Eggbox - get 503
+Bad username+password gives NoT JSON
+
+FPM - when printing querys, does not sort versions proper: fpm query afDuvet
+  release (file:/C:/Repositories-Fantom/repo-release/)
+  - found afDuvet 1.1.10, 1.1.2, 1.1.4, 1.1.6, 1.1.7, 1.1.8
+
+FPM
+	*  does not work: fpm install -r deimos afDomJax@0.0.8
+	* does work:        fpm install -r deimos afDomJax
+	* I maybe wrong - stoopid fish not updating the cur dir!
+
+
+
+FPM - when printing config files, reverse the list so fall back is last
+
+FPM - want to copy a pod to a dir + all it's dependencies (optional)
+
+FPM - see https://docs.microsoft.com/en-us/nuget/consume-packages/dependency-resolution
+score each possible dependency graph and attempt to resolve from highest down
+
+FPM - maybe ability to resolve extra pods outside of build.fan?
+
+
+FPM - use name/ver notation
+
+FPM - often need to specify a source and dest repo
