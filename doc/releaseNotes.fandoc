@@ -5,6 +5,10 @@ v2.0
 ****
 A re-write of the original code base with directed goals and a dependency resolution algorithm that's x12 faster!
 
+v2.0.10 (in-progress)
+=======
+ - Bug: Could not copy transitive dependencies to a local dir.
+
 v2.0.8
 ======
  - Bug: Updating pods from a 'build.fan' could cause an Err as it tried to overwrite existing pods in use. Thanks to [DonkLord]`https://github.com/Fantom-Factory/fantom-lang.org/issues/1` for reporting.

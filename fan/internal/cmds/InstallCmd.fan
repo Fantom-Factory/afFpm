@@ -177,8 +177,16 @@ class InstallCmd : FpmCmd {
 				log.warn(Utils.dumpUnresolved(satisfied.unresolvedPods.vals))
 				return 9
 			}
-			// isRemote() also removes all the local core pods that we wouldn't otherwise want to copy over
-			podFiles := satisfied.resolvedPods.findAll { it.repository.isRemote }
+
+			podFiles := satisfied.resolvedPods
+
+			// if local dir, then publish all trans pods to it
+			if (repo is LocalDirRepository)
+				podFiles = podFiles.findAll { !it.isCore }
+			else
+				  // isRemote() also removes all the local core pods that we wouldn't otherwise want to copy over
+				podFiles = podFiles.findAll { it.repository.isRemote }
+			
 			podFiles.each |podFile| {
 				log.info("Installing ${podFile.depend} to ${repo.name} (from ${podFile.repository.name})")
 				podFile.installTo(repo)

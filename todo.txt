@@ -8,6 +8,10 @@ Use some nice short names:
 	
 Don't use heirarchy, use .toPodInfo() instead, otherwise you'll be tempted to downcast. I've determined that this is essentially caching, and re-using old info. Best to always get the latest.
 
+
+MAKE ENV DYNAMIC - i.e. picks up new pods from lib dirs - then FPM can be used with SkySpark and allow new pods to be installed.
+
+
 ----
 
 FPM - can not update dependencies for proj no in Eggbox - get 503
