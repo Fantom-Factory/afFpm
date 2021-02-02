@@ -8,6 +8,7 @@ A re-write of the original code base with directed goals and a dependency resolu
 v2.0.10 (in-progress)
 =======
  - Bug: Could not copy transitive dependencies to a local dir.
+ - Bug: Run cmd could throw a *read only* err when using launch pods.
 
 v2.0.8
 ======
