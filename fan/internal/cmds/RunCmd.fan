@@ -48,6 +48,7 @@ class RunCmd : FpmCmd {
 			if (dep != null) {
 				if (targetNotSet)
 					target = dep
+				args = args.rw	// list only!
 				args[0] = dep.name
 			}
 		}
