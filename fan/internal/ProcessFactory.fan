@@ -14,9 +14,9 @@ internal class ProcessFactory {
 	private static Process2 makeJavaProcess(Str javaCmd, Str fanCmd, Str[] cmd) {
 		homeDir		:= Env.cur.homeDir.normalize
 		classpath	:= [homeDir + `lib/java/sys.jar`, homeDir + `lib/java/jline.jar`].join(File.pathSep) { it.osPath } 
-		javaOpts	:= Env.cur.config(Pod.find("sys"), "java.options", "")
-		args 		:= ["java", javaOpts, "-cp", classpath, "-Dfan.home=${homeDir.osPath}", javaCmd].addAll(cmd)
-		process		:= Process2(args, `./`.toFile)
+		javaOpts	:= Env.cur.config(Pod.find("sys"), "java.options")	// may be null
+		args 		:= ["java", javaOpts, "-cp", classpath, "-Dfan.home=${homeDir.osPath}", javaCmd].exclude { it == null }.addAll(cmd)
+		process		:= Process2(args, `./`.toFile.normalize)
 		processRef	:= Unsafe(process)
 		processCmd	:= Unsafe(fanCmd)
 
