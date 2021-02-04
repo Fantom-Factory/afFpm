@@ -83,6 +83,8 @@ const class FpmConfig {
 			}
 		}
 		
+		// TODO create an FpmProps class that wraps fpm.props - it can then resolve all dir paths relative to itself and contain prop conversion methods (easy to test!)
+		
 		baseDir = baseDir.normalize
 		fpmFile := (File?) baseDir.plus(configFilename).normalize
 		while (fpmFile != null && !fpmFile.exists)
