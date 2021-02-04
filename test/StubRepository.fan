@@ -23,7 +23,7 @@ const class StubRepository : Repository {
 	override Str dump() { "Stub" }
 	
 	Void add(Str dependency, Str? dependents) {
-		pod 		:= Depend(dependency.replace("@", " "))
+		pod 		:= FpmUtils.toDepend(dependency)
 		dependsOn	:= dependents == null ? Depend#.emptyList : dependents.split(',').exclude { it.isEmpty }.map { Depend(it, true) }
 		pods.add(PodFile(pod.name, pod.version, dependsOn, `stub:${dependency}`, this))
 	}

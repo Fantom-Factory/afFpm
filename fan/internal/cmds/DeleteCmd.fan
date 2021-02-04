@@ -7,7 +7,7 @@
 **
 ** Examples: 
 **   C:\> fpm delete myPod
-**   C:\> fpm delete myPod@2.0.10 -r release
+**   C:\> fpm delete myPod/2.0.10 -r release
 ** 
 @NoDoc	// Fandoc is only saved for public classes
 class DeleteCmd : FpmCmd {

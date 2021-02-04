@@ -7,7 +7,7 @@
 ** Examples:
 ** 
 **   C:\> fpm query myPod
-**   C:\> fpm query myPod@2.0+
+**   C:\> fpm query myPod/2.0+
 **   C:\> fpm query "myPod 2.0+"
 ** 
 @NoDoc	// Fandoc is only saved for public classes

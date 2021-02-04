@@ -26,7 +26,7 @@ internal class Main {
 		
 		ctorData := ArgParser() {
 			it.resolveFns["repo"]	= |Field field, Str arg->Obj?| { parseRepo(field, arg, fpmConfig) }
-			it.resolveFns["target"]	= |Field field, Str arg->Obj?| { parseTarget(field, arg) }
+			it.resolveFns["target"]	= |Field field, Str arg->Obj?| { FpmUtils.toDepend(arg, true) }
 		}.parse(args, cmdType) {
 			it[FpmCmd#log]			= StdLogger()
 			it[FpmCmd#fpmConfig]	= fpmConfig
@@ -38,13 +38,6 @@ internal class Main {
 			cmd.log.level = LogLevel.debug
 		
 		return cmd.run	
-	}
-
-	private static Depend parseTarget(Field field, Str arg) {
-		dep := arg.replace("@", " ")
-		if (!dep.contains(" "))
-			dep += " 0+"
-		return Depend(dep, true)
 	}
 
 	private static Repository? parseRepo(Field field, Str repo, FpmConfig fpmConfig) {

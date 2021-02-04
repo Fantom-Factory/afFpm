@@ -233,7 +233,7 @@ internal class Satisfier {
 		
 		if (solutions.size == 0 && log.isDebug) {
 			allBadPods.each {
-				log.debug( Utils.dumpUnresolved(it) )
+				log.debug( FpmUtils.dumpUnresolved(it) )
 			}
 		}
 

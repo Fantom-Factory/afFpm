@@ -21,9 +21,6 @@ class FpmCmd {
 	internal static Depend? parseTarget(Str? arg) {
 		if (arg == null)			return null
 		if (arg.endsWith(".fan"))	return null
-		dep := arg.replace("@", " ")
-		if (!dep.contains(" "))
-			dep += " 0+"
-		return Depend(dep, false)
+		return FpmUtils.toDepend(arg, false)
 	}
 }

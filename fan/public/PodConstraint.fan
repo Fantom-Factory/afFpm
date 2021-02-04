@@ -13,7 +13,7 @@ const class PodConstraint {
 
 	@NoDoc
 	override Str toStr() {
-		"${pod.name}@${pod.version} -> ${dependsOn}"
+		"${pod.name}/${pod.version} -> ${dependsOn}"
 	}
 	
 	@NoDoc

@@ -33,7 +33,7 @@ class TestCmd : FpmCmd {
 			return invalidArgs
 		}
 
-		// allow for explicit targets -> afFpm afGame@2.0
+		// allow for explicit targets -> afFpm afGame/2.0
 		targetNotSet := target == null
 		dep := parseTarget(pod)
 		if (dep != null) {

@@ -119,22 +119,22 @@ internal class TestSatisfaction : Test {
 	}
 
 	Void testBuggy() {
-		addDep("afEggbox@0.0.5", "afBounce 1.0.22-1.0, afFancordion 1.0.4-1.0, afFancordionBootstrap 1.0.0-1.0")
-		addDep("afFancordion@1.1.0", "afBounce 1.1.0-1.1")
-		addDep("afFancordion@1.0.4", "afBounce 1.0.18-1.0")
-		addDep("afFancordionBootstrap@1.0.2", "afFancordion 1.1.0-1.1")
-		addDep("afFancordionBootstrap@1.0.0", "afFancordion 1.0.4-1.0")
+		addDep("afEggbox/0.0.5", "afBounce 1.0.22-1.0, afFancordion 1.0.4-1.0, afFancordionBootstrap 1.0.0-1.0")
+		addDep("afFancordion/1.1.0", "afBounce 1.1.0-1.1")
+		addDep("afFancordion/1.0.4", "afBounce 1.0.18-1.0")
+		addDep("afFancordionBootstrap/1.0.2", "afFancordion 1.1.0-1.1")
+		addDep("afFancordionBootstrap/1.0.0", "afFancordion 1.0.4-1.0")
 
-		addDep("afBounce@1.1.0")
-		addDep("afBounce@1.0.24")
-		addDep("afBounce@1.0.22")
+		addDep("afBounce/1.1.0")
+		addDep("afBounce/1.0.24")
+		addDep("afBounce/1.0.22")
 		
 		satisfyDependencies("afEggbox 0.0.5")
 		
 		// hmm - I swear this wasn't resolving  on the desktop!? 
 		// sys::Err: Could not resolve afBounce (1.1.0, 1.0.24, 1.0.22)
-		//   afEggbox@0.0.5 -> afBounce 1.0.20-1.0
-		//   afFancordion@1.1.0 -> afBounce 1.1.0-1.1
+		//   afEggbox/0.0.5 -> afBounce 1.0.20-1.0
+		//   afFancordion/1.1.0 -> afBounce 1.1.0-1.1
 		verifyPodFiles("afEggbox 0.0.5, afFancordionBootstrap 1.0.0, afFancordion 1.0.4, afBounce 1.0.24")		
 	}
 

@@ -1,5 +1,12 @@
 
-internal class Utils {
+internal class FpmUtils {
+	
+	static Depend? toDepend(Str str, Bool checked := true) {
+		dep := str.replace("/", " ").replace("@", " ")
+		if (!dep.contains(" "))
+			dep += " 0+"
+		return Depend(dep, checked)
+	}
 	
 	static Bool dependFits(Depend dep1, Depend dep2) {
 		if (dep1.name != dep2.name)
@@ -53,12 +60,12 @@ internal class Utils {
 	** Could not satisfy the following constraints:
 	** 
 	**     afPlastic (1.2, 1.3)
-	**         afIoc@2.1 ------> afPlastic 1.2
-	**         afBedSheet@1.5 -> afPlastic 1.4
+	**         afIoc/2.1 ------> afPlastic 1.2
+	**         afBedSheet/1.5 -> afPlastic 1.4
 	** 	
 	**     afEfan (1.5, 1.2, 2.3)
-	**         afIoc@2.1 ------> afEfan 1.2
-	**         afBedSheet@1.5 -> afEfan 1.4
+	**         afIoc/2.1 ------> afEfan 1.2
+	**         afBedSheet/1.5 -> afEfan 1.4
 	** <pre
 	static Str dumpUnresolved(UnresolvedPod[] unresolvedPods) {
 		if (unresolvedPods.isEmpty) return ""

@@ -45,42 +45,42 @@ internal class TestUtils :Test {
 	}
 	
 	Void verifyDepends(Str d1, Str d2) {
-		verifyTrue(Utils.dependFits(Depend(d1), Depend(d2)))
+		verifyTrue(FpmUtils.dependFits(Depend(d1), Depend(d2)))
 	}
 	
 	Void verifyDependsNot(Str d1, Str d2) {
-		verifyFalse(Utils.dependFits(Depend(d1), Depend(d2)))
+		verifyFalse(FpmUtils.dependFits(Depend(d1), Depend(d2)))
 	}
 	
 	Void testSplitQuotedStr() {
-		verifyEq(Utils.splitQuotedStr(null), null)
-		verifyEq(Utils.splitQuotedStr(""), null)
+		verifyEq(FpmUtils.splitQuotedStr(null), null)
+		verifyEq(FpmUtils.splitQuotedStr(""), null)
 		
 		// standard split
-		verifyEq(Utils.splitQuotedStr("how are you"), Str["how", "are", "you"])
+		verifyEq(FpmUtils.splitQuotedStr("how are you"), Str["how", "are", "you"])
 
 		// standard split - moar spaces
-		verifyEq(Utils.splitQuotedStr("   how   are   you   "), Str["how", "are", "you"])
+		verifyEq(FpmUtils.splitQuotedStr("   how   are   you   "), Str["how", "are", "you"])
 		
 		// standard quotes
-		verifyEq(Utils.splitQuotedStr("\"how are you\""), Str["how are you"])
+		verifyEq(FpmUtils.splitQuotedStr("\"how are you\""), Str["how are you"])
 		
 		// mixed
-		verifyEq(Utils.splitQuotedStr("\"how are\" you"), Str["how are", "you"])
+		verifyEq(FpmUtils.splitQuotedStr("\"how are\" you"), Str["how are", "you"])
 		
 		// no closing quote
-		verifyEq(Utils.splitQuotedStr("how \"are you"), Str["how", "are you"])
+		verifyEq(FpmUtils.splitQuotedStr("how \"are you"), Str["how", "are you"])
 		
 		// quotes not prefixed with space
-		verifyEq(Utils.splitQuotedStr("how\"are\" you"), Str["how\"are\"", "you"])
+		verifyEq(FpmUtils.splitQuotedStr("how\"are\" you"), Str["how\"are\"", "you"])
 
 		// quotes surrounded with space
-		verifyEq(Utils.splitQuotedStr("how \" are \" you"), Str["how", " are ", "you"])
+		verifyEq(FpmUtils.splitQuotedStr("how \" are \" you"), Str["how", " are ", "you"])
 
 		// quotes surrounded with space
-		verifyEq(Utils.splitQuotedStr("how \" are \"you"), Str["how", " are ", "you"])
+		verifyEq(FpmUtils.splitQuotedStr("how \" are \"you"), Str["how", " are ", "you"])
 
 		// quotes surrounded with space
-		verifyEq(Utils.splitQuotedStr("how \" are y\"ou"), Str["how", " are y", "ou"])
+		verifyEq(FpmUtils.splitQuotedStr("how \" are y\"ou"), Str["how", " are y", "ou"])
 	}
 }

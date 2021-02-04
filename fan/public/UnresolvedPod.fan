@@ -22,7 +22,7 @@ const class UnresolvedPod {
 			size.max(con.pod.name.size + 1 + con.pod.version.toStr.size + 1)
 		} as Int
 		committee.each {
-			output	+= "    " + "${it.pod.name}@${it.pod.version} ".padr(max, '-') + "-> ${it.dependsOn}\n"
+			output	+= "    " + "${it.pod.name}/${it.pod.version} ".padr(max, '-') + "-> ${it.dependsOn}\n"
 		}
 		return output
 	}

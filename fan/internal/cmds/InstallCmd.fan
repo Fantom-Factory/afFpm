@@ -3,7 +3,7 @@
 ** 
 ** The pod may be:
 **  - a file location       (e.g. 'lib/myGame.pod' or 'C:\lib\myGame.pod')
-**  - a simple search query (e.g. 'afIoc@3.0' or '"afIoc 3.0"')
+**  - a simple search query (e.g. 'afIoc/3.0' or '"afIoc 3.0"')
 **  - a directory of pods   (e.g. 'lib/' or 'C:\lib\')
 **  - a build file          (e.g. 'build.fan' - use to update dependencies) 
 ** 
@@ -105,7 +105,7 @@ class InstallCmd : FpmCmd {
 				log.info("FPM updating dependencies for ${buildPod.podName} ...")
 				satisfied := resolver.satisfyBuild(buildPod)
 				if (satisfied.resolvedPods.isEmpty && satisfied.unresolvedPods.size > 0) {
-					log.warn(Utils.dumpUnresolved(satisfied.unresolvedPods.vals))
+					log.warn(FpmUtils.dumpUnresolved(satisfied.unresolvedPods.vals))
 					return 9
 				}
 				
@@ -174,7 +174,7 @@ class InstallCmd : FpmCmd {
 			log.info("Updating dependencies for ${target} ...")
 			satisfied := resolver.satisfyPod(target)
 			if (satisfied.resolvedPods.isEmpty && satisfied.unresolvedPods.size > 0) {
-				log.warn(Utils.dumpUnresolved(satisfied.unresolvedPods.vals))
+				log.warn(FpmUtils.dumpUnresolved(satisfied.unresolvedPods.vals))
 				return 9
 			}
 

@@ -94,7 +94,7 @@ class Resolver {
 				
 				// first lets check if this dependency 'fits' into any existing
 				// we don't want to contact remote fanr repos if we don't have to
-				existing := cash.find |vers, dep->Bool| { Utils.dependFits(dependency, dep) }
+				existing := cash.find |vers, dep->Bool| { FpmUtils.dependFits(dependency, dep) }
 				
 				if (existing != null) {
 					// only return what we need

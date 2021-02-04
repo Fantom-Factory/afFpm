@@ -121,7 +121,7 @@
 # Launch pods are libraries that should be ignored when determining the target 
 # pod. Example:
 # 
-#   C:\> fpm run afBedSheet myWebApp@1.2
+#   C:\> fpm run afBedSheet myWebApp/1.2
 #
 # launchPods				= afBedSheet, afReflux
 

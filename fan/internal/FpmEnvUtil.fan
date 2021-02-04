@@ -2,32 +2,12 @@
 ** Originally, this existed so I could create an F4 version.
 ** But I guess this *could* now be merged in to FpmEnv.
 ** Hmm... but I like the split / separation of concerns!
-internal const class FpmEnvDefault {
-//internal const class FpmEnvDefault : FpmEnv {
-
-//	static new make() {
-//		try {
-//			if (Env.cur.vars["FPM_DEBUG"]?.lower?.toBool(false) == true)
-//				FpmEnv#.pod.log.level = LogLevel.debug
-//
-//			return makeManual(FpmConfig())
-//			
-//		} catch (Err e) {
-//			// this is really just belts and braces for FPM development as
-//			// otherwise we don't get a useful stack trace
-//			Env.cur.err.print(e.traceToStr)
-//			throw e
-//		}
-//	}
-	
-	private new make2(){}
-	
-//	private new makeManual(FpmConfig fpmConfig, |This|? in := null) : super.makeManual(fpmConfig, in) { }
+internal const class FpmEnvUtil {
 
 	static TargetPod? findTarget() {
 		fanArgs	:= Env.cur.args
 		// TODO allow multiple target pods!?
-		fpmArgs	:= Utils.splitQuotedStr(Env.cur.vars["FPM_TARGET"])
+		fpmArgs	:= FpmUtils.splitQuotedStr(Env.cur.vars["FPM_TARGET"])
 		cmdArgs	:= fpmArgs ?: fanArgs
 		
 		// a fail safe / get out jail card for pin pointing the targeted environment 
@@ -79,21 +59,13 @@ internal const class FpmEnvDefault {
 		throw Err("Could not parse pod from: mainMethod: ${mainMethod?.qname ?: Str.defVal} or args: ${cmdArgs.first ?: Str.defVal} - ${Env.cur.args}")
 	}
 
-	static Depend? findPodDepend(Str? arg) {
+	private static Depend? findPodDepend(Str? arg) {
 		if (arg == null || arg.endsWith(".fan"))
 			return null
 
 		if (arg.contains("::"))
 			arg = arg[0..<arg.index("::")]
 
-		arg = arg.replace("@", " ")
-		
-		if (!arg.contains(" "))
-			arg += " 0+"
-
-		if (arg.all { isAlphaNum || equals(' ') || equals('.') || equals('-') || equals('+') })
-			return Depend(arg, false)
-		
-		return null
+		return FpmUtils.toDepend(arg, false)
 	}
 }

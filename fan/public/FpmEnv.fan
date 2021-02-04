@@ -118,7 +118,7 @@ const class FpmEnv : Env {
 		}
 
 		if (unresolvedPods.size > 0) {
-			log.warn(Utils.dumpUnresolved(unresolvedPods.vals))
+			log.warn(FpmUtils.dumpUnresolved(unresolvedPods.vals))
 			if (!loggedLatest) {
 				loggedLatest = true
 				log.warn("Defaulting to latest pod versions")
@@ -177,7 +177,7 @@ const class FpmEnv : Env {
 	}
 
 	@NoDoc
-	virtual TargetPod? findTarget() { FpmEnvDefault.findTarget }
+	virtual TargetPod? findTarget() { FpmEnvUtil.findTarget }
 
 	** Dumps the FPM environment to a string. This includes the FPM Config and a list of resolved pods.
 	virtual Str dump() {

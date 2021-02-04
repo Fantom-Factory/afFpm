@@ -75,7 +75,7 @@ If a newer version exists online, it will be downloaded along with any (transien
 ====================================
 Use the 'install' command with a specific version:
 
-  C:\> fpm install podName@2.0.0
+  C:\> fpm install podName/2.0.0
 
 If newer dependencies exists online, they will be downloaded.
 
@@ -333,7 +333,7 @@ Examples:
   FPM_DEBUG             = true
   FPM_RESOLVE_TIMEOUT_1 = 5sec
   FPM_RESOLVE_TIMEOUT_2 = 10sec
-  FPM_TARGET            = afIoc@3.0.6
+  FPM_TARGET            = afIoc/3.0.6
   FPM_TRACE             = true
 
 Note an cmd line argument of '-fpmTarget' can be used to set the target pod in place of the 'FPM_TARGET' environment variable.
