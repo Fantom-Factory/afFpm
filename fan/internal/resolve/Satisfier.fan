@@ -151,9 +151,12 @@ internal class Satisfier {
 
 					// limit the number of bad groups - cos they become counter effective
 					if (badGroups.size < MAX_BAD_GROUPS) {
+						// TODO optimise fn
 						depGrps := groupBy(res) |PodConstraint con->Str| { con.dependsOn.name }
 						depGrps.each |PodConstraint[] naa| {
+							// TODO optimise fn
 							names  := naa.map { it.pod.name }.add(naa.first.dependsOn.name)
+							// TODO optimise fn
 							badGrp := cur.map |v, i->Int?| {
 								names.contains(nos[i][v].name) ? v : null
 							}
@@ -173,6 +176,7 @@ internal class Satisfier {
 					}
 	
 				} else {					
+					// TODO optimise fn
 					solutions.add(
 						podMap.map { it.latest }
 					)
@@ -320,6 +324,7 @@ internal class Satisfier {
 			nod := podGroups[con.dependsOn.name]
 
 			if (nod == null || !nod.matches(con.dependsOn)) {
+				// TODO optimise fn
 				// find out who else conflicted / removed the versions we wanted
 				// collect ALL the errors, so we can report on the solution with the smallest number of errs (if need be)
 				unsatisfied = collect ? allCons.findAll { it.dependsOn.name == con.dependsOn.name } : PodConstraint#.emptyList
@@ -348,6 +353,7 @@ internal class Satisfier {
 		if (checked && vers.isEmpty)
 			throw UnknownPodErr("Could not resolve pod: ${pod}")
 
+		// TODO optimise fn
 		return podNodes.getOrAdd(pod.name) {
 			PodNode { it.name = pod.name }
 		}.addPodVersions(vers)

@@ -54,6 +54,9 @@ class BuildCmd : FpmCmd {
 		process.env["FAN_ENV"]		= FpmEnv#.qname
 		process.env["FPM_DEBUG"]	= debug.toStr
 		process.env["FPM_TARGET"]	= target
+		
+		// TODO pass ALL FPM env vars to process (like FPM_ALL_PODS)
+		
 		retVal := process.run.join
 		if (retVal != 0)
 			return retVal
