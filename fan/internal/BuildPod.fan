@@ -20,13 +20,14 @@ internal class BuildPod {
 	Str[]	depends()	{ buildPod->depends		}
 	Uri		outPodDir()	{ buildPod->outPodDir	}
 	
-	override Str toStr() { "${podName} ${version}" }		
+	override Str toStr() { "${podName} ${version}" }
 	
 	static new make(Str? filePath) {
 		try {
 			if (filePath == null)
 				return BuildPod.err("File null")
-			file := filePath.startsWith("file:") ? File(filePath.toUri, false) : File.os(filePath)
+
+			file := FileUtils.toFile(filePath)
 			if (file.isDir || file.exists.not || file.ext != "fan")
 				return BuildPod.err("File not found: ${file.osPath}")
 			
@@ -38,8 +39,9 @@ internal class BuildPod {
 			if (obj == null)
 				return BuildPod.err(pod.types.join(",") { it.base.qname } + " does not extend build::BuildPod", "notBuildPod")
 			
-			// if it's not a BuildPod instance, return null - e.g. it may just be a BuildScript instance!
+			// if it's not a BuildPod instance, it may just be a BuildScript instance!
 			return BuildPod.wrap(obj)
+
 		} catch (Err err)
 			return BuildPod.err(err.msg)
 	}

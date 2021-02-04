@@ -112,4 +112,63 @@ internal class FpmUtils {
 
 		return strings
 	}
+	
+	static TargetPod? findTarget(Env env) {
+		envArgs	:= env.args
+		envVars := env.vars
+		envMain := env.mainMethod
+		
+		// TODO allow multiple target pods!? e.g. xfant AND the test pod?
+		
+		// a fail safe / get out jail card for pin pointing the targeted environment 
+		idx := envArgs.index("-fpmTarget")
+		if (idx != null) {
+			podDepend := findPodDepend(envArgs.getSafe(idx + 1))
+			if (podDepend != null)
+				return TargetPod(podDepend)
+		}
+
+		// FPM_TARGET - use it if we got it
+		fpmArgs	:= FpmUtils.splitQuotedStr(envVars["FPM_TARGET"])
+		if (fpmArgs != null) {
+			buildPod := BuildPod(fpmArgs.first)
+			if (buildPod != null && buildPod.errMsg == null)
+				return TargetPod(buildPod)
+
+			podDepend := findPodDepend(fpmArgs.first)
+			if (podDepend != null)
+				return TargetPod(podDepend)
+			
+			// scripts don't have pod targets, so default to using the latest pods
+			if (fpmArgs.first.endsWith(".fan"))
+				return null
+		}
+
+		// this is only good for basic 'C:\>fan afEggbox' type cmds
+		// any fant or script / build cmds still need to use alternative means
+		if (envMain != null) {
+			// made a HUGE assumption here that the build script is the one in the current directory
+			// not much I can do about it though
+			if (envMain.qname == "build::BuildPod.main") {
+				buildPod := BuildPod("build.fan")
+				if (buildPod.errMsg == null)
+					return TargetPod(buildPod)
+			}
+			
+			podDepend := Depend("${envMain.parent.pod.name} 0+")
+			return TargetPod(podDepend)
+		}
+
+		return null
+	}
+
+	private static Depend? findPodDepend(Str? arg) {
+		if (arg == null || arg.endsWith(".fan"))
+			return null
+
+		if (arg.contains("::"))
+			arg = arg[0..<arg.index("::")]
+
+		return toDepend(arg, false)
+	}
 }

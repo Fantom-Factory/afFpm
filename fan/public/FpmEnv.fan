@@ -177,7 +177,7 @@ const class FpmEnv : Env {
 	}
 
 	@NoDoc
-	virtual TargetPod? findTarget() { FpmEnvUtil.findTarget }
+	virtual TargetPod? findTarget() { FpmUtils.findTarget(this) }
 
 	** Dumps the FPM environment to a string. This includes the FPM Config and a list of resolved pods.
 	virtual Str dump() {
