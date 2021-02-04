@@ -2,9 +2,9 @@
 ** Provides a targeted environment for a specific pod. 
 ** 
 ** The WorkDirs and HomeDir are always queried if a pod is not found in a local repository.
-abstract const class FpmEnv : Env {
+const class FpmEnv : Env {
 	@NoDoc	// so F4 can set it's own
-	const Log 				log 	:= FpmEnv#.pod.log
+	const Log 				log 	:= FpmConfig#.pod.log
 
 	** The error, if any, encountered when resolving pods for the target environment.
 	const Err?				error
@@ -35,13 +35,17 @@ abstract const class FpmEnv : Env {
 	const Str:PodFile		environmentPods
 
 	@NoDoc
-	static new make() {
-		FpmEnvDefault()
-	}
+	new make(|This|? in := null) : super.make(Env.cur) {
+		// this was suppossed to be thrown when calling "fan -version", but
+		// sys::Err: Method not mapped to java.lang.reflect correctly afFpm::FpmEnv.make
+		// is thrown at "MethodFunc.isStatic(Method.java:496)" before make() is called
+		try		f := File(`./`)
+		catch	throw Err("FpmEnv cannot be used if NOT executing a Fantom pod")
 
-	@NoDoc
-	new makeManual(FpmConfig fpmConfig, |This|? in := null) : super.make(Env.cur) {
-		in?.call(this)	// let F4 set its own logger
+		in?.call(this)	// let F4 set its own logger and fpmConfig
+
+		if (fpmConfig == null)
+			fpmConfig = FpmConfig()
 
 		if (log.isDebug) {
 			title := "Fantom Pod Manager (FPM) v${typeof.pod.version}"
@@ -50,8 +54,6 @@ abstract const class FpmEnv : Env {
 			log.debug("".padl(title.size, '-'))		
 			log.debug("")
 		}
-
-		this.fpmConfig	= fpmConfig
 
 		resolver := Resolver(fpmConfig.repositories).localOnly { it.log	= this.log }
 		
@@ -128,6 +130,15 @@ abstract const class FpmEnv : Env {
 			log.err  (error.toStr)
 			log.debug(error.traceToStr)
 		}		
+		
+		if (Env.cur.vars["FPM_DUMP"]?.lower?.toBool(false) == true) {
+			resolver.resolveAll(false)
+			resolver.dumpToOut
+			echo("\n\nAll pods:\n")
+			this.environmentPods.vals.sort.each {
+				echo(" = $it.name $it.version")
+			}
+		}
 	}
 
 	@NoDoc
@@ -166,17 +177,17 @@ abstract const class FpmEnv : Env {
 	}
 
 	@NoDoc
-	abstract TargetPod? findTarget()
+	virtual TargetPod? findTarget() { FpmEnvDefault.findTarget }
 
 	** Dumps the FPM environment to a string. This includes the FPM Config and a list of resolved pods.
-	Str dump() {
+	virtual Str dump() {
 		dumpEnv(targetPod, resolvedPods.vals, fpmConfig)
 	}
 	
 	@NoDoc	// used by F4 FPM
 	static Str dumpEnv(Depend targetPod, PodFile[] resolvedPods, FpmConfig? fpmConfig) {
 		str	:= "\n\n"
-		str += "FPM (${FpmEnv#.pod.version}) Environment:\n"
+		str += "FPM (${FpmConfig#.pod.version}) Environment:\n"
 		str += "\n"
 		str += "    Target Pod : ${targetPod}\n"
 		str += fpmConfig?.dump ?: ""

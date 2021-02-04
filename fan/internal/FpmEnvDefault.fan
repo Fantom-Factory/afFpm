@@ -2,27 +2,31 @@
 ** Originally, this existed so I could create an F4 version.
 ** But I guess this *could* now be merged in to FpmEnv.
 ** Hmm... but I like the split / separation of concerns!
-internal const class FpmEnvDefault : FpmEnv {
+internal const class FpmEnvDefault {
+//internal const class FpmEnvDefault : FpmEnv {
 
-	static new make() {
-		try {
-			if (Env.cur.vars["FPM_DEBUG"]?.lower?.toBool(false) == true)
-				FpmEnv#.pod.log.level = LogLevel.debug
-
-			return makeManual(FpmConfig())
-			
-		} catch (Err e) {
-			// this is really just belts and braces for FPM development as
-			// otherwise we don't get a useful stack trace
-			Env.cur.err.print(e.traceToStr)
-			throw e
-		}
-	}
+//	static new make() {
+//		try {
+//			if (Env.cur.vars["FPM_DEBUG"]?.lower?.toBool(false) == true)
+//				FpmEnv#.pod.log.level = LogLevel.debug
+//
+//			return makeManual(FpmConfig())
+//			
+//		} catch (Err e) {
+//			// this is really just belts and braces for FPM development as
+//			// otherwise we don't get a useful stack trace
+//			Env.cur.err.print(e.traceToStr)
+//			throw e
+//		}
+//	}
 	
-	private new makeManual(FpmConfig fpmConfig, |This|? in := null) : super.makeManual(fpmConfig, in) { }
+	private new make2(){}
+	
+//	private new makeManual(FpmConfig fpmConfig, |This|? in := null) : super.makeManual(fpmConfig, in) { }
 
-	override TargetPod? findTarget() {
+	static TargetPod? findTarget() {
 		fanArgs	:= Env.cur.args
+		// TODO allow multiple target pods!?
 		fpmArgs	:= Utils.splitQuotedStr(Env.cur.vars["FPM_TARGET"])
 		cmdArgs	:= fpmArgs ?: fanArgs
 		
