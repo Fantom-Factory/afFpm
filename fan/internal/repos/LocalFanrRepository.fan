@@ -54,6 +54,23 @@ internal const class LocalFanrRepository : Repository {
 		nameCacheRef.cleanUp
 	}
 
+	override Str dump() {
+		str := ""
+		str += "Local Fanr Repo @ ${dir.osPath}\n"
+		if (dir.exists == false)
+			str += " - (Dir does not exist)\n"
+		num := 0
+		fileCache.vals.sort.each |PodFile pod| {
+			if (pod.isCorePod)
+				num ++
+			else
+				str += " - $pod.name $pod.version\n"
+		}
+		if (num > 0)
+			str += " - ${num} x Fantom core pods\n"
+		return str
+	}
+
 	private PodFile? getOrMake(File file) {
 		fileCache.getOrAdd(file) |->PodFile?| {
 			metaProps		:= readMetaProps(file)

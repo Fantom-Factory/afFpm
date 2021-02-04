@@ -51,6 +51,23 @@ internal const class LocalDirRepository : Repository {
 	override Void cleanUp() {
 		fileCacheRef.cleanUp
 	}
+	
+	override Str dump() {
+		str := ""
+		str += "Local Dir Repo @ ${dir.osPath}\n"
+		if (dir.exists == false)
+			str += " - (Dir does not exist)\n"
+		num := 0
+		fileCache.vals.sort.each |PodFile pod| {
+			if (pod.isCorePod)
+				num ++
+			else
+				str += " - $pod.name $pod.version\n"
+		}
+		if (num > 0)
+			str += " - ${num} x Fantom core pods\n"
+		return str
+	}
 
 	private PodFile? getOrMake(File file) {
 		fileCache.getOrAdd(file) |->PodFile?| {

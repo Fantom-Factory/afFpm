@@ -61,4 +61,6 @@ internal const class RemoteFanrRepository : Repository {
 	}
 
 	override Void cleanUp() { }
+	
+	override Str dump() { "Remote Fanr Repo\n - ${url}" }
 }

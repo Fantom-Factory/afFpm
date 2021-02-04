@@ -34,6 +34,8 @@ const mixin Repository {
 	
 	** Cleans up any cached information this repository may hold.
 	abstract Void 		cleanUp		()
+
+	abstract Str 		dump		()
 	
 	** Returns the latest version of all pods this repository holds.
 	abstract PodFile[]	resolveAll	()

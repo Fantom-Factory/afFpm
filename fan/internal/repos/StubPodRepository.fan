@@ -11,6 +11,7 @@ internal const class StubPodRepository : Repository {
 	override PodFile[]	resolve		(Depend d, Str:Obj? o)	{ throw UnsupportedErr() }
 	override PodFile[]	resolveAll	()						{ throw UnsupportedErr() }
 	override Void		cleanUp		()						{ }
+	override Str		dump		()						{ "Stub Repo" }
 
 	private new make() { }
 	

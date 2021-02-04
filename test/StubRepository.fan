@@ -20,6 +20,7 @@ const class StubRepository : Repository {
 	}
 	
 	override Void cleanUp() { }
+	override Str dump() { "Stub" }
 	
 	Void add(Str dependency, Str? dependents) {
 		pod 		:= Depend(dependency.replace("@", " "))

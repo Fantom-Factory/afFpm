@@ -110,6 +110,15 @@ class Resolver {
 		repositories.each { it.cleanUp }
 	}
 
+	Str dump() {
+		repositories.join("\n\n") { it.dump }		
+	}
+	
+	This dumpToOut(OutStream out := Env.cur.out) {
+		out.writeChars(dump)
+		return this
+	}
+
 	private PodFile[] doResolve(Depend dependency) {
 		podVers := PodFile[,]
 		minVer  := null as Version

@@ -66,6 +66,11 @@ const class PodFile {
 		depend.name == this.name && depend.match(this.version)
 	}
 	
+	** Returns 'true' if this is a core Fantom pod.
+	Bool isCorePod() {
+		CorePods.instance.isCorePod(name)
+	}
+	
 	@NoDoc override Str toStr() 			{ "$name $version - $location" }
 	@NoDoc override Int hash() 				{ location.hash }
 	@NoDoc override Bool equals(Obj? that)	{ (that as PodFile)?.location == location }
