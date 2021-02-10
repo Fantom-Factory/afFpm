@@ -5,6 +5,7 @@
 # Config files are looked for in the following locations:
 #
 #  - <currentDir>/fpm.props
+#  - <parentDirs>/fpm.props
 #  - %FAN_PATH_ENV%/etc/afFpm/fpm.props
 #  - %FAN_HOME%/etc/afFpm/fpm.props
 #
@@ -16,12 +17,12 @@
 # If this is not desired then a config file may obliterate all existing values
 # defined before it by uncommenting the line below:
 #
-# clear.all			=
+# clear				= all
 #
 # Partial config may be cleared by specifying a prefix:
 #
-# clear.fanrRepo	= 
-# clear.dirRepo		= 
+# clear				= fanrRepo
+# clear				= dirRepo
 
 
 
@@ -34,8 +35,7 @@
 # If not specified then it defaults to the 'FAN_PATH_ENV' environment variable.
 # If that doesn't exist then the Fantom installation dir is used.
 #
-# Paths should be absolute and defined in your local OS format. Note that 
-# multiple directories may be specified, separated by 'sys::File.pathSep'.
+# Multiple directories may be specified, separated by 'sys::File.pathSep'.
 #
 # May contain the interpolation values: ${fanHome}
 #
@@ -47,7 +47,7 @@
 
 # ---- Temp Directory ---------------------------------------------------------
 #
-# Fantom's temporary directory. The path must be absolute. 
+# Fantom's temporary directory. 
 # If not specified, defaults to: ${workDir}/temp
 #
 # May contain the interpolation values: ${fanHome}, ${workDir}
@@ -59,7 +59,7 @@
 # ---- Directory Repositories -------------------------------------------------
 #
 # Directories of pods. These take precedence over (local) fanr repositories. 
-# Paths may be absolute or relative to the current directory.
+# Paths may be absolute or relative to this .props file.
 #
 # Repositories are named with the syntax:
 #
@@ -76,14 +76,14 @@
 # other user defined macros.
 #
 # dirRepo.default	= ${fanHome}/lib/fan/
-# dirRepo.lib			= lib/
+# dirRepo.lib		= lib/
 
 
 
 # ---- Fanr Repositories ------------------------------------------------------
 #
 # May be a local path or a remote URL.
-# Local paths may be absolute or relative to the current directory.
+# Local paths may be absolute or relative to this .props file.
 #
 # Repositories are named with the syntax:
 #
@@ -123,7 +123,7 @@
 # 
 #   C:\> fpm run afBedSheet myWebApp/1.2
 #
-# launchPods				= afBedSheet, afReflux
+# launchPods				= afBedSheet, afReflux, xfant
 
 
 
@@ -144,8 +144,6 @@
 
 # ---- Actual Config ----------------------------------------------------------
 
-launchPods			= afBedSheet, afReflux
+launchPods			= afBedSheet, afReflux, xfant
 dirRepo.default		= ${fanHome}/lib/fan/
-dirRepo.lib			= lib/
-dirRepo.libfan		= lib/fan/
 fanrRepo.eggbox		= http://eggbox.fantomfactory.org/fanr/
