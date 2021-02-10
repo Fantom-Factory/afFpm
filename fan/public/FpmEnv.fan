@@ -34,8 +34,8 @@ const class FpmEnv : Env {
 	** and index meta inspected.
 	const Str:PodFile		environmentPods
 
-	@NoDoc
-	new make(|This|? in := null) : super.make(Env.cur) {
+	@NoDoc	// ensure we have the standard Env ctor: new make(Env env)
+	new make(Env? env := null, |This|? in := null) : super.make(env ?: Env.cur) {
 		// this was suppossed to be thrown when calling "fan -version", but
 		// sys::Err: Method not mapped to java.lang.reflect correctly afFpm::FpmEnv.make
 		// is thrown at "MethodFunc.isStatic(Method.java:496)" before make() is called
