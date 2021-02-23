@@ -17,7 +17,7 @@
 **   fanrRepo.eggbox = 
 ** 
 ** Read the comments in the actual 'fpm.props' file itself for more details.
-const class FpmConfig3 {
+const class FpmConfig {
 
 	** The directory used to resolve relative files.
 	const File 		baseDir
@@ -42,31 +42,31 @@ const class FpmConfig3 {
 	** A list of libraries used to launch applications
 	const Str[]		launchPods
 
-	** The config files used to generate this class.
+	** The 'fpm.props' files used to generate this class.
 	const File[]	configFiles
 
 	** The macros applied to repository paths.
 	const Str:Str	macros
 
-	** The raw FPM config gleaned from the 'configFiles'.
-	** Does not include fanr credentials.
-	const Str:Str	rawConfig
+	** The properties gleaned from the 'configFiles' (after macros have been applied).
+	const Str:Str	props
 
-	private const Str:Str	_rawConfig
-
-	private new makePrivate(|This|in) { in(this) }
+	private static const Str _pathSepStr	:= ";"
+	private static const Int _pathSepInt	:= ';'
 	
 	@NoDoc
 	static new make() {
-		makeFromDirs(File(`./`), Env.cur.homeDir, Env.cur.vars["FAN_ENV_PATH"])
+		fromDirs(File(`./`), Env.cur.homeDir, Env.cur.vars["FAN_ENV_PATH"])
 	}
 
 	@NoDoc
-	static new makeFromDirs(File baseDir, File homeDir, Str? envPaths) {
-		configFilename := `fpm.props`
-		
+	static new fromDirs(File baseDir, File homeDir, Str? fanEnvPath) {
+		baseDir = baseDir.normalize
+		homeDir = homeDir.normalize
+
 		// grab the config filename from an env var, but only if the version matches
 		// this is useful for testing and development
+		configFilename := `fpm.props`
 		t1 := Env.cur.vars["FPM_CONFIG_FILENAME"]	// = fpm.props/2.0.1
 		if (t1 != null) {
 			t2 := Uri(t1, false)
@@ -83,180 +83,118 @@ const class FpmConfig3 {
 			}
 		}
 		
-		// TODO create an FpmProps class that wraps fpm.props - it can then resolve all dir paths relative to itself and contain prop conversion methods (easy to test!)
-		
-		baseDir = baseDir.normalize
-		fpmFile := (File?) baseDir.plus(configFilename).normalize
-		while (fpmFile != null && !fpmFile.exists)
-			fpmFile = fpmFile.parent.parent?.plus(configFilename)
-
-		// this is a little bit chicken and egg - we use the workDir to find fpm.props to find the workDir! 
-		workDirs := "" as Str
-		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + (envPaths ?: "")
-		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + homeDir.osPath
-		workFile := workDirs.split(File.pathSep.chars.first).exclude { it.isEmpty }.map { toRelDir(it, baseDir) + `etc/afFpm/` + configFilename }.unique as File[]
-		if (fpmFile != null)
-			workFile.insert(0, fpmFile)
-
-		workFile = workFile.findAll { it.exists }
-
-		fpmProps := Str:Str[:] { it.ordered = true }
-		wokFiles := File[,]
-		workFile.eachr {
-			newProps := null as Str:Str
-			try	newProps = it.readProps
-			catch (Err err)
-				FpmConfig#.pod.log.warn("Could not read ${it.normalize.osPath} ($err)")
-			
-			if (newProps["clear.all"] != null || newProps["configCmd"] == "clearExisting") {
-				// clearExisting should clear EVERYTHING! Let the new config define exactly what it needs
-				wokFiles.clear
-				fpmProps.clear
-				envPaths = null
-			}
-			
-			newProps.each |val, key| {
-				if (key.startsWith("clear.") && key != "clear.all") {
-					rem := key["clear.".size..-1]
-					fpmProps = fpmProps.exclude |v, k| { k.startsWith(rem + ".")  }
-				}
-			}
-
-			wokFiles.add(it)
-			fpmProps.setAll(newProps)
+		// find all fpm.props in parent directories
+		fpmFiles := File[,]
+		curFile2 := (File?) baseDir.plus(configFilename)
+		while (curFile2 != null) {
+			if (curFile2.exists)
+				fpmFiles.add(curFile2)
+			curFile2 = curFile2.parent.parent?.plus(configFilename)
 		}
 
-		return makeInternal(baseDir, homeDir, envPaths, fpmProps, wokFiles)
+		// this is a little bit chicken and egg - we use the workDir to find fpm.props to find the workDir! 
+		workStrs := StrBuf()
+		workStrs.join(fanEnvPath?.replace(File.pathSep, _pathSepStr) ?: "", _pathSepStr)
+		workStrs.join(homeDir.osPath, _pathSepStr)
+		workStrs.toStr.split(_pathSepInt).exclude { it.isEmpty }.each |workDir| {
+			file := toRelDir(workDir, baseDir) + `etc/afFpm/` + configFilename
+			if (file.exists)
+				fpmFiles.add(file)
+		}
+
+		// convert files to RawProps
+		rawProps := null as RawProps
+		fpmFiles.reverse.each |fpmFile| {
+echo("Raw -> $fpmFile")	// is this now the correct order?
+			rawProps = RawProps(fpmFile.readProps, fpmFile, rawProps)
+		}
+		
+		// cater for having NO fpm.prop files (which may well happen!)
+		if (rawProps == null)
+			rawProps = RawProps.defVal
+		
+		// convert Raw Props to FPM Props
+//		fpmProps := FpmProps(rawProps)
+
+		return makeFromProps(rawProps, baseDir, homeDir, fanEnvPath)
 	}
 
+	** 'fpmProps' has the least significant first, so it may be overridden by the later entries.
 	@NoDoc
-	internal new makeInternal(File baseDir, File homeDir, Str? envPaths, Str:Str fpmProps, File[]? configFiles) {
-		this.baseDir = baseDir = baseDir.normalize
-		if (baseDir.isDir.not || baseDir.exists.not)
-			throw ArgErr("Base directory is not valid: ${baseDir.osPath}")
-
+	internal new makeFromProps(RawProps rawProps, File baseDir, File homeDir, Str? fanEnvPath := null) {
 		homeDir = homeDir.normalize
 		if (homeDir.isDir.not || homeDir.exists.not)
 			throw ArgErr("Home directory is not valid: ${homeDir.osPath}")
 
-		this.homeDir = homeDir
+		baseDir = baseDir.normalize
+		if (baseDir.isDir.not || baseDir.exists.not)
+			throw ArgErr("Base directory is not valid: ${baseDir.osPath}")
+
+		macros		:= rawProps.allMacros
+		macros["baseDir"] = baseDir.uri.toStr
+		macros["fanHome"] = homeDir.uri.toStr
+
+		// todo - maybe add a second round of macro replacement here for workDirs?
 		
-		macros := Str:Str[:] { it.ordered = true }
-		// don't replace with osPath because it has a trailing slash on nix, but not on windows!
-		if ((this.homeDir  as File  ) != null)	macros["fanHome"] = homeDir.uri.toStr
-		if ((this.tempDir  as File  ) != null)	macros["tempDir"] = tempDir.uri.toStr
-		if ((this.workDirs as File[]) != null)	macros["workDir"] = workDirs.first.uri.toStr
-		fpmProps.each |value, name| {
-			if (name.startsWith("macro."))
-				macros[name["macro.".size..-1]] = value
+		allProps	:= rawProps.allProps.map |pval, pkey| {
+			macros.each |mval, mkey| { pval = pval.replace("\${${mkey}}", mval) }
+			return pval
 		}
-		
-		strInterpol := |Str? str->Str?| {
-			if (str == null) return null
-			macros.each |val, key| { str = str.replace("\$${key}", val).replace("\${${key}}", val) }
-			return str
-		}
+		fpmProps	:= FpmProps(allProps)
+		tempDir		:= rawProps.toRelDir("tempDir", fpmProps.tempDir) ?: homeDir + `temp/`
+		workDirs	:= fpmProps.workDirs .map |dir     ->File?|	{ rawProps.toRelDir("workDirs", dir)			}.exclude { it == null } as File[]
+		dirRepos	:= fpmProps.dirRepos .map |dir, key->File?|	{ rawProps.toRelDir("dirRepo.${key}", dir)		}.exclude { it == null } as Str:File
+		fanrRepos	:= fpmProps.fanrRepos.map |dir, key->Uri? |	{
+			url  := Uri(dir, false)
+			if (url != null && (url.scheme == "http" || url.scheme == "https"))
+				return url
+			return rawProps.toRelDir("fanrRepo.${key}", dir)?.uri
+		}.exclude { it == null } as Str:Uri
 
-		workDirs := strInterpol(fpmProps["workDirs"])
-		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + (envPaths ?: "")
-		workDirs = (workDirs?.trimToNull == null ? "" : workDirs + File.pathSep) + homeDir.osPath.toStr
-		this.workDirs = workDirs.split(File.pathSep.chars.first).exclude { it.isEmpty }.map { toRelDir(it, baseDir) }.unique
-		
-		tempDir := strInterpol(fpmProps["tempDir"])
-		if (tempDir == null)
-			tempDir = this.workDirs.first.plus(`temp/`, false).osPath.toStr
-		this.tempDir = toRelDir(tempDir, baseDir)
+		// add FAN_ENV_PATH dirs to workDirs
+		if (fanEnvPath != null)
+			fanEnvPath.trim.split(File.pathSep.chars.first).each |workDir| {
+				if (workDir.size > 0)
+					workDirs.add(toRelDir(workDir, baseDir))
+			}
 
-		dirRepos := (Str:File) fpmProps.findAll |path, name| {
-			name.startsWith("dirRepo.")
-		}.keys.sort.reduce(Str:File[:] { ordered=true }) |Str:File repos, key| {
-			path := fpmProps[key].trimToNull
-			if (path == null) return repos	// allow config to be removed
-			name := key["dirRepo.".size..-1]
-			file := toRelDir(strInterpol(path.trim), baseDir)
-			repos[name] = file
-			return repos
-		}
-
-		fanrRepos := (Str:Uri) fpmProps.findAll |path, name| {
-			name.startsWith("fanrRepo.") && !name.endsWith(".username") && !name.endsWith(".password")
-		}.keys.sort.reduce(Str:Uri[:] { ordered=true }) |Str:Uri repos, key| {
-			path := fpmProps[key].trimToNull
-			if (path == null) return repos	// allow config to be removed
-			name := key["fanrRepo.".size..-1]
-			url  := Uri(path, false)
-
-			if (url?.scheme != "http" && url?.scheme != "https")
-				url = toRelDir(strInterpol(path.trim), baseDir).uri
-			else
-				if (url.userInfo != null) {
-					userInfo := url.userInfo.split(':')
-					repoName := key["fanrRepo.".size..-1]
-					username := Uri.decodeToken(userInfo.getSafe(0) ?: "", Uri.sectionPath).trimToNull
-					password := Uri.decodeToken(userInfo.getSafe(1) ?: "", Uri.sectionPath).trimToNull
-					fpmProps["fanrRepo.${repoName}.username"] = username
-					fpmProps["fanrRepo.${repoName}.password"] = password
-					url		= url.toStr.replace("${url.userInfo}@", "").toUri
-				}
-			repos[name] = url
-			return repos
-		}
-
-		// add workDirs to dirRepos (note the last dir is always fanHome, so ignore that one)
-		if (this.workDirs.size > 1)
+		// add workDirs to dirRepos
+		if (workDirs.size > 0)
 			if (!dirRepos.containsKey("workDir"))
-				dirRepos["workDir"] = this.workDirs.first + `lib/fan/`
-		if (this.workDirs.size > 2)
-			this.workDirs.eachRange(1..<-1) |dir, i| {
+				dirRepos["workDir"] = workDirs.first + `lib/fan/`
+		if (workDirs.size > 1)
+			workDirs.eachRange(1..-1) |dir, i| {
 				if (!dirRepos.containsKey("workDir[$i]"))
 					dirRepos["workDir[$i]"] = dir + `lib/fan/`
 			}
+
+		// workDirs should always have fanHome as a backup
+		workDirs.add(homeDir)
 		
 		// if not defined, add "fanHome" as a new directory repo
 		// add fanHome last as these pods are _least_ important when resolving environment runtime pods
 		if (!dirRepos.containsKey("fanHome"))
 			dirRepos["fanHome"] = homeDir + `lib/fan/`
-		
+
 		// if "default" is not defined, set it to fanHome so FPM becomes a drop in replacement for fanr
 		// this allows people to update their fanHome env by default
 		if (!fanrRepos.containsKey("default") && !dirRepos.containsKey("default"))
 			dirRepos["default"] = homeDir + `lib/fan/`
 
-		// as Env is available to the entire FVM, be nice and remove any credentials
-		// it's just lip service really, as anyone could re-read the fpm.config files
-		rawConfig := fpmProps.exclude |val, key| { key.endsWith(".username") || key.endsWith(".password") }
-		rawConfig = rawConfig.map |val, key| {
-			userInfo := Uri(val, false)?.userInfo
-			return userInfo == null ? val : val.replace("${userInfo}@", "")
-		}
-
 		both := dirRepos.keys.intersection(fanrRepos.keys)
 		if (both.size > 0)
 			throw Err("Repository '" + both.join(", ") + "' is defined as both a dirRepo AND a fanrRepo")
 
-		// not sure if I want to cache them all here
-//		allRepos := Str:Repository[:]
-//		dirRepos .each |file, name| { allRepos[name] = LocalDirRepository(name, file) }
-//		fanrRepos.each | url, name| { 
-//			username := fpmProps["fanrRepo.${name}.username"]
-//			password := fpmProps["fanrRepo.${name}.password"]
-//			if (url.scheme == null   || url.scheme == "file")
-//				allRepos[name] = LocalFanrRepository(name, url.toFile)
-//			if (url.scheme == "http" || url.scheme == "https")
-//				allRepos[name] = RemoteFanrRepository(name, url, username, password)
-//		}
-
+		this.baseDir		= baseDir
+		this.homeDir		= homeDir
+		this.tempDir		= tempDir
+		this.workDirs		= workDirs
 		this.dirRepos		= dirRepos
 		this.fanrRepos		= fanrRepos
-		this.launchPods 	= fpmProps["launchPods"]?.split(',') ?: Str#.emptyList
-		this.configFiles	= configFiles ?: File[,]
-		this.rawConfig		= rawConfig
-		this._rawConfig		= fpmProps
+		this.launchPods 	= fpmProps.launchPods
+		this.configFiles	= rawProps.files
+		this.props			= allProps
 		this.macros			= macros
-	}
-
-	Str? get(Str key, Bool applyMacros := true) {
-		null
 	}
 	
 	** Returns a 'Repository' instance for the named repository. 
@@ -268,9 +206,9 @@ const class FpmConfig3 {
 		
 		if (fanrRepos.containsKey(repoName)) {
 			if (username == null)
-				username = _rawConfig["fanrRepo.${repoName}.username"]
+				username = props["fanrRepo.${repoName}.username"]
 			if (password == null)
-				password = _rawConfig["fanrRepo.${repoName}.password"]
+				password = props["fanrRepo.${repoName}.password"]
 			url := fanrRepos[repoName]
 			if (url.scheme == null   || url.scheme == "file")
 				return LocalFanrRepository(repoName, url.toFile)
