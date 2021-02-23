@@ -17,7 +17,7 @@
 **   fanrRepo.eggbox = 
 ** 
 ** Read the comments in the actual 'fpm.props' file itself for more details.
-const class FpmConfig {
+const class FpmConfig3 {
 
 	** The directory used to resolve relative files.
 	const File 		baseDir
@@ -255,6 +255,10 @@ const class FpmConfig {
 		this.macros			= macros
 	}
 
+	Str? get(Str key, Bool applyMacros := true) {
+		null
+	}
+	
 	** Returns a 'Repository' instance for the named repository. 
 	** 'repoName' may be either a 'dirRepo' or a 'fanrRepo'. 
 	Repository? repository(Str repoName, Str? username := null, Str? password := null) {
@@ -329,9 +333,10 @@ const class FpmConfig {
 		str += "    Fanr Repos : " + (fanrRepos.isEmpty ? "(none)" : "") + "\n"
 		max = fanrRepos.keys.reduce(14) |Int size, name| { size.max(name.size) } as Int
 		fanrRepos.each |repoUrl, name| {
-			usr	:= repoUrl.userInfo == null ? "" : repoUrl.userInfo + "@"
-			url	:= repoUrl.toStr.replace(usr, "")
-			str += name.justr(max) + " = " + url + "\n"
+			usr		:= repoUrl.userInfo == null ? "" : repoUrl.userInfo + "@"
+			url		:= repoUrl.toStr.replace(usr, "")
+			exists	:= (repoUrl.scheme == "file" && repoUrl.toFile.exists) ? "" : " (does not exist)"
+			str += name.justr(max) + " = ${url}${exists}\n"
 		}
 
 		str += "\n"
@@ -358,7 +363,7 @@ const class FpmConfig {
 		return str
 	}
 	
-	private static File toRelDir(Str dirPath, File baseDir) {
-		FileUtils.toAbsDir(dirPath, baseDir)
+	private static File toRelDir(Str dirPath, File base) {
+		FileUtils.toAbsDir(dirPath, base)
 	}
 }

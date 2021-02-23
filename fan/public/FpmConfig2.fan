@@ -17,7 +17,7 @@
 **   fanrRepo.eggbox = 
 ** 
 ** Read the comments in the actual 'fpm.props' file itself for more details.
-const class FpmConfig2 {
+const class FpmConfig {
 
 	** The directory used to resolve relative files.
 	const File 		baseDir
@@ -56,11 +56,11 @@ const class FpmConfig2 {
 	
 	@NoDoc
 	static new make() {
-		makeFromDirs(File(`./`), Env.cur.homeDir, Env.cur.vars["FAN_ENV_PATH"])
+		fromDirs(File(`./`), Env.cur.homeDir, Env.cur.vars["FAN_ENV_PATH"])
 	}
 
 	@NoDoc
-	static new makeFromDirs(File baseDir, File homeDir, Str? fanEnvPath) {
+	static new fromDirs(File baseDir, File homeDir, Str? fanEnvPath) {
 		baseDir = baseDir.normalize
 		homeDir = homeDir.normalize
 
@@ -105,25 +105,58 @@ const class FpmConfig2 {
 		// convert files to RawProps
 		rawProps := null as RawProps
 		fpmFiles.reverse.each |fpmFile| {
-			rawProps = RawProps(fpmFile, rawProps)
+echo("Raw -> $fpmFile")	// is this now the correct order?
+			rawProps = RawProps(fpmFile.readProps, fpmFile, rawProps)
 		}
 		
+		// cater for having NO fpm.prop files (which may well happen!)
+		if (rawProps == null)
+			rawProps = RawProps.defVal
+		
 		// convert Raw Props to FPM Props
-		fpmProps := FpmProps(rawProps, fanEnvPath)
+//		fpmProps := FpmProps(rawProps)
 
-		return makeFromProps(baseDir, homeDir, fpmProps)
+		return makeFromProps(rawProps, baseDir, homeDir, fanEnvPath)
 	}
 
 	** 'fpmProps' has the least significant first, so it may be overridden by the later entries.
 	@NoDoc
-	internal new makeFromProps(File baseDir, File homeDir, FpmProps fpmProps) {
+	internal new makeFromProps(RawProps rawProps, File baseDir, File homeDir, Str? fanEnvPath := null) {
 		homeDir = homeDir.normalize
 		if (homeDir.isDir.not || homeDir.exists.not)
 			throw ArgErr("Home directory is not valid: ${homeDir.osPath}")
 
-		workDirs	:= fpmProps.workDirs.rw
-		dirRepos	:= fpmProps.dirRepos.rw
-		fanrRepos	:= fpmProps.fanrRepos.rw
+		baseDir = baseDir.normalize
+		if (baseDir.isDir.not || baseDir.exists.not)
+			throw ArgErr("Base directory is not valid: ${baseDir.osPath}")
+
+		macros		:= rawProps.allMacros
+		macros["baseDir"] = baseDir.uri.toStr
+		macros["fanHome"] = homeDir.uri.toStr
+
+		// todo - maybe add a second round of macro replacement here for workDirs?
+		
+		allProps	:= rawProps.allProps.map |pval, pkey| {
+			macros.each |mval, mkey| { pval = pval.replace("\${${mkey}}", mval) }
+			return pval
+		}
+		fpmProps	:= FpmProps(allProps)
+		tempDir		:= rawProps.toRelDir("tempDir", fpmProps.tempDir) ?: homeDir + `temp/`
+		workDirs	:= fpmProps.workDirs .map |dir     ->File?|	{ rawProps.toRelDir("workDirs", dir)			}.exclude { it == null } as File[]
+		dirRepos	:= fpmProps.dirRepos .map |dir, key->File?|	{ rawProps.toRelDir("dirRepo.${key}", dir)		}.exclude { it == null } as Str:File
+		fanrRepos	:= fpmProps.fanrRepos.map |dir, key->Uri? |	{
+			url  := Uri(dir, false)
+			if (url != null && (url.scheme == "http" || url.scheme == "https"))
+				return url
+			return rawProps.toRelDir("fanrRepo.${key}", dir)?.uri
+		}.exclude { it == null } as Str:Uri
+
+		// add FAN_ENV_PATH dirs to workDirs
+		if (fanEnvPath != null)
+			fanEnvPath.trim.split(File.pathSep.chars.first).each |workDir| {
+				if (workDir.size > 0)
+					workDirs.add(toRelDir(workDir, baseDir))
+			}
 
 		// add workDirs to dirRepos
 		if (workDirs.size > 0)
@@ -154,14 +187,14 @@ const class FpmConfig2 {
 
 		this.baseDir		= baseDir
 		this.homeDir		= homeDir
+		this.tempDir		= tempDir
 		this.workDirs		= workDirs
 		this.dirRepos		= dirRepos
 		this.fanrRepos		= fanrRepos
-		this.tempDir		= fpmProps.tempDir	?: homeDir + `temp/`
 		this.launchPods 	= fpmProps.launchPods
-		this.configFiles	= fpmProps.files
-		this.props			= fpmProps.props
-		this.macros			= fpmProps.macros
+		this.configFiles	= rawProps.files
+		this.props			= allProps
+		this.macros			= macros
 	}
 	
 	** Returns a 'Repository' instance for the named repository. 
@@ -268,7 +301,7 @@ const class FpmConfig2 {
 		return str
 	}
 	
-	private static File toRelDir(Str dirPath, File baseDir) {
-		FileUtils.toAbsDir(dirPath, baseDir)
+	private static File toRelDir(Str dirPath, File base) {
+		FileUtils.toAbsDir(dirPath, base)
 	}
 }

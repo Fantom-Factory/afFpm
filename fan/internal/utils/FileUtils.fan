@@ -1,12 +1,15 @@
 
 internal const mixin FileUtils {
 	
-	** Warning! Dir may not exist!
-	static File toAbsDir(Str dirPath, File baseDir := Env.cur.homeDir) {
-		dir := toDir(dirPath)
-		if (dir.uri.isPathAbs.not)
-			dir = baseDir + dir.uri
-		return dir.normalize
+	** Warning! The returned dir may not exist!
+	** 
+	** 'base' may be a file or a dir.
+	static File? toAbsDir(Str dirPath, File? base) {
+		dir := toDir(dirPath) as File
+		if (dir.uri.isPathRel)
+			// can't resolve against null
+			dir = base == null ? null : base + dir.uri
+		return dir?.normalize
 	}
 	
 	private static File toDir(Str dirPath) {
