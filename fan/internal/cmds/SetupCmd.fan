@@ -20,6 +20,10 @@
 @NoDoc	// Fandoc is only saved for public classes
 class SetupCmd : FpmCmd {
 
+	// let's NOT change the pathSep per platform - we need config files to work on ANY OS
+	private static const Str _pathSepStr	:= ";"
+	private static const Int _pathSepInt	:= ';'
+
 	new make(|This| f) : super(f) { }
 
 	override Int run() {
@@ -59,7 +63,7 @@ class SetupCmd : FpmCmd {
 		configResFile	:= typeof.pod.file(`/res/fpm.props`)
 		if (configFile.exists.not) {
 			log.info("Creating: ${configFile.osPath}")
-			contents := configResFile.readAllStr.replace("#{File.pathSep}", File.pathSep)
+			contents := configResFile.readAllStr.replace("#{File.pathSep}", _pathSepStr)
 			configFile.out.writeChars(contents).close
 		} else
 			log.info("Already exists: ${configFile.osPath}")
