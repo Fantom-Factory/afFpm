@@ -212,6 +212,7 @@ const class TargetPod {
 	const Depend	pod
 	const Depend[]?	dependencies
 
+	// used by F4's FpmCompileEnv
 	new make(Depend pod, Depend[]? dependencies := null) {
 		this.pod			= pod
 		this.dependencies	= dependencies

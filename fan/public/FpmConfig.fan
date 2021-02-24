@@ -61,6 +61,7 @@ const class FpmConfig {
 		fromDirs(File(`./`), Env.cur.homeDir, Env.cur.vars["FAN_ENV_PATH"])
 	}
 
+	** This ctor used by f4afFpm::FpmCompileEnv
 	@NoDoc
 	static new fromDirs(File baseDir, File homeDir, Str? fanEnvPath) {
 		baseDir = baseDir.normalize

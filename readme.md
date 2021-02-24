@@ -1,8 +1,8 @@
-# FPM (Fantom Pod Manager) v2.0.8
+# FPM (Fantom Pod Manager) v2.1.0
 ---
 
 [![Written in: Fantom](http://img.shields.io/badge/written%20in-Fantom-lightgray.svg)](https://fantom-lang.org/)
-[![pod: v2.0.8](http://img.shields.io/badge/pod-v2.0.8-yellow.svg)](http://eggbox.fantomfactory.org/pods/afFpm)
+[![pod: v2.1.0](http://img.shields.io/badge/pod-v2.1.0-yellow.svg)](http://eggbox.fantomfactory.org/pods/afFpm)
 [![Licence: ISC](http://img.shields.io/badge/licence-ISC-blue.svg)](https://choosealicense.com/licenses/isc/)
 
 ## Overview
@@ -34,7 +34,7 @@ Or install `FPM (Fantom Pod Manager)` with [fanr](https://fantom.org/doc/docFanr
 
 To use in a [Fantom](https://fantom-lang.org/) project, add a dependency to `build.fan`:
 
-    depends = ["sys 1.0", ..., "afFpm 2.0"]
+    depends = ["sys 1.0", ..., "afFpm 2.1"]
 
 ## <a name="documentation"></a>Documentation
 
@@ -91,7 +91,7 @@ If a newer version exists online, it will be downloaded along with any (transien
 
 Use the `install` command with a specific version:
 
-    C:\> fpm install podName@2.0.0
+    C:\> fpm install podName/2.0.0
 
 If newer dependencies exists online, they will be downloaded.
 
@@ -129,8 +129,6 @@ FPM needs to know where it can find different pod versions. This is the *FPM Env
 Pods may be found in:
 
 * **Directory Repositories** - arbitrary directories that contain pods. Work directories and the Fantom Home directories are added to this list.
-    By default the relative paths `lib/` and `lib/fan/` are used, which are relative to the current working directory.
-
 * **Fanr Repositories** - named local or remote fanr repositories.
 
 
@@ -253,7 +251,7 @@ The whole FPM environment is queried, including all local file and remote fanr r
 Examples:
 
     C:\> fpm query myPod
-    C:\> fpm query myPod@2.0+
+    C:\> fpm query myPod/2.0+
     C:\> fpm query "myPod 2.0+"
 
 ### install
@@ -263,7 +261,7 @@ Installs pods to a repository.
 The pod may be:
 
 * a file location       (e.g. `lib/myGame.pod` or `C:\lib\myGame.pod`)
-* a simple search query (e.g. `afIoc@3.0` or `"afIoc 3.0"`)
+* a simple search query (e.g. `afIoc/3.0` or `"afIoc 3.0"`)
 * a directory of pods   (e.g. `lib/` or `C:\lib\`)
 * a build file          (e.g. `build.fan` - use to update dependencies)
 
@@ -302,7 +300,7 @@ The repository may be:
 Examples:
 
     C:\> fpm delete myPod
-    C:\> fpm delete myPod@2.0.10 -r release
+    C:\> fpm delete myPod/2.0.10 -r release
 
 ## Javascript Environments
 
@@ -424,7 +422,7 @@ Examples:
     FPM_DEBUG             = true
     FPM_RESOLVE_TIMEOUT_1 = 5sec
     FPM_RESOLVE_TIMEOUT_2 = 10sec
-    FPM_TARGET            = afIoc@3.0.6
+    FPM_TARGET            = afIoc/3.0.6
     FPM_TRACE             = true
 
 Note an cmd line argument of `-fpmTarget` can be used to set the target pod in place of the `FPM_TARGET` environment variable.
