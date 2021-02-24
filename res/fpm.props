@@ -17,12 +17,12 @@
 # If this is not desired then a config file may obliterate all existing values
 # defined before it by uncommenting the line below:
 #
-# clear				= all
+# clear.all			= true
 #
 # Partial config may be cleared by specifying a prefix:
 #
-# clear				= fanrRepo
-# clear				= dirRepo
+# clear.fanrRepo	= true
+# clear.dirRepo		= true
 
 
 
@@ -35,9 +35,9 @@
 # If not specified then it defaults to the 'FAN_PATH_ENV' environment variable.
 # If that doesn't exist then the Fantom installation dir is used.
 #
-# Multiple directories may be specified, separated by 'sys::File.pathSep'.
+# Multiple directories may be specified, separated by ';'.
 #
-# May contain the interpolation values: ${fanHome}
+# May contain the interpolation values: ${fanHome}, ${baseDir}
 #
 # See 'util::PathEnv' for more details.
 #
@@ -50,9 +50,9 @@
 # Fantom's temporary directory. 
 # If not specified, defaults to: ${workDir}/temp
 #
-# May contain the interpolation values: ${fanHome}, ${workDir}
+# May contain the interpolation values: ${fanHome}, ${baseDir}
 #
-# tempDir			= C:\\Repositories\\Fantom\\temp\\
+# tempDir			= ${fanHome}/temp/
 
 
 
@@ -72,11 +72,11 @@
 # Note there is always a repository named 'default'. If not defined it defaults
 # to a dirRepo at ${fanHome}/lib/fan/
 #
-# May contain the default macros ${fanHome}, ${workDir}, ${tempDir} as well as 
+# May contain the default macros ${fanHome}, ${baseDir} as well as 
 # other user defined macros.
 #
 # dirRepo.default	= ${fanHome}/lib/fan/
-# dirRepo.lib		= lib/
+# dirRepo.lib		= ${baseDir}/lib/
 
 
 
@@ -96,7 +96,7 @@
 # Note there is always a repository named 'default'. If not defined it defaults
 # to a dirRepo at ${fanHome}/lib/fan/
 #
-# May contain the default macros ${fanHome}, ${workDir}, ${tempDir} as well as 
+# May contain the default macros ${fanHome}, ${baseDir} as well as 
 # other user defined macros.
 #
 # fanrRepo.default	= C:\\Repositories\\Fantom\\fpmRepo-default\\

@@ -122,8 +122,6 @@ Pods may be found in:
 
  - **Directory Repositories** - arbitrary directories that contain pods. Work directories and the Fantom Home directories are added to this list.
 
-   By default the relative paths 'lib/' and 'lib/fan/' are used, which are relative to the current working directory.
-
  - **Fanr Repositories** - named local or remote fanr repositories.
 
 To see how the FPM environment is configured on your system, type 'fpm' on it's own:
