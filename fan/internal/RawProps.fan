@@ -8,8 +8,7 @@
 @NoDoc
 const class RawProps {
 
-//	static const RawProps defVal := RawProps(Str:Str[:], null)
-	static RawProps defVal() { RawProps(Str:Str[:], null) }
+	static const RawProps defVal := RawProps(Str:Str[:], null)
 	
 	** The chained parent props.
 	const RawProps?	parent
@@ -25,11 +24,6 @@ const class RawProps {
 
 	** Properties found in *this* 'fpm.props' file, post cleaning operations.
 	const Str:Str	props
-
-//	static new make(Str:Str rawProps, RawProps? parent := null) {
-//		file := Buf().writeProps(rawProps).toFile(`/temp/fpm.props`)
-//		return RawProps.fromFile(file, parent)
-//	}
 
 	new fromFile(Str:Str rawProps, File? file, RawProps? parent := null) {
 		file = file?.normalize

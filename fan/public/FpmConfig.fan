@@ -4,6 +4,8 @@
 ** - '<FAN_HOME>/etc/afFpm/fpm.props'
 ** - '<WORK_DIR>/etc/afFpm/fpm.props'
 ** - './fpm.props'
+** - './../fpm.props'
+** - './../../fpm.props' *(...and so on...)*
 ** 
 ** Note that the config files are additive but the values are not. If all 3 files exist, then all 3 files are merged together, 
 ** with config values from a more specific file replacing (or overriding) values found in less specific one.
@@ -105,7 +107,6 @@ const class FpmConfig {
 		// convert files to RawProps
 		rawProps := null as RawProps
 		fpmFiles.reverse.each |fpmFile| {
-echo("Raw -> $fpmFile")	// is this now the correct order?
 			rawProps = RawProps(fpmFile.readProps, fpmFile, rawProps)
 		}
 		
@@ -113,9 +114,6 @@ echo("Raw -> $fpmFile")	// is this now the correct order?
 		if (rawProps == null)
 			rawProps = RawProps.defVal
 		
-		// convert Raw Props to FPM Props
-//		fpmProps := FpmProps(rawProps)
-
 		return makeFromProps(rawProps, baseDir, homeDir, fanEnvPath)
 	}
 

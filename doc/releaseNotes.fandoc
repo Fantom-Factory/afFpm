@@ -7,6 +7,8 @@ A re-write of the original code base with directed goals and a dependency resolu
 
 v2.0.10 (in-progress)
 =======
+ - Chg: Relative repositories are now relative to the 'fpm.props' that defines it (and not the current dir).
+ - Chg: The file delimiter in 'fpm.props' is always ';', independent of platform.
  - Chg: FPM now uses 'podName/version' NOT 'podName@version' - it's more standardised with HTTP meta.
  - Bug: FPM external processes will now work on Linux.
  - Bug: Could not copy transitive dependencies to a local dir.
