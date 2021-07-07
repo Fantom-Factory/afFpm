@@ -1,6 +1,10 @@
 Versions
 ********
 
+v2.1.2
+======
+ - Bug: Fix for shifting transitive dependency trees during dependency resolution. (Phew!)
+
 v2.1.0
 ======
  - Chg: Relative repositories are now relative to the 'fpm.props' that defines it (and not the current dir).

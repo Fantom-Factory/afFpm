@@ -89,7 +89,7 @@ internal class Satisfier {
 		// reduce PodVersions into groups
 		// this can reduce the problem space from 610,397,977,600 dependency permutations to just 138,240!		
 		nos := (PodGroup[][]) podNodes.vals.map { it.reduceProblemSpace }.exclude { it->isEmpty }
-
+		
 		grpPerms	:= (Int) nos.reduce(1) |Int tot, vers| { tot * vers.size }
 		podPermsStr	:= podPerms.toLocale
 		grpPermsStr	:= grpPerms.toLocale
@@ -312,9 +312,17 @@ internal class Satisfier {
 //	}
 
 	// see https://en.wikipedia.org/wiki/AC-3_algorithm
-	private static PodConstraint[]? reduceDomain(Str:PodGroup podGroups, Bool collect) {
-		podVals := podGroups.vals
-		for (i := 0; i < podGroups.size; ++i) { podVals[i].reset }
+	private PodConstraint[]? reduceDomain(Str:PodGroup podGroups, Bool collect) {
+		
+		// remove orphaned dependencies; just because a pod is in the grand main list, doesn't mean it is a dependency in of these specific versions - see TestSkySparkBug
+		// TODO optimise fn
+		podGroups = podGroups.findAll |podVal| {
+			podVal.name == this.targetPod.name ||
+			// TODO optimise fn
+			podGroups.any { it.dependsOn.any { it.name == podVal.name } }
+		}
+		
+		podGroups.each(resetFn)
 		worklist := (PodConstraint[]) podGroups.reduce(PodConstraint[,], cacheFn)
 		allCons	 := worklist.dup
 		unsatisfied	:= null as PodConstraint[] 
@@ -334,14 +342,22 @@ internal class Satisfier {
 
 		return unsatisfied
 	}
+	private static const |PodGroup podGroup| resetFn := |PodGroup podGroup| { podGroup.reset }
 	private static const |PodConstraint[] cons, PodGroup grp->PodConstraint[]| cacheFn := |PodConstraint[] cons, PodGroup grp->PodConstraint[]| { cons.addAll(grp.constraints) }
 	
 	private Void expandNode(PodNode node, Depend[] stack) {
 		node.podVersions?.each |podVersion| {
 			if (stack.contains(podVersion.depend).not) {
 				stack.add(podVersion.depend)			
+				
 				podVersion.dependsOn.each |depend| {
 					innerNode := resolveNode(depend, false)
+					
+					// make sure we're NOT adding dependencies that our Target pod doesn't want (keep things streamlined)
+					targetDepOn := targetDependsOn.find { it.name == innerNode.name }
+					if (targetDepOn != null)
+						innerNode.reduceCore(targetDepOn)
+					
 					expandNode(innerNode, stack)
 				}
 			}
@@ -412,8 +428,8 @@ internal class PodNode {
 	}
 	
 	Void reduceCore(Depend deps) {
-		podVersions = podVersions.findAll {
-			deps.match(it.depend.version)
+		podVersions = podVersions.findAll |podVer| {
+			deps.match(podVer.depend.version)
 		}
 	}
 	
@@ -433,7 +449,10 @@ internal class PodNode {
 	Bool isEmpty() { podVersions.isEmpty }
 	Int size() { podVersions.size }
 	
-	override Str toStr() 			{ podVersions?.first?.toStr ?: "${name} XXX" }
+	override Str toStr() 			{
+		vers := podVersions?.join(",") { it.version.toStr } ?: "---"
+		return "${name} ${vers}"
+	}
 	override Int hash() 			{ name.hash }
 	override Bool equals(Obj? that)	{ name == that?->name }
 }

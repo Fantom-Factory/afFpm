@@ -71,7 +71,7 @@ internal class PodGroup {
 	override Int hash() { dependsOnHash.hash }
 	override Bool equals(Obj? obj) {
 		that := obj as PodGroup
-		return that.name == this.name && that.dependsOn == this.dependsOn
+		return that.name == this.name && that.dependsOnHash == this.dependsOnHash
 	}
 }
 
