@@ -178,7 +178,7 @@ internal class Satisfier {
 				} else {					
 					// TODO optimise fn
 					solutions.add(
-						podMap.map { it.latest }
+						podMap.map { it.latest }.exclude { it == null }
 					)
 				}
 			}

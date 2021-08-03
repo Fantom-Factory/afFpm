@@ -1,6 +1,10 @@
 Versions
 ********
 
+v2.1.4
+======
+ - Bug: Fixed error when a transitive dependency was deleted in newer solutions.
+
 v2.1.2
 ======
  - Bug: Fix for shifting transitive dependency trees during dependency resolution. (Phew!)
