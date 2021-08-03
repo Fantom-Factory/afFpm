@@ -62,7 +62,7 @@ class RunCmd : FpmCmd {
 			cmds.insert(0, "compilerJs::NodeRunner")
 		}
 
-		log.info("FPM running " + cmds.join(" "))
+//		log.info("FPM running " + cmds.join(" "))
 
 		process := ProcessFactory.fanProcess(cmds)
 		process.mergeErr = false
