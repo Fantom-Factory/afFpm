@@ -272,7 +272,7 @@ const class FpmConfig {
 		fanrRepos.each |repoUrl, name| {
 			usr		:= repoUrl.userInfo == null ? "" : repoUrl.userInfo + "@"
 			url		:= repoUrl.toStr.replace(usr, "")
-			exists	:= (repoUrl.scheme == "file" && repoUrl.toFile.exists) ? "" : " (does not exist)"
+			exists	:= (repoUrl.scheme == "file" && repoUrl.toFile.exists == false) ? " (does not exist)" : ""
 			str += name.justr(max) + " = ${url}${exists}\n"
 		}
 
