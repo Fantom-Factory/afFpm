@@ -75,12 +75,16 @@ class BuildCmd : FpmCmd {
 		
 		podFile := PodFile(file)
 		
-		log.info("")
-		log.info("Installing ${podFile.depend} to ${repo.name} (${repo.url})")
-		podFile.installTo(repo)
+		// don't install pods to the 'FAN_HOME' dir - 'cos it's already there!
+		skipCopy := repo.isLocal && repo.isDirRepo && repo.url == Env.cur.homeDir.uri + `lib/fan/`
+		if (skipCopy == false) {
+			log.info("")
+			log.info("Installing ${podFile.depend} to ${repo.name} (${repo.url})")
+			podFile.installTo(repo)
 
-		log.info("  Deleting ${file.normalize.osPath}")
-		podFile.delete
+			log.info("  Deleting ${file.normalize.osPath}")
+			podFile.delete
+		}
 
 		return 0
 	}

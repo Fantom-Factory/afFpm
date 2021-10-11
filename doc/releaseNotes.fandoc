@@ -4,10 +4,11 @@ Versions
 v2.1.4
 ======
  - Bug: Fixed error when a transitive dependency was deleted in newer solutions.
+ - Bug: When building, don't install pods to the 'FAN_HOME' dir ('cos it's already there!)
 
 v2.1.2
 ======
- - Bug: Fix for shifting transitive dependency trees during dependency resolution. (Phew!)
+ - Bug: Fix for tracking shifting transitive dependency trees during dependency resolution. (Phew!)
 
 v2.1.0
 ======
