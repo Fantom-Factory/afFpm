@@ -3,6 +3,7 @@ Versions
 
 v2.1.4
 ======
+ - Chg: Updates the list of core pods to include new ones from Fantom 1.0.77.
  - Bug: Fixed error when a transitive dependency was deleted in newer solutions.
  - Bug: When building, don't install pods to the 'FAN_HOME' dir ('cos it's already there!)
 

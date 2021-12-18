@@ -165,6 +165,9 @@ class InstallCmd : FpmCmd {
 			if (newPod == null)
 				throw Err("Could not find pod: ${target}")
 
+			// don't install pods into the SAME repository / directory
+			// it corrupts the pod when you read / write it at the same time!
+			// > Installing crypto 1.0.77 to default (from default)
 			if (newPod.repository != repo) {
 				log.info("FPM installing ${newPod.depend} to ${repo.name} (from ${newPod.repository.name})")
 				newPod.installTo(repo)

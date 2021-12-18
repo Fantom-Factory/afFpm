@@ -16,7 +16,7 @@ class TestCmd : FpmCmd {
 	@Opt { aliases=["t"]; help="The target pod" }
 	Depend?	target
 
-	@Opt { aliases=["js"]; help="Run in Javascript environment (requies NodeJs)" }
+	@Opt { aliases=["js"]; help="Run in Javascript environment (requires NodeJs)" }
 	Bool	javascript
 
 	@Arg { help="The Fantom pod / class / method to test"}
