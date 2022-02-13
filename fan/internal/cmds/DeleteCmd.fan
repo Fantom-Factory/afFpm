@@ -23,7 +23,7 @@ class DeleteCmd : FpmCmd {
 	}
 
 	override Int run() {
-		podFile := repo.resolve(target, [:]).first
+		podFile := repo.resolve(target, [:]).last	// last should be the lastest version
 		if (podFile == null) {
 			log.warn("$target not found in $repo")
 			return invalidArgs

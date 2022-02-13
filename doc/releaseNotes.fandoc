@@ -1,6 +1,10 @@
 Versions
 ********
 
+v2.1.6
+======
+ - Chg: Deleting a pod when no version is supplied, now auto-selects the latest version.
+
 v2.1.4
 ======
  - Chg: Updates the list of core pods to include new ones from Fantom 1.0.77.
