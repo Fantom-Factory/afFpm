@@ -50,6 +50,7 @@ class HelpCmd : FpmCmd {
 		logCmdSynopsis(RunCmd#)
 		log.info("")
 		logCmdSynopsis(QueryCmd#)
+		logCmdSynopsis(ResolveCmd#)
 		logCmdSynopsis(InstallCmd#)
 		logCmdSynopsis(DeleteCmd#)
 		logCmdSynopsis(UpdateCmd#)
