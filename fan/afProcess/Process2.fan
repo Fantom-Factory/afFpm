@@ -7,7 +7,7 @@ using concurrent::Actor
 using concurrent::ActorPool
 
 ** Process manages spawning external OS processes.
-** Goes one better than the standard 'sys::Process' as this constantly stream keyboard input to the new process.
+** Goes one better than the standard 'sys::Process' as this constantly streams keyboard input to the new process.
 internal class Process2 {
 	
 	private JProcess?		jProc

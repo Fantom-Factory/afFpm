@@ -1,3 +1,4 @@
+using concurrent::Actor
 
 ** Provides a targeted environment for a specific pod. 
 ** 
@@ -36,13 +37,13 @@ const class FpmEnv : Env {
 
 	@NoDoc	// ensure we have the standard Env ctor: new make(Env env)
 	new make(Env? env := null, |This|? in := null) : super.make(env ?: Env.cur) {
-		// this was suppossed to be thrown when calling "fan -version", but
+		// this was supposed to be thrown when calling "fan -version", but
 		// sys::Err: Method not mapped to java.lang.reflect correctly afFpm::FpmEnv.make
 		// is thrown at "MethodFunc.isStatic(Method.java:496)" before make() is called
 		try		f := File(`./`)
 		catch	throw Err("FpmEnv cannot be used if NOT executing a Fantom pod")
 
-		in?.call(this)	// let F4 set its own logger and fpmConfig
+		in?.call(this)	// let F4 & LSP set its own logger and fpmConfig
 
 		if (fpmConfig == null)
 			fpmConfig = FpmConfig()
@@ -177,7 +178,12 @@ const class FpmEnv : Env {
 	}
 
 	@NoDoc
-	virtual TargetPod? findTarget() { FpmUtils.findTarget(this) }
+	virtual TargetPod? findTarget() {
+		target := Actor.locals["afFpm.target"]
+		if (target is Depend)
+			target = TargetPod(target, null)
+		return (target as TargetPod) ?: FpmUtils.findTarget(this)
+	}
 
 	** Dumps the FPM environment to a string. This includes the FPM Config and a list of resolved pods.
 	virtual Str dump() {
@@ -212,7 +218,7 @@ const class TargetPod {
 	const Depend	pod
 	const Depend[]?	dependencies
 
-	// used by F4's FpmCompileEnv
+	// used by F4's FpmCompileEnv and lspFantom
 	new make(Depend pod, Depend[]? dependencies := null) {
 		this.pod			= pod
 		this.dependencies	= dependencies
