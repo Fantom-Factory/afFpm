@@ -3,6 +3,7 @@ Versions
 
 v2.1.6
 ======
+ - New: 'extraPods' config option to add libraries to the final resolved pod list.
  - Chg: Deleting a pod when no version is supplied, now auto-selects the latest version.
 
 v2.1.4

@@ -15,6 +15,9 @@ const class FpmProps {
 	** A map of named fanr repositories, may be local or remote.
 	const Str:Str	fanrRepos
 	
+	** A list of extra pods to be resolved alongside the target pod.
+	const Depend[]	extraPods
+
 	** A list of libraries used to launch applications
 	const Str[]		launchPods
 
@@ -25,6 +28,7 @@ const class FpmProps {
 		workDirs	:= allProps["workDirs"]?.split(_pathSepInt)?.exclude { it.isEmpty }?.unique ?: Str#.emptyList
 		tempDir		:= allProps["tempDir"]
 		launchPods 	:= allProps["launchPods"]?.split(',')?.exclude { it.isEmpty }?.unique ?: Str#.emptyList
+		extraPods 	:= allProps["extraPods" ]?.split(',')?.exclude { it.isEmpty }?.unique ?: Str#.emptyList
 		
 		dirRepos := Str:Str[:] { ordered=true } 
 		allProps.keys.findAll { it.startsWith("dirRepo.") }.sort.each |key| {
@@ -44,10 +48,18 @@ const class FpmProps {
 		if (both.size > 0)
 			throw Err("Repository '" + both.join(", ") + "' is defined as both a dirRepo AND a fanrRepo")
 
+		extraDeps	:= extraPods.map |Str str->Depend?| {
+			str = str.replace("/", " ")
+			if (str.contains(" ") == false)
+				str += " 0+"
+			return Depend(str, false)
+		}.exclude { it == null }
+		
 		this.workDirs		= workDirs
 		this.tempDir		= tempDir
 		this.dirRepos		= dirRepos
 		this.fanrRepos		= fanrRepos
+		this.extraPods		= extraDeps
 		this.launchPods 	= launchPods
 	}
 }

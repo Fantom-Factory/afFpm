@@ -26,7 +26,7 @@ class ResolveCmd : FpmCmd {
 		
 		target := parseTarget(this.target.toStr)
 		
-		satisfied := resolver.satisfyPod(target)
+		satisfied := resolver.satisfyPod(target, fpmConfig.extraPods)
 		if (satisfied.resolvedPods.isEmpty && satisfied.unresolvedPods.size > 0) {
 			log.warn(FpmUtils.dumpUnresolved(satisfied.unresolvedPods.vals))
 			return 9
@@ -38,7 +38,7 @@ class ResolveCmd : FpmCmd {
 		buckets := podFiles.vals.groupBy { it.repository.name }
 		
 		log.info("${podFiles.size} pods")
-		log.info("${mainPod.depend}  ->  ${mainPod.repository.name}\n")
+		log.info("${mainPod?.depend ?: target.name}  ->  ${mainPod?.repository?.name}\n")
 		
 		buckets.each |PodFile[] pods, repoName| {
 			log.info("${repoName} ->")

@@ -41,9 +41,12 @@ const class FpmConfig {
 	** A map of named fanr repositories, may be local or remote.
 	const Str:Uri	fanrRepos
 	
+	** A list of extra pods to be resolved alongside the target pod.
+	const Depend[]	extraPods
+
 	** A list of libraries used to launch applications
 	const Str[]		launchPods
-
+	
 	** The 'fpm.props' files used to generate this class.
 	const File[]	configFiles
 
@@ -190,6 +193,7 @@ const class FpmConfig {
 		this.workDirs		= workDirs
 		this.dirRepos		= dirRepos
 		this.fanrRepos		= fanrRepos
+		this.extraPods		= fpmProps.extraPods
 		this.launchPods 	= fpmProps.launchPods
 		this.configFiles	= rawProps.files
 		this.props			= allProps
@@ -252,11 +256,12 @@ const class FpmConfig {
 	** <pre
 	Str dump() {
 		str := ""
-		str += "      Base Dir : " + dumpList([baseDir])
-		str += "  Fan Home Dir : " + dumpList([homeDir])
-		str += "     Work Dirs : " + dumpList(workDirs)
-		str += "      Temp Dir : " + dumpList([tempDir])
-		str += "  Config Files : " + dumpList(configFiles)
+		str += "      Base Dir : " + dumpFiles([baseDir])
+		str += "  Fan Home Dir : " + dumpFiles([homeDir])
+		str += "     Work Dirs : " + dumpFiles(workDirs)
+		str += "      Temp Dir : " + dumpFiles([tempDir])
+		str += "    Extra Pods : " + dumpList(extraPods)
+		str += "  Config Files : " + dumpFiles(configFiles)
 
 		str += "\n"
 		str += "     Dir Repos : " + (dirRepos.isEmpty ? "(none)" : "") + "\n"
@@ -276,17 +281,18 @@ const class FpmConfig {
 			str += name.justr(max) + " = ${url}${exists}\n"
 		}
 
-		str += "\n"
-		str += "        Macros : " + (macros.isEmpty ? "(none)" : "") + "\n"
-		max = macros.keys.reduce(14) |Int size, name| { size.max(name.size) } as Int
-		macros.each |value, name| {
-			str += name.justr(max) + " = ${value}\n"
-		}
+		// I've got too many Macros for this to still be useful 
+//		str += "\n"
+//		str += "        Macros : " + (macros.isEmpty ? "(none)" : "") + "\n"
+//		max = macros.keys.reduce(14) |Int size, name| { size.max(name.size) } as Int
+//		macros.each |value, name| {
+//			str += name.justr(max) + " = ${value}\n"
+//		}
 
 		return str
 	}
 
-	private Str dumpList(File[] files) {
+	private Str dumpFiles(File[] files) {
 		if (files.isEmpty)
 			return "(none)\n"
 
@@ -299,7 +305,19 @@ const class FpmConfig {
 			}
 		return str
 	}
-	
+
+	private Str dumpList(Obj[] objs) {
+		if (objs.isEmpty)
+			return "(none)\n"
+
+		str := "${objs.first}\n"
+		if (objs.size > 1)
+			objs[1..-1].each {
+				str += "".justr(14) + "   ${it}\n"
+			}
+		return str
+	}
+
 	private static File toRelDir(Str dirPath, File base) {
 		FileUtils.toAbsDir(dirPath, base)
 	}

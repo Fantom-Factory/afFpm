@@ -118,7 +118,8 @@ internal class FpmUtils {
 		envVars := env.vars
 		envMain := env.mainMethod
 		
-		// TODO allow multiple target pods!? e.g. xfant AND the test pod?
+		// todo allow multiple target pods!? e.g. xfant AND the test pod?
+		// naa - we have "extraPods" now
 		
 		// a fail safe / get out jail card for pin pointing the targeted environment 
 		idx := envArgs.index("-fpmTarget")

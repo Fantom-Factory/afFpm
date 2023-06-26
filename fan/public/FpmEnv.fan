@@ -35,6 +35,7 @@ const class FpmEnv : Env {
 	** and index meta inspected.
 	const Str:PodFile		environmentPods
 
+	// TODO add targetPod depends to this std ctor - but beware, it's a backwards breaking change!
 	@NoDoc	// ensure we have the standard Env ctor: new make(Env env)
 	new make(Env? env := null, |This|? in := null) : super.make(env ?: Env.cur) {
 		// this was supposed to be thrown when calling "fan -version", but
@@ -61,7 +62,7 @@ const class FpmEnv : Env {
 		try {
 			targetPod	:= findTarget
 			if (targetPod != null) {
-				satisfied	:= resolver.satisfy(targetPod)
+				satisfied	:= resolver.satisfy(targetPod, fpmConfig.extraPods)
 				resolver.cleanUp
 				
 				this.targetPod		= satisfied.targetPod
@@ -180,9 +181,17 @@ const class FpmEnv : Env {
 	@NoDoc
 	virtual TargetPod? findTarget() {
 		target := Actor.locals["afFpm.target"]
+
+		// allow target to be either Depend or TargetPod
 		if (target is Depend)
-			target = TargetPod(target, null)
-		return (target as TargetPod) ?: FpmUtils.findTarget(this)
+			target = TargetPod((Depend) target)
+
+		target = target as TargetPod
+		
+		if (target == null)
+			target = FpmUtils.findTarget(this)
+		
+		return target
 	}
 
 	** Dumps the FPM environment to a string. This includes the FPM Config and a list of resolved pods.
@@ -216,7 +225,7 @@ const class FpmEnv : Env {
 @NoDoc
 const class TargetPod {
 	const Depend	pod
-	const Depend[]?	dependencies
+	const Depend[]?	dependencies	// used for build.fan
 
 	// used by F4's FpmCompileEnv and lspFantom
 	new make(Depend pod, Depend[]? dependencies := null) {
@@ -229,10 +238,6 @@ const class TargetPod {
 		version	:= buildPod.version 
 		depends	:= buildPod.depends 
 		return TargetPod(Depend("$podName $version"), depends.map { Depend(it, false) }.exclude { it == null })
-	}
-	
-	Bool resolveDependencies() {
-		dependencies == null
 	}
 	
 	PodFile podFile() {

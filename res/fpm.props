@@ -127,6 +127,15 @@
 
 
 
+# ---- Extra Pods ------------------------------------------------------------
+#
+# Extra pods are libraries that should be added to the final resolved pod list.
+# Is a CSV of pod names with optional versions. Example:
+#
+# extraPods				= afBedSheet, afBedSheet 1.2, afBedSheet/1.5
+
+
+
 # ---- Macros -----------------------------------------------------------------
 #
 # Macros are basic substitutions that are made in file paths. Use them to 

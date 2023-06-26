@@ -60,16 +60,16 @@ class Resolver {
 		return pods
 	}
 
-	Satisfied satisfyPod(Depend depend) {
-		satisfy(TargetPod(depend))
+	Satisfied satisfyPod(Depend depend, Depend[]? extraPods := null) {
+		satisfy(TargetPod(depend), extraPods ?: Depend#.emptyList)
 	}
 	
 	internal Satisfied satisfyBuild(BuildPod buildPod) {
-		satisfy(TargetPod(buildPod))
+		satisfy(TargetPod(buildPod), Depend#.emptyList)
 	}
 	
-	Satisfied satisfy(TargetPod target) {
-		satisfier := Satisfier(target, this) {
+	Satisfied satisfy(TargetPod target, Depend[] extraPods) {
+		satisfier := Satisfier(target, this, extraPods) {
 			it.log				= this.log
 			it.writeTraceFile	= this.writeTraceFile
 			it.resolveTimeout1	= this.resolveTimeout1

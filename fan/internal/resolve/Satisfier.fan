@@ -24,7 +24,7 @@ internal class Satisfier {
 	private	Duration			startTime		:= Duration.now
 	private	Resolver			resolver
 
-	new make(TargetPod target, Resolver	resolver, |This|? f := null) {
+	new make(TargetPod target, Resolver	resolver, Depend[] extraPods, |This|? f := null) {
 		f?.call(this)
 		this.targetPod	= target.pod
 		this.resolver	= resolver
@@ -51,10 +51,17 @@ internal class Satisfier {
 			building = true
 		}
 		
+		// make sure the extra pods get resolved
+		extraPods.each |epod| {
+			podVers := resolver.resolve(epod)
+			resolveNode(epod, true)
+		}
+		
 		// to save us the hassle of resolving and de-ciphering the UnresolvedPod results 
 		// just make sure we have the direct dependencies first
 		initNode.podVersions.first.dependsOn.each {
-			resolveNode(it, true)
+			podVers := resolver.resolve(it)
+			initNode.addPodVersions(podVers)
 		}
 		
 		podNodes[initNode.name] = initNode
@@ -369,10 +376,12 @@ internal class Satisfier {
 		if (checked && vers.isEmpty)
 			throw UnknownPodErr("Could not resolve pod: ${pod}")
 
-		// TODO optimise fn
-		return podNodes.getOrAdd(pod.name) {
-			PodNode { it.name = pod.name }
-		}.addPodVersions(vers)
+		podNode := podNodes.get(pod.name)
+		if (podNode == null) {
+			podNode = PodNode(pod.name)
+			podNodes[pod.name] = podNode
+		}
+		return podNode.addPodVersions(vers)
 	}
 	
 	private static Str s(Int size) {
@@ -396,6 +405,10 @@ internal class PodNode {
 			PodFile[]?	podVersions { private set }
 
 	new make(|This|in) { in(this) }
+	
+	new makefromName(Str name) {
+		this.name = name
+	}
 
 	This pickLatestVersion() {
 		picked := podVersions?.sort?.last
