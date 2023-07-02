@@ -60,8 +60,7 @@ internal class Satisfier {
 		// to save us the hassle of resolving and de-ciphering the UnresolvedPod results 
 		// just make sure we have the direct dependencies first
 		initNode.podVersions.first.dependsOn.each {
-			podVers := resolver.resolve(it)
-			initNode.addPodVersions(podVers)
+			resolveNode(it, true)
 		}
 		
 		podNodes[initNode.name] = initNode
