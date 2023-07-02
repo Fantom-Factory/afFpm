@@ -44,6 +44,9 @@ const class FpmEnv : Env {
 		try		f := File(`./`)
 		catch	throw Err("FpmEnv cannot be used if NOT executing a Fantom pod")
 
+		if (Env.cur.vars["FPM_DEBUG"] == "true")
+			log.level = LogLevel.debug
+
 		in?.call(this)	// let F4 & LSP set its own logger and fpmConfig
 
 		if (fpmConfig == null)
