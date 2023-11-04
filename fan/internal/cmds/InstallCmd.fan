@@ -86,7 +86,7 @@ class InstallCmd : FpmCmd {
 			// install a single pod
 			if (file.ext == "pod") {
 				podFile := PodFile(file)
-				log.info("FPM installing ${podFile.depend} to ${repo.name}")
+				log.info("FPM installing ${podFile.depend} to ${repo.name} (${repo.url})")
 				podFile.installTo(repo)
 				return 0
 			}

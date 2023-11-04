@@ -16,8 +16,12 @@ class RunCmd : FpmCmd {
 	@Opt { aliases=["t"]; help="The target pod; maybe used when running scripts" }
 	Depend?	target
 
-	@Opt { aliases=["js"]; help="Run in Javascript environment (requies NodeJs)" }
+	@Opt { aliases=["js"]; help="Run in Javascript environment (requires NodeJs)" }
 	Bool	javascript
+
+	// TODO
+//	@Opt { help="Extra pods to add to the FpmConfig" }
+//	Str		pods
 
 	@Arg { help="The Fantom pod / class / method to run"}
 	Str?	pod
