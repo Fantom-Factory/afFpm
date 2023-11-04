@@ -14,7 +14,7 @@
 class QueryCmd : FpmCmd {
 
 	@NoDoc @Opt { aliases=["n"]; help="Max number of pod versions to return from each repo" } 
-	Int numVersions	:= 5
+	Int numVersions	:= 11
 	
 	@Opt { aliases=["r"]; help="Name or location of a specific repository to query" }
 	Repository? repo
