@@ -110,7 +110,7 @@ const class FpmConfig {
 
 		// convert files to RawProps
 		rawProps := null as RawProps
-		fpmFiles.reverse.each |fpmFile| {
+		fpmFiles.unique.reverse.each |fpmFile| {
 			rawProps = RawProps(fpmFile.readProps, fpmFile, rawProps)
 		}
 		
@@ -195,7 +195,7 @@ const class FpmConfig {
 		this.fanrRepos		= fanrRepos
 		this.extraPods		= fpmProps.extraPods
 		this.launchPods 	= fpmProps.launchPods
-		this.configFiles	= rawProps.files
+		this.configFiles	= rawProps.files.unique
 		this.props			= allProps
 		this.macros			= macros
 	}
