@@ -100,6 +100,10 @@ class InstallCmd : FpmCmd {
 					log.err(buildPod.errMsg)
 					return invalidArgs
 				}
+				
+				if (fpmConfig.extraPods.size > 0) {
+					buildPod.depends.addAll(fpmConfig.extraPods.map { it.toStr })
+				}
 
 				// update
 				log.info("FPM updating dependencies for ${buildPod.podName} ...")
