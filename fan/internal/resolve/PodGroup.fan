@@ -45,7 +45,7 @@ internal class PodGroup {
 	** May return 'null' if a pod exists in the "overall" search but not part of the solution
 	** i.e. it *was* a transitive dependency in older versions, but is not more.
 	PodFile? latest() {
-		depend := matched.findAll { it != false }.keys.max
+		depend := matched.findAll { it != false }.keys.max |d1, d2| { d1.version <=> d2.version }
 		return pods.find { it.depend == depend } 
 	}
 

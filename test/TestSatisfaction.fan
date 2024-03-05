@@ -137,6 +137,16 @@ internal class TestSatisfaction : Test {
 		//   afFancordion/1.1.0 -> afBounce 1.1.0-1.1
 		verifyPodFiles("afEggbox 0.0.5, afFancordionBootstrap 1.0.0, afFancordion 1.0.4, afBounce 1.0.24")		
 	}
+	
+	Void testDependStrCompare() {
+		addDep("afBed 1.0", "afTest 0+")
+		addDep("afTest 9")
+		addDep("afTest 10")
+		
+		satisfyDependencies("afBed 1.0")
+		
+		verifyPodFiles("afBed 1.0, afTest 10")
+	}
 
 	private Void addDep(Str dependency, Str? dependents := null) {
 		repository.add(dependency, dependents)
