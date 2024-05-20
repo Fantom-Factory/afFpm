@@ -1,5 +1,3 @@
 #!/bin/bash
-
 export FPM_TARGET=afFpm
-
 fan afFpm "$@"

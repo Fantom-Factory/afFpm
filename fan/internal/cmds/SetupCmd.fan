@@ -27,7 +27,7 @@ class SetupCmd : FpmCmd {
 	new make(|This| f) : super(f) { }
 
 	override Int run() {
-		log.info("Settin up FPM...")
+		log.info("Setting up FPM...")
 		log.info("")
 		doRun()
 		log.info("FPM setup complete.")
