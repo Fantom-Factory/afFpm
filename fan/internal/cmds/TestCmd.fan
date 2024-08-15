@@ -16,8 +16,15 @@ class TestCmd : FpmCmd {
 	@Opt { aliases=["t"]; help="The target pod" }
 	Depend?	target
 
-	@Opt { aliases=["js"]; help="Run in Javascript environment (requires NodeJs)" }
+	@Opt { aliases=["js"]; help="Run in legacy JavaScript environment (requires NodeJs)" }
 	Bool	javascript
+
+	@Opt { aliases=["es"]; help="Run in EMCA JavaScript environment (requires NodeJs)" }
+	Bool	ecmascript
+
+	@NoDoc
+	@Opt { help="Don't delete node.js env when done" }
+	Bool	keep
 
 	@Arg { help="The Fantom pod / class / method to test"}
 	Str?	pod
@@ -48,7 +55,16 @@ class TestCmd : FpmCmd {
 
 		if (javascript) {
 			cmds.insert(0, "-test")
+			if (keep)
+				cmds.insert(0, "-keep")
 			cmds.insert(0, "compilerJs::NodeRunner")
+		}
+
+		if (ecmascript) {
+			if (keep)
+				cmds.insert(0, "-keep")
+			cmds.insert(0, "test")
+			cmds.insert(0, "nodeJs::Main")
 		}
 
 		log.info("FPM testing " + cmds.join(" "))
