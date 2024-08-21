@@ -5,7 +5,7 @@ class Build : BuildPod {
 	new make() {
 		podName = "afFpm"
 		summary = "Manages pods and their dependencies, providing a targeted environment for building, testing, and running Fantom apps"
-		version = Version("2.1.8")
+		version = Version("2.1.9")
 
 		meta = [
 			"pod.dis"			: "FPM (Fantom Pod Manager)",
@@ -23,7 +23,7 @@ class Build : BuildPod {
 
 		srcDirs = [`fan/`, `fan/afConcurrent/`, `fan/afPlastic/`, `fan/afProcess/`, `fan/internal/`, `fan/internal/cmds/`, `fan/internal/repos/`, `fan/internal/resolve/`, `fan/internal/utils/`, `fan/public/`, `test/`]
 		resDirs = [`doc/`, `res/`]
-		
+
 		docApi	= true
 		docSrc	= true
 	}

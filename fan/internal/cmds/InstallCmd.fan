@@ -93,7 +93,7 @@ class InstallCmd : FpmCmd {
 			
 			// update a build file
 			if (file.ext == "fan" && file.basename == "build") {
-				buildPod := BuildPod(file.name)
+				buildPod := BuildPod(file.osPath)
 
 				if (buildPod.errMsg != null) {
 					// TODO parse fan scripts for "using" statements and update those
