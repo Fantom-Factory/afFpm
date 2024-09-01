@@ -27,9 +27,9 @@ const class FpmProps {
 	new make(Str:Str allProps) {
 		workDirs	:= allProps["workDirs"]?.split(_pathSepInt)?.exclude { it.isEmpty }?.unique ?: Str#.emptyList
 		tempDir		:= allProps["tempDir"]
-		launchPods 	:= allProps["launchPods"]?.split(',')?.exclude { it.isEmpty }?.unique ?: Str#.emptyList
-		extraPods 	:= allProps["extraPods" ]?.split(',')?.exclude { it.isEmpty }?.unique ?: Str#.emptyList
-		
+		launchPods 	:= allProps["launchPods"]?.replace(",", " ")?.trimToNull?.split?.unique ?: Str#.emptyList
+		extraPods 	:= allProps["extraPods" ]?.replace(",", " ")?.trimToNull?.split?.unique ?: Str#.emptyList
+
 		dirRepos := Str:Str[:] { ordered=true } 
 		allProps.keys.findAll { it.startsWith("dirRepo.") }.sort.each |key| {
 			path := allProps[key]
