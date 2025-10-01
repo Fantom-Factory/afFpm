@@ -1,5 +1,6 @@
 using fanr::Repo
 using fanr::PodSpec
+using web::WebClient
 
 internal const class RemoteFanrRepository : Repository {
 	private  const CorePods	corePods	:= CorePods()
@@ -28,8 +29,22 @@ internal const class RemoteFanrRepository : Repository {
 		return buff.toFile(`fanr://${name}/${podFile.depend}`)
 	}
 	
-	override Void delete(PodFile podFile) { throw UnsupportedErr() }
+	override Void delete(PodFile podFile) {
+		// we do not depend on afFanr. Instead, directly send a POST request representing afFanr's WebRepo uninstall functionality.
+		c:= (WebClient) repo->prepare("POST", `${url.toStr}uninstall/${podFile.name}/${podFile.version}`)
+		
+		c.writeReq.readRes
+		
+		// if not 200, then assume a JSON error message 
+		if (c.resCode != 200) repo->parseRes(c)
 
+    	Str:Obj? jsonRes := (Str:Obj?) repo->parseRes(c)
+		if(!jsonRes.containsKey("uninstalled")) {
+			throw Err("Missing 'uninstalled' in JSON response")
+		}
+		return;
+	}
+	
 	override PodFile[] resolve(Depend depend, Str:Obj? options) {
 		corePods := (Bool)		options.get("corePods",  false) 
 		maxPods	 := (Int )		options.get("maxPods", 5)
@@ -57,7 +72,7 @@ internal const class RemoteFanrRepository : Repository {
 	
 	override PodFile[] resolveAll() {
 		// should only be called on local repos
-		throw UnsupportedErr("fanr does not support pod deletion")
+		throw UnsupportedErr("fanr does not support resolveAll")
 	}
 
 	override Void cleanUp() { }
