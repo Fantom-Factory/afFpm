@@ -50,12 +50,21 @@ internal const class RemoteFanrRepository : Repository {
 		maxPods	 := (Int )		options.get("maxPods", 5)
 		minVer	 := (Version?)	options.get("minVer", null)
 		log		 := (Log?)		options.get("log")
+		errLog	 := (Log?)		options.get("errLog")
 
 		if (!corePods && this.corePods.isCorePod(depend.name))
 			return PodFile#.emptyList
 
 		log?.debug("Querying ${name} for ${depend}" + ((minVer == null) ? "" : " ( > $minVer)"))
-		specs := repo.query(depend.toStr, maxPods)
+		specs := [,]
+		
+		try {
+			specs = repo.query(depend.toStr, maxPods) // may throw if repo is offline
+		} catch(IOErr e) {
+			errLog?.info("\nUnable to query repo '${name}' (offline?)")
+			return PodFile#.emptyList
+		}
+
 		files  := specs
 			.findAll |PodSpec spec->Bool| {
 				(minVer == null) ? true : spec.version > minVer

@@ -41,7 +41,8 @@ class QueryCmd : FpmCmd {
 			return invalidArgs
 		}
 		
-		opts	:= [:]
+
+		opts	:= ["errLog": log]
 		total	:= 0
 		repos.each |repo| {
 			pods := repo.resolve(target, opts)

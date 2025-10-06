@@ -1,8 +1,8 @@
 
-** Deletes a pod from a local repository. (Remote fanr repositories don't support pod deletion.)
+** Deletes a pod from a repository.
 ** 
 ** The repository may be:
-**  - a named local repository (e.g. 'default')
+**  - a named repository (e.g. 'default')
 **  - the location of directory (e.g. 'C:\lib-release\')
 **
 ** Examples: 
