@@ -4,7 +4,6 @@ internal class ArgParser {
 	Str:|Field,Str->Obj?| resolveFns	:= Str:|Field,Str->Obj?|[:]
 	
 	Field:Obj? parse(Str[] args, Type cmdType) {
-		
 		boolOpts	:= Field:Str[][:]
 		strOpts		:= Field:Str[][:]
 		argFields	:= Field[,]

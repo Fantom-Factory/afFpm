@@ -2,7 +2,7 @@
 internal class Main {
 	
 	Int main(Str[] args) {
-		args		= args.rw
+		argsRw		:= args.rw
 		fpmConfig	:= FpmConfig()
 
 		cmdStr		:= args.first
@@ -21,18 +21,26 @@ internal class Main {
 		cmdType := Main#.pod.type("${cmdStr.lower.capitalize}Cmd", false)
 		if (cmdType == null)
 			cmdType = HelpCmd#
-		else if (args.size > 0)
-			args.removeAt(0)
+		else if (argsRw.size > 0)
+			argsRw.removeAt(0)
 		
 		ctorData := ArgParser() {
 			it.resolveFns["repo"]	= |Field field, Str arg->Obj?| { parseRepo(field, arg, fpmConfig) }
 			it.resolveFns["target"]	= |Field field, Str arg->Obj?| { FpmUtils.toDepend(arg, true) }
-		}.parse(args, cmdType) {
+		}.parse(argsRw, cmdType) {
 			it[FpmCmd#log]			= StdLogger()
 			it[FpmCmd#fpmConfig]	= fpmConfig
 		}
 
-		cmd := (FpmCmd) cmdType.make([Field.makeSetFunc(ctorData)])
+		FpmCmd? cmd := null
+		try {
+			cmd = (FpmCmd) cmdType.make([Field.makeSetFunc(ctorData)])
+		} catch(FieldNotSetErr err) {
+			StdLogger().info("Invalid command usage!")
+			Str[] newArgs := args.dup.insert(0, "help")
+			return main(newArgs)
+		}
+		
 
 		if (cmd.debug)
 			cmd.log.level = LogLevel.debug
