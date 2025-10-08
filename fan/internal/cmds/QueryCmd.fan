@@ -40,7 +40,6 @@ class QueryCmd : FpmCmd {
 			log.err("No repositories to query")
 			return invalidArgs
 		}
-		
 
 		opts	:= ["errLog": log]
 		total	:= 0

@@ -57,11 +57,23 @@ internal const class RemoteFanrRepository : Repository {
 
 		log?.debug("Querying ${name} for ${depend}" + ((minVer == null) ? "" : " ( > $minVer)"))
 		specs := [,]
-		
+
 		try {
-			specs = repo.query(depend.toStr, maxPods) // may throw if repo is offline
-		} catch(IOErr e) {
-			errLog?.info("\nUnable to query repo '${name}' (offline?)")
+			specs = repo.query(depend.toStr, maxPods) // may throw if repo is offline or we pass an invalid parse string
+		} catch(Err e) {			
+			if(e is IOErr) {	
+				errLog?.info("\nUnable to query repo '${name}' (offline?)")
+				return PodFile#.emptyList
+			}
+			
+			// we don't want to print a whole stack trace out when not debugging (especially as catching here is common)
+			errLog?.info("\nUnable to query repo '${name}':")
+			if(errLog.level == LogLevel.debug) {
+				errLog?.debug(e.traceToStr)
+			} else {
+				errLog?.info(e.msg)
+			}
+
 			return PodFile#.emptyList
 		}
 
