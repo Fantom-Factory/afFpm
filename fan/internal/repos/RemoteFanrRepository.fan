@@ -52,8 +52,9 @@ internal const class RemoteFanrRepository : Repository {
 		log		 := (Log?)		options.get("log")
 		errLog	 := (Log?)		options.get("errLog")
 
-		if (!corePods && this.corePods.isCorePod(depend.name))
+		if (!corePods && this.corePods.isCorePod(depend.name)) {
 			return PodFile#.emptyList
+		}
 
 		log?.debug("Querying ${name} for ${depend}" + ((minVer == null) ? "" : " ( > $minVer)"))
 		specs := [,]

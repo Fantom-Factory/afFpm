@@ -24,7 +24,10 @@ class QueryCmd : FpmCmd {
 
 	@Arg { help="The pod to query for" }
 	Depend	target
-
+	
+	@Opt { aliases=["c"]; help="Query Fantom core pods" } 
+	Bool core
+	
 	new make(|This| f) : super(f) { }
 
 	override Int run() {
@@ -41,7 +44,7 @@ class QueryCmd : FpmCmd {
 			return invalidArgs
 		}
 
-		opts	:= ["errLog": log]
+		opts	:= ["errLog": log, "corePods": core]
 		total	:= 0
 		repos.each |repo| {
 			pods := repo.resolve(target, opts)
