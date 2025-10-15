@@ -25,7 +25,7 @@ class QueryCmd : FpmCmd {
 	@Arg { help="The pod to query for" }
 	Depend	target
 	
-	@Opt { aliases=["c"]; help="Query Fantom core pods" } 
+	@Opt { aliases=["c"]; help="Query Fantom core pods from remotes" } 
 	Bool core
 	
 	new make(|This| f) : super(f) { }
@@ -47,10 +47,26 @@ class QueryCmd : FpmCmd {
 		opts	:= ["errLog": log, "corePods": core]
 		total	:= 0
 		repos.each |repo| {
+//			log.info("${repo.typeof} - ${repo.name}" )
 			pods := repo.resolve(target, opts)
 			if (pods.size > 0) {
 				log.info("\n${repo.name} (${repo.url})")
-				log.info(" - found ${target.name} " + pods.join(", ") { it.depend.version.toStr })
+				
+				if(target.name.contains("*")) {
+					// we want to differentiate between different pods when using a wildcard
+					Str:PodFile[] namePods := [:];
+					pods.each |pod| {
+						if(!namePods.containsKey(pod.name)) {
+							namePods.add(pod.name, [pod])
+						} else namePods.get(pod.name).add(pod)
+					}
+					namePods.each |val, key| {
+						log.info(" - found ${key} " + val.join(", ") { it.depend.version.toStr })
+					}
+				} else {
+					log.info(" - found ${target.name} " + pods.join(", ") { it.depend.version.toStr })
+				}
+
 			}
 			total += pods.size
 		}

@@ -47,7 +47,7 @@ internal const class RemoteFanrRepository : Repository {
 	
 	override PodFile[] resolve(Depend depend, Str:Obj? options) {
 		corePods := (Bool)		options.get("corePods",  false) 
-		maxPods	 := (Int )		options.get("maxPods", 5)
+		maxPods	 := (Int )		options.get("maxPods", 50)
 		minVer	 := (Version?)	options.get("minVer", null)
 		log		 := (Log?)		options.get("log")
 		errLog	 := (Log?)		options.get("errLog")
@@ -59,8 +59,53 @@ internal const class RemoteFanrRepository : Repository {
 		log?.debug("Querying ${name} for ${depend}" + ((minVer == null) ? "" : " ( > $minVer)"))
 		specs := [,]
 
+		
+		specs = tryQuery(depend.toStr, maxPods, errLog)
+
+		files  := specs
+			.findAll |PodSpec spec->Bool| {
+				(minVer == null) ? true : spec.version > minVer
+			}
+			.map |PodSpec spec->PodFile| {
+				PodFile(spec.name, spec.version, spec.depends, `fanr://${name}/${depend}`, this)
+			}.sort as PodFile[]
+
+		if (files.size > 0)
+			log?.info(" - found ${depend.name} " + files.join(", ") { it.version.toStr })
+
+		return files.sort
+	}
+	
+	
+	override PodFile[] resolveAll() {
+		PodSpec[] all := tryQuery("*", 11)
+		PodSpec[] latestVers := [,];
+		all.each |pod| {
+			PodSpec? inList := latestVers.find |lv| { lv.name == pod.name };
+			if(inList == null) {
+				latestVers.add(pod)
+			} else {
+				if(inList.version < pod.version) {
+					latestVers.remove(inList)
+					latestVers.add(pod)
+				}
+			}
+		}
+
+		return latestVers.map |PodSpec spec->PodFile| {
+			PodFile(spec.name, spec.version, spec.depends, `fanr://${spec.name}/${spec.name} ${spec.version}`, this) 
+		}
+		
+	}
+
+	override Void cleanUp() { }
+	
+	override Str dump() { "Remote Fanr Repo\n - ${url}" }
+	
+	** Attempts to query our remote repo. On fail, prints error to errLog and returns an empty list.
+	private PodSpec[] tryQuery(Str queryString, Int? maxPods := 11, Log? errLog := null) {
 		try {
-			specs = repo.query(depend.toStr, maxPods) // may throw if repo is offline or we pass an invalid parse string
+			return repo.query(queryString, maxPods) // may throw if repo is offline or we pass an invalid parse string
 		} catch(Err e) {			
 			if(e is IOErr) {	
 				errLog?.info("\nUnable to query repo '${name}' (offline?)")
@@ -77,27 +122,5 @@ internal const class RemoteFanrRepository : Repository {
 
 			return PodFile#.emptyList
 		}
-
-		files  := specs
-			.findAll |PodSpec spec->Bool| {
-				(minVer == null) ? true : spec.version > minVer
-			}
-			.map |PodSpec spec->PodFile| {
-				PodFile(spec.name, spec.version, spec.depends, `fanr://${name}/${depend}`, this)
-			}.sort as PodFile[]
-
-		if (files.size > 0)
-			log?.info(" - found ${depend.name} " + files.join(", ") { it.version.toStr })
-
-		return files.sort
 	}
-	
-	override PodFile[] resolveAll() {
-		// should only be called on local repos
-		throw UnsupportedErr("fanr does not support resolveAll")
-	}
-
-	override Void cleanUp() { }
-	
-	override Str dump() { "Remote Fanr Repo\n - ${url}" }
 }

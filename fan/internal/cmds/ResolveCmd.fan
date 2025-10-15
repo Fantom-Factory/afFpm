@@ -21,15 +21,24 @@ class ResolveCmd : FpmCmd {
 		}
 		
 		resolver := Resolver(fpmConfig.repositories)
-		resolver.log		= log
+		resolver.log = log
 		resolver.localOnly
 		
 		target := parseTarget(this.target.toStr)
 		
-		satisfied := resolver.satisfyPod(target, fpmConfig.extraPods)
+		Satisfied? satisfied := null
+		
+		try {
+			// TODO currently resolving target/someVer just resolves the latest version
+			satisfied = resolver.satisfyPod(target, fpmConfig.extraPods)
+		} catch(UnknownPodErr e) {
+			log.warn("Could not find target '${target}'")
+			return invalidArgs
+		}
+
 		if (satisfied.resolvedPods.isEmpty && satisfied.unresolvedPods.size > 0) {
 			log.warn(FpmUtils.dumpUnresolved(satisfied.unresolvedPods.vals))
-			return 9
+			return 9 // ?
 		}
 
 		podFiles := satisfied.resolvedPods.rw

@@ -6,7 +6,7 @@ internal class Main {
 		fpmConfig	:= FpmConfig()
 
 		cmdStr		:= args.first
-		if (cmdStr == null)
+		if (cmdStr == null || cmdStr == "fpm") // dump so we don't run the FpmCmd class on `fpm fpm`, and for util on `fpm`, 
 			cmdStr = "dump"
 
 //		while (cmdStr.startsWith("-"))
