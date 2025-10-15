@@ -47,12 +47,12 @@ class QueryCmd : FpmCmd {
 		opts	:= ["errLog": log, "corePods": core]
 		total	:= 0
 		repos.each |repo| {
-//			log.info("${repo.typeof} - ${repo.name}" )
 			pods := repo.resolve(target, opts)
 			if (pods.size > 0) {
 				log.info("\n${repo.name} (${repo.url})")
 				
 				if(target.name.contains("*")) {
+					log.info("\nNot all repositories support wildcards! For accuracy, be exact.")
 					// we want to differentiate between different pods when using a wildcard
 					Str:PodFile[] namePods := [:];
 					pods.each |pod| {

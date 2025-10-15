@@ -15,12 +15,31 @@ class ResolveCmd : FpmCmd {
 	new make(|This| f) : super(f) { }
 
 	override Int run() {
-		if (target == null) {
-			log.warn("Resolve what!?")
-			return invalidArgs
-		}
+
+		Repository[] repos := Repository[,]
+		repos.addAll(fpmConfig.repositories)
 		
-		resolver := Resolver(fpmConfig.repositories)
+		if (target == null) {
+			// look at our current context to try to determine target
+			File buildFile := File(`build.fan`) // relative to working dir
+			if(!buildFile.exists()) {
+				log.warn("Resolve what!?")
+				return invalidArgs
+			}
+			
+			// we assume the described pod is built and latest version, we do not rebuild
+			File buildDir := File(`build/`);
+			File[] pods := buildDir.listFiles(Regex.glob("*.pod"))
+			if(!buildDir.exists || pods.isEmpty) {
+				log.warn("Resolve what!?")
+				return invalidArgs
+			}
+			
+			target = Depend.fromStr("${pods.first.basename} 0+")
+			repos.add(SinglePodRepository(pods.first)) // make sure we're actually looking at the built pod, even if it's not being extracted to a local repo
+		} 
+
+		resolver := Resolver(repos)
 		resolver.log = log
 		resolver.localOnly
 		
@@ -29,7 +48,7 @@ class ResolveCmd : FpmCmd {
 		Satisfied? satisfied := null
 		
 		try {
-			// TODO currently resolving target/someVer just resolves the latest version
+			// TODO currently resolving target/someVer sometimes resolves the latest version regardless
 			satisfied = resolver.satisfyPod(target, fpmConfig.extraPods)
 		} catch(UnknownPodErr e) {
 			log.warn("Could not find target '${target}'")
