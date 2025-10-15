@@ -35,8 +35,11 @@ class ResolveCmd : FpmCmd {
 				return invalidArgs
 			}
 			
-			target = Depend.fromStr("${pods.first.basename} 0+")
-			repos.add(SinglePodRepository(pods.first)) // make sure we're actually looking at the built pod, even if it's not being extracted to a local repo
+			spr := SinglePodRepository(pods.first)	
+			target = spr.podFile.depend
+			
+			// insert at 0 so we always find this single pod repo first (and thus take its dependencies, rather than potentially outdated ones in another local repo)
+			repos.insert(0, spr)
 		} 
 
 		resolver := Resolver(repos)
@@ -65,7 +68,7 @@ class ResolveCmd : FpmCmd {
 		mainPod := podFiles.remove(target.name)
 		buckets := podFiles.vals.groupBy { it.repository.name }
 		
-		log.info("${podFiles.size} pods")
+		log.info("resolved ${podFiles.size} pods")
 		log.info("${mainPod?.depend ?: target.name}  ->  ${mainPod?.repository?.name}\n")
 		
 		buckets.each |PodFile[] pods, repoName| {
@@ -80,4 +83,5 @@ class ResolveCmd : FpmCmd {
 		
 		return 0
 	}
+
 }
