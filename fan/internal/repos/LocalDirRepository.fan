@@ -19,7 +19,6 @@ internal const class LocalDirRepository : Repository {
 
 	override PodFile upload(PodFile podFile) {
 		newFile := download(podFile)
-
 		// turns out that file locking is a REAL problem on Windows and happens ALL the time
 		// a comment in this stackoverflow post suggests avoiding Java NIO - which Fantom.copyTo() now uses
 		// https://stackoverflow.com/questions/4179145/release-java-file-lock-in-windows

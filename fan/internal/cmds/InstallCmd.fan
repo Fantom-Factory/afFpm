@@ -32,6 +32,9 @@ class InstallCmd : FpmCmd {
 	@Opt { aliases=["r"]; help="Name or location of repository to install pods to (defaults to 'default')" }
 	Repository repo
 
+	@Opt { aliases=["d"]; help="If specified, then dependencies of the target will also be installed (default if updating from a build.fan file)" }
+	Bool deps	
+	
 	@Opt { aliases=["c"]; help="Query and install Fantom core pods" } 
 	Bool core
 	
@@ -46,7 +49,7 @@ class InstallCmd : FpmCmd {
 
 	@Opt { aliases=["n"]; help="The max number of pod versions remote repositories should return (defaults to 5)" }
 	Int? numPods
-
+	
 	@Arg { help="location or query for pod" }
 	Str? pod
 
@@ -82,7 +85,6 @@ class InstallCmd : FpmCmd {
 		
 		file := FileUtils.toFile(pod).normalize
 		if (file.exists) {
-			
 			// install a single pod
 			if (file.ext == "pod") {
 				podFile := PodFile(file)
@@ -178,6 +180,10 @@ class InstallCmd : FpmCmd {
 			}
 
 			// update & install dependencies
+			if(!deps) {
+				return 0
+			}
+			
 			log.info("Updating dependencies for ${target} ...")
 			satisfied := resolver.satisfyPod(target)
 			if (satisfied.resolvedPods.isEmpty && satisfied.unresolvedPods.size > 0) {
