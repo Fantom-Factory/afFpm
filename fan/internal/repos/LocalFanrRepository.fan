@@ -44,6 +44,9 @@ internal const class LocalFanrRepository : Repository {
 
 	override Void delete(PodFile podFile) {
 		download(podFile).delete
+
+		// tidy up after ourselves and delete empty dirs
+		if (dir.isEmpty) dir.delete
 	}
 
 	override PodFile[] resolve(Depend depend, Str:Obj? options) {
