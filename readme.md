@@ -1,8 +1,8 @@
-# FPM (Fantom Pod Manager) v2.1.6
+# FPM (Fantom Pod Manager) v2.1.10
 ---
 
 [![Written in: Fantom](http://img.shields.io/badge/written%20in-Fantom-lightgray.svg)](https://fantom-lang.org/)
-[![pod: v2.1.6](http://img.shields.io/badge/pod-v2.1.6-yellow.svg)](http://eggbox.fantomfactory.org/pods/afFpm)
+[![pod: v2.1.10](http://img.shields.io/badge/pod-v2.1.10-yellow.svg)](https://eggbox.fantomfactory.org/pods/afFpm)
 [![Licence: ISC](http://img.shields.io/badge/licence-ISC-blue.svg)](https://choosealicense.com/licenses/isc/)
 
 ## Overview
@@ -289,11 +289,11 @@ To upload and publish a pod to the eggbox repository:
 
 ### delete
 
-Deletes a pod from a local repository. (Remote fanr repositories don't support pod deletion.)
+Deletes a pod from a repository.
 
 The repository may be:
 
-* a named local repository (e.g. `default`)
+* a named repository (e.g. `default`)
 * the location of directory (e.g. `C:\lib-release\`)
 
 

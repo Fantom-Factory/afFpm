@@ -1,6 +1,17 @@
 Versions
 ********
 
+v2.1.10
+=======
+ - New: Wildcard support for queries.
+ - New: Installing dependencies is now optional.
+ - New: config may add extra pods to the current Env.
+
+v2.1.8
+======
+ - New: Add ES Test Runner to Test Cmd.
+ - Chg: Avoid Java NIO File Locking problems on Windows - caused by new Fantom file handling.
+
 v2.1.6
 ======
  - New: 'extraPods' config option to add libraries to the final resolved pod list.
