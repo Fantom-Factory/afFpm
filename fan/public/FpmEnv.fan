@@ -145,6 +145,11 @@ const class FpmEnv : Env {
 			}
 		}
 	}
+	
+	@NoDoc
+	override File[] path() {
+		fpmConfig.workDirs
+	}
 
 	@NoDoc
 	override File workDir() {
